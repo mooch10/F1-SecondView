@@ -13,24 +13,25 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
   onNudge,
 }) => {
   return (
-    <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 shadow-sm">
+    <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3">
+      {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[#27F4D2]" />
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#E10600]" />
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Sincronización TV (Anti-Spoilers)
           </span>
         </div>
 
-        {/* Current Delay Badge */}
+        {/* Current Delay Status Badge */}
         <div className="flex items-center gap-1.5">
           {delaySeconds === 0 ? (
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30 tracking-wide uppercase">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest uppercase">
               EN VIVO (0s)
             </span>
           ) : (
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30 tracking-wide font-mono">
-              -{delaySeconds}s TV Delay
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider">
+              -{delaySeconds}s RETRASO
             </span>
           )}
 
@@ -38,29 +39,29 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             <button
               type="button"
               onClick={() => onDelayChange(0)}
-              title="Volver a tiempo real (0s)"
-              className="p-1 rounded text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+              title="Restablecer a tiempo real (0s)"
+              className="p-1 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-[#1C2230] transition-colors"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className="w-3 h-3" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Slider & Nudge Buttons Container */}
-      <div className="flex items-center gap-2">
-        {/* Nudge -2s button */}
+      {/* Production Scrubber & Hardware Nudge Controls */}
+      <div className="flex items-center gap-2 pt-1">
+        {/* Hardware Button -2s */}
         <button
           type="button"
           onClick={() => onNudge(-2)}
           disabled={delaySeconds <= 0}
-          className="h-10 px-2.5 rounded-lg bg-[#1C2230] border border-white/[0.08] text-xs font-mono font-bold text-zinc-200 hover:bg-white/[0.08] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all"
           title="Restar 2 segundos de retraso"
         >
-          <span>-2s</span>
+          -2s
         </button>
 
-        {/* Range slider */}
+        {/* Timeline Scrubber */}
         <div className="flex-1 flex flex-col justify-center px-1">
           <input
             type="range"
@@ -69,26 +70,39 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             step="1"
             value={delaySeconds}
             onChange={(e) => onDelayChange(Number(e.target.value))}
-            className="w-full h-2 bg-[#0B0E14] rounded-lg appearance-none cursor-pointer accent-[#27F4D2] border border-white/[0.1]"
+            className="w-full h-2 bg-[#0B0E14] rounded-lg appearance-none cursor-pointer accent-[#E10600] border border-white/[0.08]"
           />
-          <div className="flex justify-between text-[10px] text-zinc-500 font-mono mt-1 font-tabular">
-            <span>0s (Pista)</span>
-            <span>15s (F1 TV)</span>
-            <span>30s (Disney+)</span>
-            <span>45s</span>
+          {/* Broadcast Ruler Marks */}
+          <div className="flex justify-between text-[9px] text-zinc-400 font-mono mt-1 tabular-nums select-none">
+            <span className="flex flex-col items-start">
+              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
+              0s (PISTA)
+            </span>
+            <span className="flex flex-col items-center">
+              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
+              15s (F1 TV)
+            </span>
+            <span className="flex flex-col items-center">
+              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
+              30s (DISNEY+)
+            </span>
+            <span className="flex flex-col items-end">
+              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
+              45s
+            </span>
           </div>
         </div>
 
-        {/* Nudge +2s button */}
+        {/* Hardware Button +2s */}
         <button
           type="button"
           onClick={() => onNudge(2)}
           disabled={delaySeconds >= 45}
-          className="h-10 px-2.5 rounded-lg bg-[#1C2230] border border-white/[0.08] text-xs font-mono font-bold text-zinc-200 hover:bg-white/[0.08] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1"
           title="Sumar 2 segundos de retraso"
         >
           <span>+2s</span>
-          <FastForward className="w-3 h-3 text-[#27F4D2]" />
+          <FastForward className="w-3 h-3 text-[#E10600]" />
         </button>
       </div>
     </div>

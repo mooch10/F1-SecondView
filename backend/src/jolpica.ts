@@ -1,4 +1,6 @@
-﻿export interface JolpicaRace {
+import type { LastRacePodium } from './types.js';
+
+export interface JolpicaRace {
   round: number;
   raceName: string;
   circuitName: string;
@@ -63,6 +65,7 @@ export class JolpicaClient {
     timestamp: number;
     data: { drivers: JolpicaDriverStanding[]; constructors: JolpicaConstructorStanding[] };
   } | null = null;
+  private lastRaceCache: { timestamp: number; data: LastRacePodium | null } | null = null;
   private cacheTtlMs = 60 * 60 * 1000; // 1 hour
 
   private async fetchRaw<T>(path: string): Promise<T | null> {
@@ -273,6 +276,75 @@ export class JolpicaClient {
 
     const result = { drivers, constructors };
     this.standingsCache = { timestamp: Date.now(), data: result };
+    return result;
+  }
+
+  async getLastRacePodium(): Promise<LastRacePodium | null> {
+    if (this.lastRaceCache && Date.now() - this.lastRaceCache.timestamp < this.cacheTtlMs) {
+      return this.lastRaceCache.data;
+    }
+
+    interface RawLastRaceResponse {
+      MRData?: {
+        RaceTable?: {
+          Races?: Array<{
+            raceName: string;
+            round: string;
+            date: string;
+            Circuit: {
+              circuitName: string;
+            };
+            Results?: Array<{
+              position: string;
+              Driver: {
+                code?: string;
+                givenName: string;
+                familyName: string;
+              };
+              Constructor: {
+                constructorId: string;
+                name: string;
+              };
+              Time?: {
+                time: string;
+              };
+              status: string;
+            }>;
+          }>;
+        };
+      };
+    }
+
+    let raw = await this.fetchRaw<RawLastRaceResponse>('/current/last/results.json');
+    let race = raw?.MRData?.RaceTable?.Races?.[0];
+
+    if (!race || !race.Results || race.Results.length === 0) {
+      raw = await this.fetchRaw<RawLastRaceResponse>('/2024/last/results.json');
+      race = raw?.MRData?.RaceTable?.Races?.[0];
+    }
+
+    if (!race || !race.Results) {
+      return null;
+    }
+
+    const podium = race.Results.slice(0, 3).map((r) => ({
+      position: Number(r.position),
+      code: r.Driver.code || r.Driver.familyName.substring(0, 3).toUpperCase(),
+      fullName: `${r.Driver.givenName} ${r.Driver.familyName}`,
+      teamName: r.Constructor.name,
+      teamColor: getTeamColor(r.Constructor.constructorId),
+      timeOrStatus: r.Time?.time || r.status,
+    }));
+
+    const result: LastRacePodium = {
+      raceName: race.raceName,
+      round: Number(race.round),
+      circuitName: race.Circuit.circuitName,
+      date: race.date,
+      podium,
+    };
+
+    this.lastRaceCache = { timestamp: Date.now(), data: result };
     return result;
   }
 }

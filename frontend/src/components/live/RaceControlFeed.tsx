@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Radio } from 'lucide-react';
 import type { RaceControlMessage } from '../../types/f1';
 import {

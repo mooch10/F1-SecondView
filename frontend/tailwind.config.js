@@ -36,8 +36,10 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Outfit', 'Space Grotesk', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
+        sans: ['var(--font-sans)', '"Chakra Petch"', 'sans-serif'],
+        mono: ['var(--font-mono)', '"JetBrains Mono"', 'monospace'],
+        chakra: ['"Chakra Petch"', 'sans-serif'],
+        'mono-jetbrains': ['"JetBrains Mono"', 'monospace'],
       },
     },
   },

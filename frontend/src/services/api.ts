@@ -1,4 +1,4 @@
-import type { JolpicaRace, LiveSnapshot, StandingsData } from '../types/f1';
+import type { JolpicaRace, LiveSnapshot, ScheduleResponse, StandingsData } from '../types/f1';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -30,6 +30,21 @@ export async function fetchSchedule(): Promise<JolpicaRace[]> {
   } catch (err) {
     console.warn('[API] Failed to fetch schedule:', err);
     return [];
+  }
+}
+
+export async function fetchScheduleDetails(): Promise<ScheduleResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/schedule.json`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return (await res.json()) as ScheduleResponse;
+  } catch (err) {
+    console.warn('[API] Failed to fetch schedule details:', err);
+    return null;
   }
 }
 

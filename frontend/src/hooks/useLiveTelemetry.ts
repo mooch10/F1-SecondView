@@ -6,7 +6,7 @@ export function useLiveTelemetry() {
   const [snapshot, setSnapshot] = useState<LiveSnapshot | null>(null);
   const [delaySeconds, setDelaySeconds] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
+  const [lastUpdated, setLastUpdated] = useState<number>(() => Date.now());
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(true);
 
   // Polling loop

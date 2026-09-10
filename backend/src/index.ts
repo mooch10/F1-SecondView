@@ -1,4 +1,4 @@
-﻿import { createServer } from 'node:http';
+import { createServer } from 'node:http';
 import { JolpicaClient } from './jolpica.js';
 import { buildLiveSnapshot } from './normalizer.js';
 import { OpenF1Client } from './openf1.js';
@@ -30,6 +30,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       data.stints,
       data.laps,
       data.raceControl,
+      data.weather,
     );
 
     // Maintain a 45-second sliding history in memory (up to 30 snapshots)
@@ -84,12 +85,15 @@ const server = createServer(async (req, res) => {
 
   // Endpoint 2: Schedule & Race Calendar (Low-frequency, 1h Edge Cache)
   if (url.pathname === '/api/schedule.json' || url.pathname === '/api/schedule') {
-    const races = await jolpica.getSchedule();
+    const [races, lastRace] = await Promise.all([
+      jolpica.getSchedule(),
+      jolpica.getLastRacePodium(),
+    ]);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
     });
-    res.end(JSON.stringify({ races, total: races.length }, null, 2));
+    res.end(JSON.stringify({ races, total: races.length, lastRace }, null, 2));
     return;
   }
 

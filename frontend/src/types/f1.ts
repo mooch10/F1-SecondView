@@ -6,6 +6,15 @@ export type FlagStatus = 'GREEN' | 'YELLOW' | 'VSC' | 'SC' | 'RED' | 'CHEQUERED'
 
 export type SessionState = 'SCHEDULED' | 'IN_PROGRESS' | 'FINISHED' | 'SUSPENDED';
 
+export interface TrackWeather {
+  airTemp: number;
+  trackTemp: number;
+  humidity: number;
+  rainfall: boolean;
+  windSpeed: number;
+  windDirection: number;
+}
+
 export interface DriverLive {
   pos: number;
   posChange: number;
@@ -23,8 +32,11 @@ export interface DriverLive {
     compound: TyreCompound;
     laps: number;
   } | null;
+  pitStops: number;
   inPit: boolean;
   status: DriverStatus;
+  retiredLap?: number;
+  retirementReason?: string;
   sectors?: {
     s1?: number | null;
     s2?: number | null;
@@ -43,6 +55,7 @@ export interface SessionLive {
   flag: FlagStatus;
   currentLap: number;
   totalLaps: number;
+  progressPercentage: number;
   timestamp: number;
 }
 
@@ -60,6 +73,7 @@ export interface HistorySnapshot {
 
 export interface LiveSnapshot {
   session: SessionLive;
+  weather?: TrackWeather | null;
   messages: RaceControlMessage[];
   drivers: DriverLive[];
   history?: HistorySnapshot[];
@@ -77,6 +91,27 @@ export interface JolpicaRace {
     dateTime: string;
   }[];
   isNext: boolean;
+}
+
+export interface LastRacePodium {
+  raceName: string;
+  round: number;
+  circuitName: string;
+  date: string;
+  podium: Array<{
+    position: number;
+    code: string;
+    fullName: string;
+    teamName: string;
+    teamColor: string;
+    timeOrStatus: string;
+  }>;
+}
+
+export interface ScheduleResponse {
+  races: JolpicaRace[];
+  total: number;
+  lastRace?: LastRacePodium | null;
 }
 
 export interface JolpicaDriverStanding {
@@ -104,3 +139,4 @@ export interface StandingsData {
 }
 
 export type ActiveTab = 'live' | 'schedule' | 'standings';
+

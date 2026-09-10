@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Flag, ShieldAlert, Timer } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Flag, ShieldAlert } from 'lucide-react';
 import type { FlagStatus, SessionLive } from '../../types/f1';
 
 interface FlagBannerProps {
@@ -9,8 +9,8 @@ interface FlagBannerProps {
 export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
   if (!session) {
     return (
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 animate-pulse text-zinc-500 text-xs">
-        Cargando estado de pista...
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 animate-pulse text-zinc-400 font-mono text-xs">
+        CARGANDO TELEMETRÍA DE PISTA...
       </div>
     );
   }
@@ -19,51 +19,58 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
     switch (flag) {
       case 'GREEN':
         return {
-          bg: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300',
-          indicator: 'bg-emerald-400',
-          icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
+          border: 'border-l-4 border-l-[#39B54A]',
+          text: 'text-[#39B54A]',
+          indicator: 'bg-[#39B54A]',
+          icon: <CheckCircle2 className="w-4 h-4 text-[#39B54A]" />,
           label: 'PISTA LIBRE • BANDERA VERDE',
         };
       case 'YELLOW':
         return {
-          bg: 'bg-amber-950/40 border-amber-500/30 text-amber-300',
-          indicator: 'bg-amber-400 animate-pulse',
-          icon: <AlertTriangle className="w-4 h-4 text-amber-400" />,
+          border: 'border-l-4 border-l-[#FFD800]',
+          text: 'text-[#FFD800]',
+          indicator: 'bg-[#FFD800] animate-pulse',
+          icon: <AlertTriangle className="w-4 h-4 text-[#FFD800]" />,
           label: 'PELIGRO EN PISTA • BANDERA AMARILLA',
         };
       case 'VSC':
         return {
-          bg: 'bg-amber-950/60 border-amber-400/50 text-amber-200',
-          indicator: 'bg-amber-400 animate-ping',
-          icon: <ShieldAlert className="w-4 h-4 text-amber-300" />,
+          border: 'border-l-4 border-l-[#FF9500]',
+          text: 'text-[#FF9500]',
+          indicator: 'bg-[#FF9500] animate-ping',
+          icon: <ShieldAlert className="w-4 h-4 text-[#FF9500]" />,
           label: 'VIRTUAL SAFETY CAR (VSC)',
         };
       case 'SC':
         return {
-          bg: 'bg-orange-950/60 border-orange-400/50 text-orange-200',
-          indicator: 'bg-orange-400 animate-ping',
-          icon: <ShieldAlert className="w-4 h-4 text-orange-300" />,
+          border: 'border-l-4 border-l-[#FF9500]',
+          text: 'text-[#FF9500]',
+          indicator: 'bg-[#FF9500] animate-ping',
+          icon: <ShieldAlert className="w-4 h-4 text-[#FF9500]" />,
           label: 'SAFETY CAR EN PISTA',
         };
       case 'RED':
         return {
-          bg: 'bg-rose-950/70 border-rose-500/60 text-rose-200',
-          indicator: 'bg-rose-500 animate-ping',
-          icon: <AlertTriangle className="w-4 h-4 text-rose-400" />,
+          border: 'border-l-4 border-l-[#E10600]',
+          text: 'text-[#E10600]',
+          indicator: 'bg-[#E10600] animate-ping',
+          icon: <AlertTriangle className="w-4 h-4 text-[#E10600]" />,
           label: 'SESIÓN DETENIDA • BANDERA ROJA',
         };
       case 'CHEQUERED':
         return {
-          bg: 'bg-zinc-900 border-white/20 text-white',
-          indicator: 'bg-white',
-          icon: <Flag className="w-4 h-4 text-white" />,
-          label: 'FINALIZADA • BANDERA A CUADROS',
+          border: 'border-l-4 border-l-[#F5F5F7]',
+          text: 'text-[#F5F5F7]',
+          indicator: 'bg-[#F5F5F7]',
+          icon: <Flag className="w-4 h-4 text-[#F5F5F7]" />,
+          label: 'SESIÓN FINALIZADA • BANDERA A CUADROS',
         };
       default:
         return {
-          bg: 'bg-zinc-900 border-white/10 text-zinc-300',
-          indicator: 'bg-zinc-500',
-          icon: <Flag className="w-4 h-4" />,
+          border: 'border-l-4 border-l-[#8E929B]',
+          text: 'text-[#8E929B]',
+          indicator: 'bg-[#8E929B]',
+          icon: <Flag className="w-4 h-4 text-[#8E929B]" />,
           label: 'SESIÓN EN CURSO',
         };
     }
@@ -73,49 +80,69 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Session Title & Lap Counter Card */}
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 sm:p-4 shadow-sm flex items-center justify-between">
+      {/* Session Title & Digital Lap Instrument */}
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#E10600]">
-              {session.sessionName || 'Gran Premio'}
-            </span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-xs text-zinc-400 font-medium">
-              {session.circuit} ({session.country})
-            </span>
+          <div className="text-xs font-mono tracking-wider uppercase text-zinc-400">
+            ROUND 16 • {session.circuit.toUpperCase()} ({session.country.toUpperCase()})
           </div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white mt-0.5">
-            {session.location} Grand Prix
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white mt-0.5 uppercase">
+            {session.location} GRAND PRIX
           </h1>
         </div>
 
-        {/* Lap Counter */}
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1">
-            <Timer className="w-3 h-3 text-[#27F4D2]" /> VUELTA
+        {/* Lap Instrument Box */}
+        <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
+          <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+            VUELTA
           </span>
-          <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight font-tabular">
-            {session.currentLap}{' '}
-            <span className="text-xs sm:text-sm font-normal text-zinc-500">
+          <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
+            {session.currentLap}
+            <span className="text-xs sm:text-sm font-normal text-zinc-500 ml-1">
               / {session.totalLaps || '--'}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Track Flag Banner */}
+      {/* Race Progress Bar */}
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-3 py-2 flex flex-col gap-1.5 shadow-sm">
+        <div className="flex items-center justify-between text-[10px] font-mono">
+          <span className="text-zinc-400 uppercase tracking-wider font-semibold">
+            PROGRESO DEL GRAN PREMIO
+          </span>
+          <span className="font-bold text-white tabular-nums">
+            {session.currentLap} / {session.totalLaps || session.currentLap} VUELTAS •{' '}
+            <span className="text-[#FFD60A]">
+              {session.progressPercentage ??
+                Math.round((session.currentLap / (session.totalLaps || 1)) * 100)}
+              %
+            </span>
+          </span>
+        </div>
+        <div className="w-full h-2 bg-[#0B0E14] border border-white/[0.08] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#E10600] via-[#FF8000] to-[#34C759] transition-all duration-500 rounded-full"
+            style={{
+              width: `${Math.min(
+                100,
+                session.progressPercentage ??
+                  Math.round((session.currentLap / (session.totalLaps || 1)) * 100),
+              )}%`,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Track Flag Strip */}
       <div
-        className={`flex items-center justify-between px-3 py-2 rounded-lg border text-xs sm:text-sm font-bold tracking-wide transition-colors ${flagConfig.bg}`}
+        className={`flex items-center justify-between px-3 py-2 bg-[#131722] border-y border-r border-white/[0.08] ${flagConfig.border} rounded-xl text-xs font-mono font-semibold tracking-wider ${flagConfig.text} shadow-sm`}
       >
         <div className="flex items-center gap-2.5">
-          <span className={`w-2.5 h-2.5 rounded-full ${flagConfig.indicator}`} />
+          <span className={`w-2 h-2 rounded-full ${flagConfig.indicator}`} />
           {flagConfig.icon}
           <span>{flagConfig.label}</span>
         </div>
-        <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black/30 font-semibold">
-          {session.status}
-        </span>
       </div>
     </div>
   );

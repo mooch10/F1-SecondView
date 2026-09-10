@@ -3,9 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-sans: 'Chakra Petch', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+  }
+
   body {
-    @apply bg-[#0B0E14] text-zinc-100 antialiased font-sans selection:bg-[#E10600] selection:text-white min-h-screen;
+    font-family: var(--font-sans);
+    @apply bg-[#0B0E14] text-zinc-100 antialiased selection:bg-[#E10600] selection:text-white min-h-screen;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
   }
 
   /* Monospace numbers with tabular figures so digits do not jump */
@@ -35,6 +45,143 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #333849;
   }
+}
+
+/* ==========================================================================
+   Light Mode Theme (Promiedos Daytime Style)
+   ========================================================================== */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #F3F4F6 !important;
+  color: #111827 !important;
+}
+
+/* Base Surfaces */
+html.light .bg-\[\#0B0E14\],
+html.light div.bg-\[\#0B0E14\] {
+  background-color: #F3F4F6 !important;
+}
+
+html.light header.bg-\[\#0B0E14\]\/95,
+html.light .bg-\[\#0B0E14\]\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #E5E7EB !important;
+}
+
+html.light .bg-\[\#0B0E14\]\/80 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html.light .bg-\[\#0B0E14\]\/60 {
+  background-color: rgba(243, 244, 246, 0.8) !important;
+}
+
+html.light .bg-\[\#131722\] {
+  background-color: #FFFFFF !important;
+  border-color: #E5E7EB !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .bg-\[\#1C2230\] {
+  background-color: #E5E7EB !important;
+  color: #111827 !important;
+}
+
+html.light .bg-zinc-900 {
+  background-color: #F3F4F6 !important;
+}
+
+html.light .bg-black\/30,
+html.light .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Borders & Dividers */
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.04\],
+html.light .border-white\/\[0\.1\],
+html.light .border-white\/\[0\.12\] {
+  border-color: #E5E7EB !important;
+}
+
+html.light .divide-white\/\[0\.04\] > :not([hidden]) ~ :not([hidden]),
+html.light .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #F3F4F6 !important;
+}
+
+/* Typography Contrast in Light Mode */
+html.light .text-white {
+  color: #111827 !important;
+}
+
+html.light .text-zinc-100 {
+  color: #1F2937 !important;
+}
+
+html.light .text-zinc-200 {
+  color: #374151 !important;
+}
+
+html.light .text-zinc-300 {
+  color: #4B5563 !important;
+}
+
+html.light .text-zinc-400 {
+  color: #6B7280 !important;
+}
+
+html.light .text-zinc-500 {
+  color: #9CA3AF !important;
+}
+
+html.light .text-zinc-600 {
+  color: #6B7280 !important;
+}
+
+/* Subtle backgrounds & hovers */
+html.light .hover\:bg-white\/\[0\.02\]:hover,
+html.light .hover\:bg-white\/\[0\.03\]:hover,
+html.light .hover\:bg-white\/\[0\.04\]:hover,
+html.light .hover\:bg-white\/\[0\.05\]:hover {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .bg-white\/\[0\.04\],
+html.light .bg-white\/\[0\.05\],
+html.light .bg-white\/\[0\.06\],
+html.light .bg-white\/\[0\.07\] {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Hard Tyre contrast fix in light mode */
+html.light .border-zinc-200.text-zinc-100 {
+  border-color: #9CA3AF !important;
+  color: #374151 !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Neon accents darkened for WCAG contrast on white backgrounds */
+html.light .text-\[\#FFD60A\] {
+  color: #D97706 !important; /* Rich amber/gold */
+}
+
+html.light .text-\[\#27F4D2\] {
+  color: #0D9488 !important; /* Rich teal */
+}
+
+/* Scrollbar in Light Mode */
+html.light ::-webkit-scrollbar-track {
+  background: #F3F4F6 !important;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1 !important;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8 !important;
 }
 
 /* Animations */

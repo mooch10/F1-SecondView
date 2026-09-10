@@ -8,12 +8,12 @@ export const ScheduleView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedRound, setExpandedRound] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  const [now] = useState<number>(() => Date.now());
 
   useEffect(() => {
     fetchSchedule().then((data) => {
       setRaces(data);
       setLoading(false);
-      // Automatically expand the next race
       const nextRace = data.find((r) => r.isNext);
       if (nextRace) {
         setExpandedRound(nextRace.round);
@@ -23,7 +23,6 @@ export const ScheduleView: React.FC = () => {
 
   const nextRace = races.find((r) => r.isNext);
 
-  // Live countdown timer for the next race
   useEffect(() => {
     if (!nextRace?.raceDateTime) return;
 
@@ -79,9 +78,9 @@ export const ScheduleView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-500">
-        <Calendar className="w-8 h-8 text-zinc-600 mx-auto mb-2 animate-spin" />
-        <span className="text-xs">Cargando calendario de la temporada...</span>
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
+        <Calendar className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
+        <span>SINCRONIZANDO CALENDARIO OFICIAL...</span>
       </div>
     );
   }
@@ -90,61 +89,58 @@ export const ScheduleView: React.FC = () => {
     <div className="flex flex-col gap-3">
       {/* Next GP Hero Countdown Card */}
       {nextRace && (
-        <div className="bg-gradient-to-br from-[#131722] to-[#1C2230] border border-[#27F4D2]/30 rounded-xl p-4 sm:p-5 shadow-lg relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#27F4D2]/5 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 relative shadow-sm">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-[#27F4D2]/15 text-[#27F4D2] border border-[#27F4D2]/30 tracking-wider">
-              PRÓXIMO GRAN PREMIO • R{nextRace.round}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest">
+              PRÓXIMO GP • ROUND {nextRace.round}
             </span>
-            <span className="text-xs text-zinc-400 font-mono">
-              Hora local ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+            <span className="text-[11px] text-zinc-400 font-mono">
+              HORA LOCAL ({Intl.DateTimeFormat().resolvedOptions().timeZone})
             </span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
             {nextRace.raceName}
           </h2>
-          <div className="flex items-center gap-2 text-xs text-zinc-300 mt-1">
+          <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1 font-mono">
             <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
-            <span>{nextRace.circuitName}</span>
+            <span>{nextRace.circuitName.toUpperCase()}</span>
             <span>•</span>
-            <span>{nextRace.locality}, {nextRace.country}</span>
+            <span>{nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}</span>
           </div>
 
-          {/* Countdown Clock */}
+          {/* Countdown Clock Digital Boxes */}
           {timeLeft && (
             <div className="grid grid-cols-4 gap-2 mt-4 max-w-sm">
-              <div className="bg-[#0B0E14]/80 border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-black text-white font-mono font-tabular">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
+                <span className="text-lg sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {timeLeft.days}
                 </span>
-                <span className="text-[9px] text-zinc-500 uppercase tracking-wider block font-sans">
+                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   DÍAS
                 </span>
               </div>
-              <div className="bg-[#0B0E14]/80 border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-black text-white font-mono font-tabular">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
+                <span className="text-lg sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-500 uppercase tracking-wider block font-sans">
+                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   HS
                 </span>
               </div>
-              <div className="bg-[#0B0E14]/80 border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-black text-white font-mono font-tabular">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
+                <span className="text-lg sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-500 uppercase tracking-wider block font-sans">
+                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   MIN
                 </span>
               </div>
-              <div className="bg-[#0B0E14]/80 border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-black text-[#27F4D2] font-mono font-tabular">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
+                <span className="text-lg sm:text-2xl font-bold text-[#E10600] font-mono tabular-nums">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-500 uppercase tracking-wider block font-sans">
+                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   SEG
                 </span>
               </div>
@@ -153,93 +149,93 @@ export const ScheduleView: React.FC = () => {
         </div>
       )}
 
-      {/* Season Races List (Promiedos Calendar Style) */}
+      {/* Season Races List */}
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-        <div className="px-4 py-2.5 bg-[#1C2230] border-b border-white/[0.08] flex items-center justify-between text-xs font-bold text-zinc-300">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#27F4D2]" />
-            <span>CALENDARIO DE CARRERAS</span>
+        <div className="px-4 py-2.5 bg-[#131722] border-b border-white/[0.08] flex items-center justify-between text-xs font-mono font-bold text-zinc-400">
+          <div className="flex items-center gap-2 tracking-wider">
+            <Calendar className="w-3.5 h-3.5 text-[#E10600]" />
+            <span>CALENDARIO DE LA TEMPORADA</span>
           </div>
-          <span className="text-[10px] text-zinc-500 font-mono">
+          <span className="text-[10px] text-zinc-400 font-mono tracking-widest">
             {races.length} RONDAS
           </span>
         </div>
 
-        <div className="divide-y divide-white/[0.04]">
+        <div className="divide-y divide-white/[0.08]">
           {races.map((r) => {
             const isExpanded = expandedRound === r.round;
-            const isPast = new Date(r.raceDateTime).getTime() < Date.now();
+            const isPast = new Date(r.raceDateTime).getTime() < now;
 
             return (
               <div key={r.round} className="flex flex-col">
                 <button
                   type="button"
                   onClick={() => toggleRound(r.round)}
-                  className={`w-full px-3.5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors ${
-                    r.isNext ? 'bg-[#27F4D2]/[0.03]' : ''
+                  className={`w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors select-none ${
+                    r.isNext ? 'bg-[#E10600]/[0.04]' : ''
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-black text-zinc-500 w-6 text-center font-tabular">
-                      R{r.round}
+                    <span className="font-mono text-xs font-bold text-zinc-400 w-7 text-center tabular-nums">
+                      R{String(r.round).padStart(2, '0')}
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white tracking-tight">
+                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase">
                           {r.raceName}
                         </span>
                         {r.isNext && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-[#27F4D2]/20 text-[#27F4D2] border border-[#27F4D2]/30">
-                            Próximo
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30">
+                            PRÓXIMO
                           </span>
                         )}
                         {isPast && (
-                          <span className="inline-flex items-center gap-1 text-[9px] text-zinc-500 font-medium">
-                            <CheckCircle2 className="w-3 h-3 text-zinc-600" /> Finalizado
+                          <span className="inline-flex items-center gap-1 text-[9px] text-zinc-400 font-mono">
+                            <CheckCircle2 className="w-3 h-3 text-[#39B54A]" /> FINALIZADO
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-[11px] text-zinc-400 font-mono">
                         {r.circuitName} • {r.country}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-zinc-300 font-semibold hidden sm:inline">
+                    <span className="font-mono text-xs text-zinc-400 tabular-nums hidden sm:inline">
                       {formatLocalDate(r.raceDateTime)}
                     </span>
                     {isExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-zinc-400" />
+                      <ChevronUp className="w-3.5 h-3.5 text-zinc-400" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                     )}
                   </div>
                 </button>
 
-                {/* Session details (Local Timetable) */}
+                {/* Session Details */}
                 {isExpanded && r.sessions && r.sessions.length > 0 && (
-                  <div className="bg-[#0B0E14] border-t border-white/[0.06] px-4 py-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2 block font-mono flex items-center gap-1.5">
-                      <Clock className="w-3 h-3" /> Cronograma de Sesiones (Hora Local)
+                  <div className="bg-[#0B0E14] border-t border-white/[0.08] px-4 py-3">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+                      <Clock className="w-3 h-3 text-[#E10600]" /> HORARIOS DE SESIÓN (HORA LOCAL)
                     </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                       {r.sessions.map((s, idx) => (
                         <div
                           key={idx}
                           className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
                             s.name === 'Carrera'
-                              ? 'bg-[#E10600]/10 border-[#E10600]/30 text-white font-bold'
-                              : 'bg-[#131722] border-white/[0.06] text-zinc-300'
+                              ? 'bg-[#1C2230] border-l-2 border-l-[#E10600] border-t border-b border-r border-white/[0.08] text-white font-bold'
+                              : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
                           }`}
                         >
-                          <span className="font-sans font-semibold">{s.name}</span>
-                          <div className="flex items-center gap-2 font-tabular">
+                          <span className="font-semibold uppercase">{s.name}</span>
+                          <div className="flex items-center gap-2 tabular-nums">
                             <span className="text-zinc-400 text-[11px]">
                               {formatLocalDate(s.dateTime)}
                             </span>
-                            <span className="font-bold text-white bg-black/40 px-1.5 py-0.5 rounded">
-                              {formatLocalTime(s.dateTime)} hs
+                            <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
+                              {formatLocalTime(s.dateTime)} HS
                             </span>
                           </div>
                         </div>

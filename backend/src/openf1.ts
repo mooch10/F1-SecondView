@@ -62,6 +62,18 @@ export interface OpenF1RaceControl {
   scope: string | null;
 }
 
+export interface OpenF1Weather {
+  date: string;
+  session_key: number;
+  rainfall: number;
+  humidity: number;
+  air_temperature: number;
+  track_temperature: number;
+  wind_speed: number;
+  wind_direction: number;
+  pressure?: number;
+}
+
 export class OpenF1Client {
   private baseUrl = 'https://api.openf1.org/v1';
   private timeoutMs = 8000;
@@ -155,6 +167,10 @@ export class OpenF1Client {
     return this.fetchJson<OpenF1RaceControl>(`/race_control?session_key=${sessionKey}`);
   }
 
+  async getWeather(sessionKey: number): Promise<OpenF1Weather[]> {
+    return this.fetchJson<OpenF1Weather>(`/weather?session_key=${sessionKey}`);
+  }
+
   /**
    * Helper that executes requests sequentially or in small batches with spacing
    * to respect OpenF1's free tier rate limits (3 req/sec).
@@ -179,7 +195,10 @@ export class OpenF1Client {
     await this.delay(350);
 
     const raceControl = await this.getRaceControl(sessionKey);
+    await this.delay(350);
 
-    return { session, drivers, positions, intervals, stints, laps, raceControl };
+    const weather = await this.getWeather(sessionKey);
+
+    return { session, drivers, positions, intervals, stints, laps, raceControl, weather };
   }
 }
