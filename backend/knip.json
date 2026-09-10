@@ -1,0 +1,4 @@
+﻿{
+  "$schema": "https://unpkg.com/knip@5/overview/config-schema.json",
+  "project": ["src/**/*.ts"]
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "biome": {
+      "source": "bobmatnyc/claude-mpm-skills",
+      "sourceType": "github",
+      "skillPath": "toolchains/javascript/tooling/biome/SKILL.md",
+      "computedHash": "2d89865ec243a4e5d395554750d083f258486ea85c07767fdb71265c87b1dd3b"
+    },
+    "knip": {
+      "source": "brianlovin/agent-config",
+      "sourceType": "github",
+      "skillPath": "skills/knip/SKILL.md",
+      "computedHash": "96e70565ccfa71cb56bbb2a25241b9c7c25b83ebe691709c00da6cd9dab537b8"
+    },
+    "tailwind-design-system": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/frontend-mobile-development/skills/tailwind-design-system/SKILL.md",
+      "computedHash": "992ab1e874c4f4159aa18d4ff45d1c3f86f322f0bd2a6744cc32f7d6147f9f06"
+    },
+    "web-quality-audit": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-quality-audit/SKILL.md",
+      "computedHash": "10c0b018ce77d2c6dd17aecf1ab58a64abb2beee945354d83c4ba8883527120a"
+    }
+  }
+}
