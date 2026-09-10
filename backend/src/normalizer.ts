@@ -165,29 +165,32 @@ export function buildLiveSnapshot(
   let flag: FlagStatus = 'GREEN';
   let sessionState: SessionState = 'IN_PROGRESS';
 
-  const messages: RaceControlMessage[] = rawRaceControl.slice(-10).map((m, idx) => {
-    const textUpper = m.message.toUpperCase();
-    if (textUpper.includes('CHEQUERED')) {
-      flag = 'CHEQUERED';
-      sessionState = 'FINISHED';
-    } else if (textUpper.includes('RED FLAG')) {
-      flag = 'RED';
-      sessionState = 'SUSPENDED';
-    } else if (textUpper.includes('SAFETY CAR') && !textUpper.includes('VIRTUAL')) {
-      flag = 'SC';
-    } else if (textUpper.includes('VIRTUAL SAFETY CAR')) {
-      flag = 'VSC';
-    } else if (textUpper.includes('YELLOW')) {
-      flag = 'YELLOW';
-    }
+  const messages: RaceControlMessage[] = rawRaceControl
+    .slice(-20)
+    .reverse()
+    .map((m, idx) => {
+      const textUpper = m.message.toUpperCase();
+      if (textUpper.includes('CHEQUERED')) {
+        flag = 'CHEQUERED';
+        sessionState = 'FINISHED';
+      } else if (textUpper.includes('RED FLAG')) {
+        flag = 'RED';
+        sessionState = 'SUSPENDED';
+      } else if (textUpper.includes('SAFETY CAR') && !textUpper.includes('VIRTUAL')) {
+        flag = 'SC';
+      } else if (textUpper.includes('VIRTUAL SAFETY CAR')) {
+        flag = 'VSC';
+      } else if (textUpper.includes('YELLOW')) {
+        flag = 'YELLOW';
+      }
 
-    return {
-      id: idx + 1,
-      time: m.date ? m.date.substring(11, 16) : '--:--',
-      text: m.message,
-      flag: m.flag,
-    };
-  });
+      return {
+        id: idx + 1,
+        time: m.date ? m.date.substring(11, 19) : '--:--:--',
+        text: m.message,
+        flag: m.flag,
+      };
+    });
 
   const sessionLive: SessionLive = {
     sessionKey: session?.session_key ?? 0,

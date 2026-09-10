@@ -1,0 +1,17 @@
+{
+  "name": "Rebufo • F1 Second-Screen",
+  "short_name": "Rebufo",
+  "description": "Telemetría y cronometraje en tiempo real para Fórmula 1",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0E14",
+  "theme_color": "#0B0E14",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
