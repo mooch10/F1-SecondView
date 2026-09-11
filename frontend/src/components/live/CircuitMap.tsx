@@ -1,18 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Car,
   ChevronDown,
   ChevronUp,
-  Compass,
   Eye,
   EyeOff,
-  Flame,
   Maximize2,
   Minimize2,
   Navigation,
-  Pause,
-  Play,
-  RotateCcw,
   Zap,
 } from 'lucide-react';
 import type { DriverLive, TrackOutline } from '../../types/f1';
@@ -27,7 +22,6 @@ interface CircuitMapProps {
   defaultExpanded?: boolean;
 }
 
-type TrackingMode = 'simulation' | 'gps';
 type FilterMode = 'all' | 'top10' | 'top3' | 'leader';
 
 export const CircuitMap: React.FC<CircuitMapProps> = ({
@@ -45,14 +39,6 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
   const [selectedDriverNumber, setSelectedDriverNumber] = useState<number | null>(null);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
-  const [trackingMode, setTrackingMode] = useState<TrackingMode>('simulation');
-  const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
-
-  // Animation frame progress tracking (0 to 1)
-  const [animProgress, setAnimProgress] = useState<number>(0);
-  const animRef = useRef<number>(0);
-  const lastTimeRef = useRef<number>(0);
 
   // Sort active drivers cleanly by position
   const sortedDrivers = useMemo(() => {
@@ -219,33 +205,6 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     };
   }, [circuitTrack]);
 
-  // Continuous 60fps circulation loop
-  useEffect(() => {
-    if (!isPlaying) return;
-    let animId: number;
-
-    const tick = (timestamp: number) => {
-      if (lastTimeRef.current === 0) {
-        lastTimeRef.current = timestamp;
-      }
-      const delta = (timestamp - lastTimeRef.current) / 1000;
-      lastTimeRef.current = timestamp;
-
-      // Realistic lap duration ~46 seconds at 1x speed
-      const lapSeconds = 46 / speedMultiplier;
-      animRef.current = (animRef.current + delta / lapSeconds) % 1;
-      setAnimProgress(animRef.current);
-
-      animId = requestAnimationFrame(tick);
-    };
-
-    animId = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(animId);
-      lastTimeRef.current = 0;
-    };
-  }, [isPlaying, speedMultiplier]);
-
   // Filtered drivers based on active filter chip
   const filteredDrivers = useMemo(() => {
     switch (filterMode) {
@@ -266,7 +225,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     return sortedDrivers.find((d) => d.driverNumber === selectedDriverNumber) || null;
   }, [sortedDrivers, selectedDriverNumber]);
 
-  // Render car coordinates with anti-overlap decluttering
+  // Render car coordinates with anti-overlap decluttering based on real GPS
   const carRenderData = useMemo(() => {
     if (!trackGeometry) return [];
 
@@ -281,34 +240,23 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       sector: number;
     }> = [];
 
-    // Calculate base position for each driver
+    // Calculate position for each driver strictly using real GPS coordinates
     activeList.forEach((d, idx) => {
       let x = 0;
       let y = 0;
-      let angle = 0;
-      let sector = 1;
+      const angle = 0;
+      const sector = 1;
 
-      if (trackingMode === 'simulation') {
-        // Space drivers cleanly based on their position and qualifying gaps
-        const posOffset = ((d.pos - 1) * 0.046) % 1;
-        const progress = ((animProgress - posOffset + 1) % 1);
-        const pt = trackGeometry.getPointAtProgress(progress);
+      // Real GPS coordinates from session snapshot
+      if (d.location && (d.location.x !== 0 || d.location.y !== 0)) {
+        const [gx, gy] = trackGeometry.toSvgPoint(d.location.x, d.location.y);
+        x = gx;
+        y = gy;
+      } else {
+        // Cars parked in pit lane or without active track coordinates
+        const pt = trackGeometry.getPointAtProgress(((idx * 0.02) % 0.12) + 0.94);
         x = pt.x;
         y = pt.y;
-        angle = pt.angle;
-        sector = progress < 0.33 ? 1 : progress < 0.67 ? 2 : 3;
-      } else {
-        // Real GPS coordinates from session snapshot
-        if (d.location && (d.location.x !== 0 || d.location.y !== 0)) {
-          const [gx, gy] = trackGeometry.toSvgPoint(d.location.x, d.location.y);
-          x = gx;
-          y = gy;
-        } else {
-          // Fallback if car has no GPS
-          const pt = trackGeometry.getPointAtProgress(((idx * 0.05) % 1));
-          x = pt.x;
-          y = pt.y;
-        }
       }
 
       coords.push({
@@ -343,7 +291,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     }
 
     return coords;
-  }, [trackGeometry, filteredDrivers, trackingMode, animProgress, selectedDriverNumber]);
+  }, [trackGeometry, filteredDrivers, selectedDriverNumber]);
 
   // Handle Driver Tap
   const handleDriverSelect = useCallback((driverNum: number) => {
@@ -369,13 +317,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
               </span>
               <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {trackingMode === 'simulation'
-                  ? lang === 'es'
-                    ? 'EN MOVIMIENTO'
-                    : 'IN MOTION'
-                  : lang === 'es'
-                  ? 'GPS REAL'
-                  : 'REAL GPS'}
+                {lang === 'es' ? 'GPS EN VIVO' : 'LIVE GPS'}
               </span>
             </div>
             <span className="text-[10px] text-zinc-400 font-mono">
@@ -452,35 +394,6 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
         <div className="flex flex-col flex-1 bg-[#0B0E14] select-none">
           {/* Interactive Mobile Control Toolbar */}
           <div className="flex flex-wrap items-center justify-between px-3 py-1.5 bg-[#141923] border-b border-white/[0.06] text-xs gap-2">
-            {/* Mode Switcher: Motion vs Real GPS */}
-            <div className="flex items-center bg-[#0B0E14] p-0.5 rounded-lg border border-white/[0.08]">
-              <button
-                type="button"
-                onClick={() => setTrackingMode('simulation')}
-                className={`px-2 py-1 rounded-md text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  trackingMode === 'simulation'
-                    ? 'bg-[#E10600] text-white shadow'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Flame className="w-3 h-3" />
-                <span>{lang === 'es' ? 'En Movimiento' : 'In Motion'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTrackingMode('gps')}
-                className={`px-2 py-1 rounded-md text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  trackingMode === 'gps'
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Compass className="w-3 h-3" />
-                <span>{lang === 'es' ? 'GPS Real' : 'Real GPS'}</span>
-              </button>
-            </div>
-
             {/* Filter Pills (All / Top 10 / Top 3 / Leader) */}
             <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
               {(['all', 'top10', 'top3', 'leader'] as FilterMode[]).map((mode) => {
@@ -507,58 +420,16 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
                 );
               })}
             </div>
-
-            {/* Animation Speed & Play/Pause Controls (for simulation) */}
-            {trackingMode === 'simulation' && (
-              <div className="flex items-center gap-1 ml-auto">
-                <button
-                  type="button"
-                  onClick={() => setIsPlaying((p) => !p)}
-                  title={isPlaying ? 'Pausar animación' : 'Reanudar animación'}
-                  className="p-1 rounded bg-white/[0.05] hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-                >
-                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSpeedMultiplier((s) => (s === 1 ? 2 : s === 2 ? 0.5 : 1))}
-                  title="Cambiar velocidad"
-                  className="px-1.5 py-0.5 rounded bg-white/[0.05] hover:bg-white/10 text-[10px] font-mono font-bold text-zinc-300 hover:text-white cursor-pointer"
-                >
-                  {speedMultiplier}x
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    animRef.current = 0;
-                    setAnimProgress(0);
-                  }}
-                  title="Reiniciar vuelta"
-                  className="p-1 rounded bg-white/[0.05] hover:bg-white/10 text-zinc-300 hover:text-white cursor-pointer"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Clustered / Parc Fermé Notice Banner in GPS Mode */}
-          {trackingMode === 'gps' && isGpsClustered && (
+          {isGpsClustered && (
             <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 flex items-center justify-between text-xs text-amber-300">
               <span className="text-[11px] font-mono">
                 {lang === 'es'
-                  ? '⚠️ Autos en Parque Cerrado / Boxes. Las coordenadas son estáticas.'
-                  : '⚠️ Cars in Parc Fermé / Pits. GPS telemetry is stationary.'}
+                  ? '⚠️ Monoplazas en Boxes / Parque Cerrado. Telemetría GPS en espera.'
+                  : '⚠️ Cars in Pits / Parc Fermé. GPS telemetry on standby.'}
               </span>
-              <button
-                type="button"
-                onClick={() => setTrackingMode('simulation')}
-                className="px-2 py-0.5 rounded bg-amber-500 text-black font-bold text-[10px] font-mono hover:bg-amber-400 transition-colors ml-2 cursor-pointer"
-              >
-                {lang === 'es' ? 'Ver en Movimiento' : 'Switch to Motion'}
-              </button>
             </div>
           )}
 

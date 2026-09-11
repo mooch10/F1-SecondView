@@ -5,7 +5,6 @@ import {
   Flag,
   Gauge,
   MapPin,
-  Navigation,
   Radio,
   Sparkles,
   Timer,
@@ -19,7 +18,6 @@ import type {
   TyreCompound,
 } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
-import { CircuitMap } from '../live/CircuitMap';
 import { MiniSectorsBar } from './MiniSectorsBar';
 import { SectorPill } from './SectorPill';
 
@@ -56,7 +54,6 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
   const [userViewMode, setUserViewMode] = useState<'LIVE' | 'RESULTS' | null>(null);
   const viewMode = userViewMode ?? (hasLiveSession ? 'LIVE' : 'RESULTS');
-  const [showCircuitMap, setShowCircuitMap] = useState<boolean>(true);
 
   // Official F1 Qualifying Classification for Live Telemetry
   const displayedLiveDrivers = useMemo(() => {
@@ -441,39 +438,8 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                 <span>Q1</span>
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowCircuitMap((prev) => !prev)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 border ${
-                showCircuitMap
-                  ? 'bg-[#E10600]/20 text-[#E10600] border-[#E10600]/40 shadow-xs'
-                  : 'text-zinc-400 hover:text-white border-white/10'
-              }`}
-            >
-              <Navigation className="w-3.5 h-3.5" />
-              <span>
-                {showCircuitMap
-                  ? lang === 'es'
-                    ? 'Ocultar Mapa'
-                    : 'Hide Map'
-                  : lang === 'es'
-                  ? 'Ver Mapa'
-                  : 'Show Map'}
-              </span>
-            </button>
           </div>
         </div>
-
-        {/* Live Interactive Circuit Map */}
-        {showCircuitMap && (
-          <CircuitMap
-            circuitTrack={liveSnapshot?.circuitTrack}
-            drivers={liveDrivers}
-            sessionName={liveSnapshot?.session.sessionName}
-            circuitName={liveSnapshot?.session.circuit}
-          />
-        )}
 
         {/* Live Qualy Table */}
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">

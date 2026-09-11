@@ -125,13 +125,17 @@ function App() {
                   drivers={drivers}
                 />
 
-                {/* Real-time 2D Interactive Circuit Map */}
-                <CircuitMap
-                  circuitTrack={snapshot?.circuitTrack}
-                  drivers={drivers}
-                  sessionName={snapshot?.session.sessionName}
-                  circuitName={snapshot?.session.circuit}
-                />
+                {/* Real-time 2D Interactive Circuit Map (Solo durante Qualy o Carrera EN VIVO) */}
+                {isLiveSessionActive &&
+                  (snapshot?.session.sessionType === 'Qualifying' ||
+                    snapshot?.session.sessionType === 'Race') && (
+                    <CircuitMap
+                      circuitTrack={snapshot?.circuitTrack}
+                      drivers={drivers}
+                      sessionName={snapshot?.session.sessionName}
+                      circuitName={snapshot?.session.circuit}
+                    />
+                  )}
 
                 {/* 2-Tier Timing Table with Pit Stops & DNF */}
                 <TimingTable
