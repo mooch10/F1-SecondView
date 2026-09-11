@@ -131,6 +131,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           const drsActive = !isQualy && isDrsDanger(d.interval, d.isDrsZone);
           const prevDriver = index > 0 ? activeDrivers[index - 1] : null;
           const isPointsZone = isRace && d.pos <= 10;
+          const basePoints = isRace ? F1_POINTS[d.pos] || 0 : 0;
+          const hasFastestLapBonus = isRace && d.isFastestLap && d.pos <= 10;
+          const totalPoints = basePoints + (hasFastestLapBonus ? 1 : 0);
           const showPointsCutoff = isRace && d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
           const showQ2Cutoff = isQualy && d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
           const showQ1Cutoff = isQualy && d.pos > 15 && (!prevDriver || prevDriver.pos <= 15);
@@ -231,19 +234,27 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       <span className="text-[10px] text-zinc-500 font-mono">
                         #{d.driverNumber}
                       </span>
-                      {/* Official Championship Points Badge in Race */}
-                      {isRace && F1_POINTS[d.pos] && (
+                      {/* Official Championship Points Badge in Race (incluye punto de Vuelta Rápida en Top 10) */}
+                      {isRace && totalPoints > 0 && (
                         <span
-                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 tracking-tight shrink-0 select-none shadow-xs"
-                          title={`Zona de puntos: +${F1_POINTS[d.pos]} pts para el Campeonato Mundial`}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black border tracking-tight shrink-0 select-none shadow-xs ${
+                            hasFastestLapBonus
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                              : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          }`}
+                          title={
+                            hasFastestLapBonus
+                              ? `Zona de puntos: +${basePoints} pts (P${d.pos}) + 1 pt (Vuelta Rápida) = +${totalPoints} pts`
+                              : `Zona de puntos: +${basePoints} pts para el Campeonato Mundial`
+                          }
                         >
-                          +{F1_POINTS[d.pos]} PTS
+                          +{totalPoints} PTS
                         </span>
                       )}
-                      {/* Active FIA Penalty Badge in Race */}
+                      {/* Active FIA Penalty Badge in Race (En rojo oficial de sanción) */}
                       {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span
-                          className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight"
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs"
                           title={`Penalización oficial FIA: +${d.penaltySeconds}s`}
                         >
                           +{d.penaltySeconds}s PEN
@@ -374,7 +385,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                         {d.isFastestLap && (
                           <span className="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
-                            V. Rápida 🟣
+                            V. RÁPIDA 🟣
                           </span>
                         )}
                       </div>
@@ -410,14 +421,25 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {isRace && (
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                            F1_POINTS[d.pos]
-                              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                            totalPoints > 0
+                              ? hasFastestLapBonus
+                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                                : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                               : 'bg-white/[0.04] text-zinc-500 border border-white/[0.06]'
                           }`}
                         >
-                          {F1_POINTS[d.pos]
-                            ? `+${F1_POINTS[d.pos]} PTS CAMPEONATO`
+                          {totalPoints > 0
+                            ? hasFastestLapBonus
+                              ? `+${basePoints} PTS (P${d.pos}) + 1 PT (V. RÁPIDA) = ${totalPoints} PTS`
+                              : `+${totalPoints} PTS CAMPEONATO`
+                            : d.isFastestLap
+                            ? 'V. RÁPIDA (0 PTS · FUERA DEL TOP 10)'
                             : 'FUERA DE PUNTOS (0 PTS)'}
+                        </span>
+                      )}
+                      {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                          PENALIZACIÓN: +{d.penaltySeconds}s
                         </span>
                       )}
                       <span className="font-mono text-[10px] text-zinc-400">

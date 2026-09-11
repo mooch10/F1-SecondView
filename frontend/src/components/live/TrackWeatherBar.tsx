@@ -44,20 +44,22 @@ export const TrackWeatherBar: React.FC<TrackWeatherBarProps> = ({ weather }) => 
 
       <span className="text-white/20 select-none">•</span>
 
-      {/* 4. Rain Status */}
-      <div className="flex items-center gap-1.5 whitespace-nowrap" title="Estado de Precipitación">
+      {/* 4. Track Surface / Weather Status */}
+      <div className="flex items-center gap-1.5 whitespace-nowrap" title="Condición de Pista / Clima">
         {weather.rainfall ? (
           <>
             <CloudRain className="w-3.5 h-3.5 text-[#00AEEF] animate-pulse" />
-            <span className="font-bold text-[#00AEEF] px-1.5 py-0.5 bg-[#00AEEF]/10 rounded-md border border-[#00AEEF]/30">
+            <span className="text-zinc-400 text-[10px] sm:text-[11px]">CLIMA</span>
+            <span className="font-bold text-[#00AEEF] tabular-nums">
               LLUVIA
             </span>
           </>
         ) : (
           <>
             <Sun className="w-3.5 h-3.5 text-[#FFD60A]" />
-            <span className="font-bold text-[#39B54A] px-1.5 py-0.5 bg-[#39B54A]/10 rounded-md border border-[#39B54A]/30">
-              SECO
+            <span className="text-zinc-400 text-[10px] sm:text-[11px]">CLIMA</span>
+            <span className="font-bold text-zinc-100 tabular-nums">
+              PISTA SECA
             </span>
           </>
         )}

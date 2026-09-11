@@ -150,5 +150,36 @@ export interface StandingsData {
   constructors: JolpicaConstructorStanding[];
 }
 
-export type ActiveTab = 'live' | 'schedule' | 'standings';
+export interface JolpicaQualifyingResult {
+  pos: number;
+  driverNumber: number;
+  code: string;
+  fullName: string;
+  familyName: string;
+  teamName: string;
+  teamColor: string;
+  q1: string;
+  q2?: string;
+  q3?: string;
+  bestLap: string;
+  gap: string;
+  eliminatedPhase?: 'Q1' | 'Q2' | null;
+  isPole?: boolean;
+}
+
+export interface JolpicaQualifyingSession {
+  round: number;
+  raceName: string;
+  circuitName: string;
+  date: string;
+  poleDriver: {
+    code: string;
+    fullName: string;
+    teamName: string;
+    time: string;
+  };
+  results: JolpicaQualifyingResult[];
+}
+
+export type ActiveTab = 'live' | 'qualy' | 'schedule' | 'standings';
 

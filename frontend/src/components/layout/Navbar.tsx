@@ -91,6 +91,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             type="button"
+            onClick={() => setActiveTab('qualy')}
+            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 ${
+              activeTab === 'qualy'
+                ? 'text-zinc-100 border-[#E10600]'
+                : 'text-zinc-400 hover:text-zinc-100 border-transparent'
+            }`}
+          >
+            <span>Clasificación</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('schedule')}
             className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 ${
               activeTab === 'schedule'

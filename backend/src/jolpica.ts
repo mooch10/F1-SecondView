@@ -33,6 +33,37 @@ export interface JolpicaConstructorStanding {
   teamColor: string;
 }
 
+export interface JolpicaQualifyingResult {
+  pos: number;
+  driverNumber: number;
+  code: string;
+  fullName: string;
+  familyName: string;
+  teamName: string;
+  teamColor: string;
+  q1: string;
+  q2?: string;
+  q3?: string;
+  bestLap: string;
+  gap: string;
+  eliminatedPhase?: 'Q1' | 'Q2' | null;
+  isPole?: boolean;
+}
+
+export interface JolpicaQualifyingSession {
+  round: number;
+  raceName: string;
+  circuitName: string;
+  date: string;
+  poleDriver: {
+    code: string;
+    fullName: string;
+    teamName: string;
+    time: string;
+  };
+  results: JolpicaQualifyingResult[];
+}
+
 const TEAM_COLORS: Record<string, string> = {
   mercedes: '#27F4D2',
   ferrari: '#E8002D',
@@ -73,6 +104,8 @@ export class JolpicaClient {
     data: { drivers: JolpicaDriverStanding[]; constructors: JolpicaConstructorStanding[] };
   } | null = null;
   private lastRaceCache: { timestamp: number; data: LastRacePodium | null } | null = null;
+  private qualifyingCache: { timestamp: number; data: JolpicaQualifyingSession | null } | null =
+    null;
   private cacheTtlMs = 60 * 60 * 1000; // 1 hour
 
   private async fetchRaw<T>(path: string): Promise<T | null> {
@@ -347,5 +380,126 @@ export class JolpicaClient {
 
     this.lastRaceCache = { timestamp: Date.now(), data: result };
     return result;
+  }
+
+  async getQualifying(): Promise<JolpicaQualifyingSession | null> {
+    if (this.qualifyingCache && Date.now() - this.qualifyingCache.timestamp < this.cacheTtlMs) {
+      return this.qualifyingCache.data;
+    }
+
+    interface RawQualifyingResponse {
+      MRData?: {
+        RaceTable?: {
+          Races?: Array<{
+            raceName: string;
+            round: string;
+            date: string;
+            Circuit: {
+              circuitName: string;
+            };
+            QualifyingResults?: Array<{
+              number: string;
+              position: string;
+              Driver: {
+                driverId?: string;
+                code?: string;
+                givenName: string;
+                familyName: string;
+              };
+              Constructor: {
+                constructorId: string;
+                name: string;
+              };
+              Q1?: string;
+              Q2?: string;
+              Q3?: string;
+            }>;
+          }>;
+        };
+      };
+    }
+
+    let raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
+    let race = raw?.MRData?.RaceTable?.Races?.[0];
+
+    if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+      raw = await this.fetchRaw<RawQualifyingResponse>('/2024/last/qualifying.json');
+      race = raw?.MRData?.RaceTable?.Races?.[0];
+    }
+
+    if (!race || !race.QualifyingResults) {
+      return null;
+    }
+
+    const parseToSec = (str?: string): number | null => {
+      if (!str) return null;
+      const parts = str.trim().split(':');
+      if (parts.length === 2) {
+        const m = Number.parseFloat(parts[0]);
+        const s = Number.parseFloat(parts[1]);
+        if (!Number.isNaN(m) && !Number.isNaN(s)) return m * 60 + s;
+      }
+      const val = Number.parseFloat(str);
+      return Number.isNaN(val) ? null : val;
+    };
+
+    const firstResult = race.QualifyingResults[0];
+    const poleTimeStr = firstResult?.Q3 || firstResult?.Q2 || firstResult?.Q1 || '';
+    const poleSec = parseToSec(poleTimeStr);
+
+    const results: JolpicaQualifyingResult[] = race.QualifyingResults.map((r) => {
+      const pos = Number(r.position);
+      const code = r.Driver.code || r.Driver.familyName.substring(0, 3).toUpperCase();
+      const fullName = `${r.Driver.givenName} ${r.Driver.familyName}`;
+      const q1 = r.Q1 || '';
+      const q2 = r.Q2 || '';
+      const q3 = r.Q3 || '';
+      const bestLap = q3 || q2 || q1 || '--:--.---';
+      const bestSec = parseToSec(bestLap);
+
+      let gap = '--';
+      if (pos === 1) {
+        gap = 'POLE';
+      } else if (poleSec !== null && bestSec !== null) {
+        const diff = bestSec - poleSec;
+        gap = `+${diff.toFixed(3)}s`;
+      }
+
+      const eliminatedPhase: 'Q1' | 'Q2' | null = pos >= 16 ? 'Q1' : pos >= 11 ? 'Q2' : null;
+
+      return {
+        pos,
+        driverNumber: Number(r.number),
+        code,
+        fullName,
+        familyName: r.Driver.familyName,
+        teamName: r.Constructor.name,
+        teamColor: getTeamColor(r.Constructor.constructorId),
+        q1,
+        q2: q2 || undefined,
+        q3: q3 || undefined,
+        bestLap,
+        gap,
+        eliminatedPhase,
+        isPole: pos === 1,
+      };
+    });
+
+    const data: JolpicaQualifyingSession = {
+      round: Number(race.round),
+      raceName: race.raceName,
+      circuitName: race.Circuit.circuitName,
+      date: race.date,
+      poleDriver: {
+        code: results[0]?.code || '',
+        fullName: results[0]?.fullName || '',
+        teamName: results[0]?.teamName || '',
+        time: poleTimeStr,
+      },
+      results,
+    };
+
+    this.qualifyingCache = { timestamp: Date.now(), data };
+    return data;
   }
 }

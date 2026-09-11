@@ -108,6 +108,17 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // Endpoint 4: Qualifying Session Results (Low-frequency, 1h Edge Cache)
+  if (url.pathname === '/api/qualifying.json' || url.pathname === '/api/qualifying') {
+    const qualifying = await jolpica.getQualifying();
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+    });
+    res.end(JSON.stringify(qualifying || { error: 'No data available' }, null, 2));
+    return;
+  }
+
   // Healthcheck Endpoint
   if (url.pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -128,4 +139,5 @@ server.listen(PORT, () => {
   console.log(`- GET http://localhost:${PORT}/api/live.json`);
   console.log(`- GET http://localhost:${PORT}/api/schedule.json`);
   console.log(`- GET http://localhost:${PORT}/api/standings.json`);
+  console.log(`- GET http://localhost:${PORT}/api/qualifying.json`);
 });

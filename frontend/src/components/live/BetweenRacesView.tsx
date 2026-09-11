@@ -61,24 +61,28 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
   }, [nextRace]);
 
   const formatLocalDate = (dateStr: string) => {
+    if (!dateStr) return 'A confirmar';
     try {
       const d = new Date(dateStr);
+      if (Number.isNaN(d.getTime())) return 'A confirmar';
       return d.toLocaleDateString(undefined, {
         weekday: 'short',
         day: '2-digit',
         month: 'short',
       });
     } catch {
-      return dateStr;
+      return 'A confirmar';
     }
   };
 
   const formatLocalTime = (dateStr: string) => {
+    if (!dateStr) return null;
     try {
       const d = new Date(dateStr);
+      if (Number.isNaN(d.getTime())) return null;
       return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch {
-      return '';
+      return null;
     }
   };
 

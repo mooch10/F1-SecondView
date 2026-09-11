@@ -3,21 +3,20 @@ import { Navbar } from './components/layout/Navbar';
 import { BetweenRacesView } from './components/live/BetweenRacesView';
 import { FlagBanner } from './components/live/FlagBanner';
 import { RaceControlFeed } from './components/live/RaceControlFeed';
-import { RaceSimulatorBar } from './components/live/RaceSimulatorBar';
 import { SyncDelayBar } from './components/live/SyncDelayBar';
 import { TimingTable } from './components/live/TimingTable';
 import { TrackWeatherBar } from './components/live/TrackWeatherBar';
+import { QualifyingView } from './components/qualy/QualifyingView';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { StandingsView } from './components/standings/StandingsView';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
-import { useRaceSimulation } from './hooks/useRaceSimulation';
 import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
 import type { ActiveTab } from './types/f1';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('live');
-  const [liveSubView, setLiveSubView] = useState<'timing' | 'simulator' | 'betweenRaces'>('timing');
+  const [liveSubView, setLiveSubView] = useState<'timing' | 'betweenRaces'>('timing');
   const { isDarkMode, toggleTheme } = useTheme();
 
   const {
@@ -39,33 +38,12 @@ export function App() {
     }
   }, [activeTab, requestLock]);
 
-  // Race Simulation Engine
-  const {
-    isPlaying: isSimPlaying,
-    simLap,
-    totalLaps: simTotalLaps,
-    simSpeed,
-    simPreset,
-    setSimPreset,
-    simSnapshot,
-    toggleSimulation,
-    play: playSim,
-    pause: pauseSim,
-    reset: resetSim,
-    setLap: setSimLap,
-    setSpeed: setSimSpeed,
-  } = useRaceSimulation(snapshot);
-
-  const isSimulating = liveSubView === 'simulator';
-  const effectiveSnapshot = isSimulating && simSnapshot ? simSnapshot : snapshot;
-  const effectiveDrivers = isSimulating && simSnapshot ? simSnapshot.drivers : drivers;
-
   const isLiveSessionActive =
-    effectiveSnapshot?.session.status === 'IN_PROGRESS' ||
-    effectiveSnapshot?.session.flag === 'GREEN' ||
-    effectiveSnapshot?.session.flag === 'YELLOW' ||
-    effectiveSnapshot?.session.flag === 'SC' ||
-    effectiveSnapshot?.session.flag === 'VSC';
+    snapshot?.session.status === 'IN_PROGRESS' ||
+    snapshot?.session.flag === 'GREEN' ||
+    snapshot?.session.flag === 'YELLOW' ||
+    snapshot?.session.flag === 'SC' ||
+    snapshot?.session.flag === 'VSC';
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-zinc-100 flex flex-col font-chakra antialiased">
@@ -83,14 +61,11 @@ export function App() {
       <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-3 flex flex-col gap-3 pb-16">
         {activeTab === 'live' && (
           <>
-            {/* Live Subview Mode Switcher */}
+            {/* Live Subview Mode Switcher (Telemetría / Entre Carreras) */}
             <div className="flex items-center justify-between bg-[#131722] border border-white/[0.08] rounded-xl p-1 select-none text-xs font-mono gap-1">
               <button
                 type="button"
-                onClick={() => {
-                  if (isSimulating) toggleSimulation();
-                  setLiveSubView('timing');
-                }}
+                onClick={() => setLiveSubView('timing')}
                 className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold text-center transition-colors cursor-pointer truncate ${
                   liveSubView === 'timing'
                     ? 'bg-[#1C2230] text-white shadow-sm border border-white/10'
@@ -102,25 +77,7 @@ export function App() {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (!isSimulating) toggleSimulation();
-                  setLiveSubView('simulator');
-                }}
-                className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold text-center transition-colors cursor-pointer truncate ${
-                  liveSubView === 'simulator'
-                    ? 'bg-[#27F4D2]/20 text-[#27F4D2] border border-[#27F4D2]/40 shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                SIMULADOR DEMO
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (isSimulating) toggleSimulation();
-                  setLiveSubView('betweenRaces');
-                }}
+                onClick={() => setLiveSubView('betweenRaces')}
                 className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold text-center transition-colors cursor-pointer truncate ${
                   liveSubView === 'betweenRaces'
                     ? 'bg-[#1C2230] text-white shadow-sm border border-white/10'
@@ -135,64 +92,43 @@ export function App() {
               <BetweenRacesView onSwitchToLiveTiming={() => setLiveSubView('timing')} />
             ) : (
               <>
-                {/* Simulation Control Bar (when in simulator mode) */}
-                {isSimulating && (
-                  <RaceSimulatorBar
-                    isPlaying={isSimPlaying}
-                    simLap={simLap}
-                    totalLaps={simTotalLaps}
-                    simSpeed={simSpeed}
-                    simPreset={simPreset}
-                    onPresetChange={setSimPreset}
-                    onPlay={playSim}
-                    onPause={pauseSim}
-                    onReset={resetSim}
-                    onLapChange={setSimLap}
-                    onSpeedChange={setSimSpeed}
-                    onExit={() => {
-                      toggleSimulation();
-                      setLiveSubView('timing');
-                    }}
-                  />
-                )}
-
                 {/* Header with Circuit info & Track Flag & Progress Bar */}
-                <FlagBanner session={effectiveSnapshot?.session || null} />
+                <FlagBanner session={snapshot?.session || null} />
 
                 {/* Live Track Weather Telemetry */}
-                <TrackWeatherBar weather={effectiveSnapshot?.weather} />
+                <TrackWeatherBar weather={snapshot?.weather} />
 
-                {/* Anti-Spoilers Delay Bar (only in live mode) */}
-                {!isSimulating && (
-                  <SyncDelayBar
-                    delaySeconds={delaySeconds}
-                    onDelayChange={setDelaySeconds}
-                    onNudge={nudgeDelay}
-                  />
-                )}
+                {/* Anti-Spoilers Delay Bar */}
+                <SyncDelayBar
+                  delaySeconds={delaySeconds}
+                  onDelayChange={setDelaySeconds}
+                  onNudge={nudgeDelay}
+                />
 
                 {/* FIA Race Control Official Ticker */}
                 <RaceControlFeed
-                  messages={effectiveSnapshot?.messages || []}
-                  drivers={effectiveDrivers}
+                  messages={snapshot?.messages || []}
+                  drivers={drivers}
                 />
 
                 {/* 2-Tier Timing Table (Promiedos Style) with Pit Stops & DNF */}
-                {isLoading && !isSimulating ? (
+                {isLoading ? (
                   <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-500 font-mono text-xs">
                     <span>SINTONIZANDO TELEMETRÍA EN VIVO...</span>
                   </div>
                 ) : (
                   <TimingTable
-                    drivers={effectiveDrivers}
-                    sessionType={effectiveSnapshot?.session.sessionType}
-                    qualifyingPhase={effectiveSnapshot?.session.qualifyingPhase}
+                    drivers={drivers}
+                    sessionType={snapshot?.session.sessionType}
+                    qualifyingPhase={snapshot?.session.qualifyingPhase}
                   />
                 )}
               </>
             )}
           </>
         )}
+
+        {activeTab === 'qualy' && <QualifyingView />}
 
         {activeTab === 'schedule' && <ScheduleView />}
 
