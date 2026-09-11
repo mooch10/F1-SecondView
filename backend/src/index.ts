@@ -196,6 +196,30 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Root / Status Endpoint
+    if (url.pathname === '/' || url.pathname === '') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify(
+          {
+            name: 'Delta • F1 Telemetry API',
+            status: 'online',
+            endpoints: [
+              '/health',
+              '/api/live.json',
+              '/api/schedule.json',
+              '/api/standings.json',
+              '/api/qualifying.json',
+              '/api/last-race.json',
+            ],
+          },
+          null,
+          2,
+        ),
+      );
+      return;
+    }
+
     // Healthcheck Endpoint
     if (url.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
