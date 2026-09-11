@@ -1,6 +1,7 @@
 import type {
   JolpicaQualifyingSession,
   JolpicaRace,
+  JolpicaRaceDetail,
   LiveSnapshot,
   ScheduleResponse,
   StandingsData,
@@ -18,7 +19,7 @@ export async function fetchLiveSnapshot(): Promise<LiveSnapshot | null> {
     }
     return (await res.json()) as LiveSnapshot;
   } catch (err) {
-    console.warn('[API] Failed to fetch live snapshot:', err);
+    console.warn('[API] Failed to fetch live telemetry snapshot:', err);
     return null;
   }
 }
@@ -31,7 +32,7 @@ export async function fetchSchedule(): Promise<JolpicaRace[]> {
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     }
-    const data = await res.json();
+    const data = (await res.json()) as ScheduleResponse;
     return data.races || [];
   } catch (err) {
     console.warn('[API] Failed to fetch schedule:', err);
@@ -80,6 +81,36 @@ export async function fetchQualifying(): Promise<JolpicaQualifyingSession | null
     return (await res.json()) as JolpicaQualifyingSession;
   } catch (err) {
     console.warn('[API] Failed to fetch qualifying results:', err);
+    return null;
+  }
+}
+
+export async function fetchLastRaceDetail(): Promise<JolpicaRaceDetail | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/last-race.json`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return (await res.json()) as JolpicaRaceDetail;
+  } catch (err) {
+    console.warn('[API] Failed to fetch last race details:', err);
+    return null;
+  }
+}
+
+export async function fetchRaceResultsByRound(round: number): Promise<JolpicaRaceDetail | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/race-results.json?round=${round}`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return (await res.json()) as JolpicaRaceDetail;
+  } catch (err) {
+    console.warn(`[API] Failed to fetch race results for round ${round}:`, err);
     return null;
   }
 }

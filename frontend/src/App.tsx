@@ -8,6 +8,7 @@ import { SyncDelayBar } from './components/live/SyncDelayBar';
 import { TimingTable } from './components/live/TimingTable';
 import { TrackWeatherBar } from './components/live/TrackWeatherBar';
 import { QualifyingView } from './components/qualy/QualifyingView';
+import { LastRaceView } from './components/race/LastRaceView';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { StandingsView } from './components/standings/StandingsView';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
@@ -141,7 +142,7 @@ export function App() {
                     Sin Actividad en Pista en Este Momento
                   </h3>
                   <p className="text-xs text-zinc-400 mt-1.5 font-mono leading-relaxed">
-                    La telemetría y el cronometraje vuelta a vuelta se conectan automáticamente en tiempo real durante las sesiones oficiales de Gran Premio (Prácticas, Clasificación y Carrera).
+                    La telemetría y el cronometraje vuelta a vuelta se conectan automáticamente en tiempo real durante las sesiones oficiales de Gran Premio (Prácticas, Qualy y Carrera).
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
@@ -157,13 +158,15 @@ export function App() {
                     onClick={() => setActiveTab('qualy')}
                     className="px-3.5 py-2 rounded-lg bg-[#FFD60A]/15 hover:bg-[#FFD60A]/25 text-[#FFD60A] font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-[#FFD60A]/30"
                   >
-                    ⏱️ Resultados de Clasificación
+                    ⏱️ Resultados de Qualy
                   </button>
                 </div>
               </div>
             )}
           </>
         )}
+
+        {activeTab === 'last-race' && <LastRaceView />}
 
         {activeTab === 'qualy' && <QualifyingView />}
 

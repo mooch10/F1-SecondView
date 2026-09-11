@@ -99,6 +99,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             type="button"
+            onClick={() => setActiveTab('last-race')}
+            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 ${
+              activeTab === 'last-race'
+                ? 'text-zinc-100 border-[#E10600]'
+                : 'text-zinc-400 hover:text-zinc-100 border-transparent'
+            }`}
+          >
+            <span>Último GP</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('qualy')}
             className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 ${
               activeTab === 'qualy'

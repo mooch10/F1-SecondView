@@ -20,7 +20,7 @@ export const QualifyingView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
         <Timer className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
-        <span>CARGANDO RESULTADOS DE CLASIFICACIÓN OFICIAL...</span>
+        <span>CARGANDO RESULTADOS DE QUALY OFICIAL...</span>
       </div>
     );
   }
@@ -29,7 +29,7 @@ export const QualifyingView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-400 font-mono text-xs">
         <Flag className="w-6 h-6 text-zinc-500 mx-auto mb-2" />
-        <span>NO HAY RESULTADOS DE CLASIFICACIÓN DISPONIBLES EN ESTE MOMENTO.</span>
+        <span>NO HAY RESULTADOS DE QUALY DISPONIBLES EN ESTE MOMENTO.</span>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const QualifyingView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30 tracking-widest">
-                ROUND {session.round} • CLASIFICACIÓN
+                ROUND {session.round} • QUALY
               </span>
               <span className="text-[11px] text-zinc-400 font-mono">
                 {session.date}
@@ -172,30 +172,14 @@ export const QualifyingView: React.FC = () => {
 
             return (
               <div key={d.driverNumber} className="flex flex-col">
-                {/* Promiedos-Style Q2 Elimination Barrier (Between P10 and P11) */}
+                {/* Línea divisoria de corte Q2 (eliminación P11 a P15) */}
                 {showQ2Cutoff && (
-                  <div className="bg-[#2A1215] border-y border-rose-500/40 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-                      <span>⛔ ZONA DE CORTE Q2 (ELIMINACIÓN P11 - P15)</span>
-                    </div>
-                    <span className="text-[9px] uppercase tracking-wider text-rose-200 bg-rose-900/60 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold">
-                      TOP 10 AVANZA A Q3
-                    </span>
-                  </div>
+                  <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
                 )}
 
-                {/* Promiedos-Style Q1 Elimination Barrier (Between P15 and P16) */}
+                {/* Línea divisoria de corte Q1 (eliminación P16 a P20) */}
                 {showQ1Cutoff && (
-                  <div className="bg-[#351014] border-y border-rose-600/50 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                      <span>⛔ ZONA DE CORTE Q1 (ELIMINACIÓN P16 - P20)</span>
-                    </div>
-                    <span className="text-[9px] uppercase tracking-wider text-rose-200 bg-rose-900/60 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold">
-                      ELIMINADOS EN Q1
-                    </span>
-                  </div>
+                  <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
                 )}
 
                 {/* Main Row */}

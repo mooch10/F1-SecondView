@@ -64,6 +64,49 @@ export interface JolpicaQualifyingSession {
   results: JolpicaQualifyingResult[];
 }
 
+export interface JolpicaRaceResult {
+  pos: number;
+  grid: number;
+  posChange: number;
+  driverNumber: number;
+  code: string;
+  fullName: string;
+  familyName: string;
+  teamName: string;
+  teamColor: string;
+  points: number;
+  laps: number;
+  status: string;
+  timeOrStatus: string;
+  isWinner?: boolean;
+  isPodium?: boolean;
+  isFastestLap?: boolean;
+  fastestLapTime?: string;
+  fastestLapRank?: number;
+}
+
+export interface JolpicaRaceDetail {
+  round: number;
+  season: string;
+  raceName: string;
+  circuitName: string;
+  date: string;
+  winner: {
+    code: string;
+    fullName: string;
+    teamName: string;
+    time: string;
+  };
+  fastestLap?: {
+    code: string;
+    driverName: string;
+    teamName: string;
+    time: string;
+    lap: number;
+  };
+  results: JolpicaRaceResult[];
+}
+
 const TEAM_COLORS: Record<string, string> = {
   mercedes: '#27F4D2',
   ferrari: '#E8002D',
@@ -500,6 +543,152 @@ export class JolpicaClient {
     };
 
     this.qualifyingCache = { timestamp: Date.now(), data };
+    return data;
+  }
+
+  private raceResultsCache = new Map<
+    string,
+    { timestamp: number; data: JolpicaRaceDetail | null }
+  >();
+
+  async getRaceResults(roundStr = 'last'): Promise<JolpicaRaceDetail | null> {
+    const cacheKey = roundStr;
+    const cached = this.raceResultsCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.cacheTtlMs) {
+      return cached.data;
+    }
+
+    interface RawResultsResponse {
+      MRData?: {
+        RaceTable?: {
+          season?: string;
+          Races?: Array<{
+            season?: string;
+            round: string;
+            raceName: string;
+            date: string;
+            Circuit: {
+              circuitName: string;
+            };
+            Results?: Array<{
+              number: string;
+              position: string;
+              points: string;
+              grid: string;
+              laps: string;
+              status: string;
+              Driver: {
+                driverId?: string;
+                code?: string;
+                givenName: string;
+                familyName: string;
+              };
+              Constructor: {
+                constructorId: string;
+                name: string;
+              };
+              Time?: {
+                time: string;
+              };
+              FastestLap?: {
+                rank?: string;
+                lap?: string;
+                Time?: {
+                  time: string;
+                };
+              };
+            }>;
+          }>;
+        };
+      };
+    }
+
+    let raw = await this.fetchRaw<RawResultsResponse>(`/current/${roundStr}/results.json`);
+    let race = raw?.MRData?.RaceTable?.Races?.[0];
+
+    if (!race || !race.Results || race.Results.length === 0) {
+      if (roundStr === 'last') {
+        raw = await this.fetchRaw<RawResultsResponse>('/2024/last/results.json');
+        race = raw?.MRData?.RaceTable?.Races?.[0];
+      }
+    }
+
+    if (!race || !race.Results) {
+      return null;
+    }
+
+    const winnerTime = race.Results[0]?.Time?.time || 'Ganador';
+
+    let fastestLapInfo: JolpicaRaceDetail['fastestLap'] = undefined;
+
+    const results: JolpicaRaceResult[] = race.Results.map((r) => {
+      const pos = Number(r.position);
+      const grid = Number(r.grid) || pos;
+      const posChange = grid - pos;
+      const code = r.Driver.code || r.Driver.familyName.substring(0, 3).toUpperCase();
+      const fullName = `${r.Driver.givenName} ${r.Driver.familyName}`;
+      const isWinner = pos === 1;
+      const isPodium = pos <= 3;
+      const isFastestLap = r.FastestLap?.rank === '1';
+
+      if (isFastestLap && r.FastestLap?.Time?.time) {
+        fastestLapInfo = {
+          code,
+          driverName: fullName,
+          teamName: r.Constructor.name,
+          time: r.FastestLap.Time.time,
+          lap: Number(r.FastestLap.lap) || 0,
+        };
+      }
+
+      let timeOrStatus = r.Time?.time || r.status;
+      if (pos > 1 && !r.Time?.time) {
+        if (r.status.toLowerCase().includes('lap')) {
+          timeOrStatus = r.status;
+        } else {
+          timeOrStatus = r.status.toUpperCase();
+        }
+      }
+
+      return {
+        pos,
+        grid,
+        posChange,
+        driverNumber: Number(r.number),
+        code,
+        fullName,
+        familyName: r.Driver.familyName,
+        teamName: r.Constructor.name,
+        teamColor: getTeamColor(r.Constructor.constructorId),
+        points: Number(r.points) || 0,
+        laps: Number(r.laps) || 0,
+        status: r.status,
+        timeOrStatus,
+        isWinner,
+        isPodium,
+        isFastestLap,
+        fastestLapTime: r.FastestLap?.Time?.time,
+        fastestLapRank: r.FastestLap?.rank ? Number(r.FastestLap.rank) : undefined,
+      };
+    });
+
+    const data: JolpicaRaceDetail = {
+      round: Number(race.round),
+      season: race.season || '2026',
+      raceName: race.raceName,
+      circuitName: race.Circuit.circuitName,
+      date: race.date,
+      winner: {
+        code: results[0]?.code || '',
+        fullName: results[0]?.fullName || '',
+        teamName: results[0]?.teamName || '',
+        time: winnerTime,
+      },
+      fastestLap: fastestLapInfo,
+      results,
+    };
+
+    this.raceResultsCache.set(cacheKey, { timestamp: Date.now(), data });
     return data;
   }
 }

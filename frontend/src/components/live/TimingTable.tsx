@@ -144,30 +144,14 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 <div className="h-[2px] bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.5)] my-0" />
               )}
 
-              {/* Promiedos-Style Q2 Elimination Barrier (Between P10 and P11) */}
+              {/* Línea divisoria de corte Q2 (eliminación P11 a P15) */}
               {showQ2Cutoff && (
-                <div className="bg-[#2A1215] border-y border-rose-500/40 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-                    <span>⛔ ZONA DE CORTE Q2 (ELIMINACIÓN P11 - P15)</span>
-                  </div>
-                  <span className="text-[9px] uppercase tracking-wider text-rose-200 bg-rose-900/60 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold">
-                    TOP 10 A Q3
-                  </span>
-                </div>
+                <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
               )}
 
-              {/* Promiedos-Style Q1 Elimination Barrier (Between P15 and P16) */}
+              {/* Línea divisoria de corte Q1 (eliminación P16 a P20) */}
               {showQ1Cutoff && (
-                <div className="bg-[#351014] border-y border-rose-600/50 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                    <span>⛔ ZONA DE CORTE Q1 (ELIMINACIÓN P16 - P20)</span>
-                  </div>
-                  <span className="text-[9px] uppercase tracking-wider text-rose-200 bg-rose-900/60 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold">
-                    ELIMINADOS EN Q1
-                  </span>
-                </div>
+                <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
               )}
 
               {/* Level 1: Main Row (Tap to expand) */}

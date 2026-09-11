@@ -119,6 +119,23 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // Endpoint 5: Race Results (Last GP or by ?round=X) (Low-frequency, 1h Edge Cache)
+  if (
+    url.pathname === '/api/race-results.json' ||
+    url.pathname === '/api/race-results' ||
+    url.pathname === '/api/last-race.json' ||
+    url.pathname === '/api/last-race'
+  ) {
+    const roundParam = url.searchParams.get('round') || 'last';
+    const raceDetail = await jolpica.getRaceResults(roundParam);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+    });
+    res.end(JSON.stringify(raceDetail || { error: 'No data available' }, null, 2));
+    return;
+  }
+
   // Healthcheck Endpoint
   if (url.pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -140,4 +157,6 @@ server.listen(PORT, () => {
   console.log(`- GET http://localhost:${PORT}/api/schedule.json`);
   console.log(`- GET http://localhost:${PORT}/api/standings.json`);
   console.log(`- GET http://localhost:${PORT}/api/qualifying.json`);
+  console.log(`- GET http://localhost:${PORT}/api/last-race.json`);
+  console.log(`- GET http://localhost:${PORT}/api/race-results.json?round=X`);
 });

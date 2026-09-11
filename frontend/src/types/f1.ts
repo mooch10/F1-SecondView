@@ -181,5 +181,48 @@ export interface JolpicaQualifyingSession {
   results: JolpicaQualifyingResult[];
 }
 
-export type ActiveTab = 'live' | 'qualy' | 'schedule' | 'standings';
+export interface JolpicaRaceResult {
+  pos: number;
+  grid: number;
+  posChange: number;
+  driverNumber: number;
+  code: string;
+  fullName: string;
+  familyName: string;
+  teamName: string;
+  teamColor: string;
+  points: number;
+  laps: number;
+  status: string;
+  timeOrStatus: string;
+  isWinner?: boolean;
+  isPodium?: boolean;
+  isFastestLap?: boolean;
+  fastestLapTime?: string;
+  fastestLapRank?: number;
+}
+
+export interface JolpicaRaceDetail {
+  round: number;
+  season: string;
+  raceName: string;
+  circuitName: string;
+  date: string;
+  winner: {
+    code: string;
+    fullName: string;
+    teamName: string;
+    time: string;
+  };
+  fastestLap?: {
+    code: string;
+    driverName: string;
+    teamName: string;
+    time: string;
+    lap: number;
+  };
+  results: JolpicaRaceResult[];
+}
+
+export type ActiveTab = 'live' | 'last-race' | 'qualy' | 'schedule' | 'standings';
 

@@ -177,7 +177,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
               ? `${session.location} `
               : ''}
             {session.sessionType === 'Qualifying'
-              ? 'CLASIFICACIÓN'
+              ? 'QUALY'
               : session.sessionType === 'Practice'
               ? 'PRÁCTICA LIBRE'
               : session.sessionName && session.sessionName !== 'Gran Premio'
@@ -216,7 +216,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
         <div className="flex items-center justify-between text-[10px] font-mono">
           <span className="text-zinc-400 uppercase tracking-wider font-semibold">
             {session.sessionType === 'Qualifying'
-              ? `CLASIFICACIÓN OFICIAL • FASE ${session.qualifyingPhase || 'Q1'}`
+              ? `QUALY OFICIAL • FASE ${session.qualifyingPhase || 'Q1'}`
               : 'PROGRESO DEL GP'}
           </span>
           <span className="font-bold text-white tabular-nums">
