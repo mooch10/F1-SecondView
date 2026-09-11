@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Award, Trophy, Users } from 'lucide-react';
 import { fetchStandings } from '../../services/api';
 import type { StandingsData } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export const StandingsView: React.FC = () => {
+  const { lang: _lang, t } = useLanguage();
   const [data, setData] = useState<StandingsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
@@ -19,7 +21,7 @@ export const StandingsView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
         <Trophy className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
-        <span>CARGANDO CLASIFICACIONES DE CAMPEONATO...</span>
+        <span>{t.standings.loading}</span>
       </div>
     );
   }
@@ -27,7 +29,7 @@ export const StandingsView: React.FC = () => {
   if (!data) {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-400 font-mono text-xs">
-        SIN DATOS DE CAMPEONATO DISPONIBLES
+        {t.standings.noData}
       </div>
     );
   }
@@ -39,27 +41,27 @@ export const StandingsView: React.FC = () => {
         <button
           type="button"
           onClick={() => setSubTab('drivers')}
-          className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 ${
+          className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer ${
             subTab === 'drivers'
               ? 'text-white border-[#E10600]'
               : 'text-zinc-400 hover:text-white border-transparent'
           }`}
         >
           <Award className="w-3.5 h-3.5 text-[#FFD60A]" />
-          <span>Campeonato de Pilotos</span>
+          <span>{t.standings.driversTab}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setSubTab('constructors')}
-          className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 ${
+          className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer ${
             subTab === 'constructors'
               ? 'text-white border-[#E10600]'
               : 'text-zinc-400 hover:text-white border-transparent'
           }`}
         >
           <Users className="w-3.5 h-3.5 text-[#27F4D2]" />
-          <span>Campeonato de Constructores</span>
+          <span>{t.standings.constructorsTab}</span>
         </button>
       </div>
 
@@ -67,11 +69,11 @@ export const StandingsView: React.FC = () => {
       {subTab === 'drivers' && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase select-none">
-            <div className="col-span-1 text-center">POS</div>
-            <div className="col-span-6 sm:col-span-5">PILOTO</div>
-            <div className="col-span-3 hidden sm:block">EQUIPO</div>
-            <div className="col-span-3 sm:col-span-2 text-right">PTS</div>
-            <div className="col-span-2 sm:col-span-1 text-right">W</div>
+            <div className="col-span-1 text-center">{t.standings.headers.pos}</div>
+            <div className="col-span-6 sm:col-span-5">{t.standings.headers.driver}</div>
+            <div className="col-span-3 hidden sm:block">{t.standings.headers.team}</div>
+            <div className="col-span-3 sm:col-span-2 text-right">{t.standings.headers.points}</div>
+            <div className="col-span-2 sm:col-span-1 text-right">{t.standings.headers.wins}</div>
           </div>
 
           <div className="divide-y divide-white/[0.08]">
@@ -140,10 +142,10 @@ export const StandingsView: React.FC = () => {
       {subTab === 'constructors' && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase select-none">
-            <div className="col-span-2 sm:col-span-1 text-center">POS</div>
-            <div className="col-span-6 sm:col-span-7">CONSTRUCTOR</div>
-            <div className="col-span-2 text-right">PTS</div>
-            <div className="col-span-2 text-right">W</div>
+            <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
+            <div className="col-span-6 sm:col-span-7">{t.standings.headers.team}</div>
+            <div className="col-span-2 text-right">{t.standings.headers.points}</div>
+            <div className="col-span-2 text-right">{t.standings.headers.wins}</div>
           </div>
 
           <div className="divide-y divide-white/[0.08]">

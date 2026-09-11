@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle2, Flag, ShieldAlert } from 'lucide-react';
 import type { FlagStatus, SessionLive } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface FlagBannerProps {
   session: SessionLive | null;
@@ -78,10 +79,12 @@ function getCircuitOfficialLaps(circuit?: string, location?: string, country?: s
 }
 
 export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
+  const { lang, t } = useLanguage();
+
   if (!session) {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 animate-pulse text-zinc-400 font-mono text-xs">
-        CARGANDO TELEMETRÍA DE PISTA...
+        {lang === 'es' ? 'CARGANDO TELEMETRÍA DE PISTA...' : 'LOADING TRACK TELEMETRY...'}
       </div>
     );
   }
@@ -105,7 +108,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-[#39B54A]',
           indicator: 'bg-[#39B54A]',
           icon: <CheckCircle2 className="w-4 h-4 text-[#39B54A]" />,
-          label: 'PISTA LIBRE • BANDERA VERDE',
+          label: t.live.flags.green,
         };
       case 'YELLOW':
         return {
@@ -113,7 +116,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-[#FFD800]',
           indicator: 'bg-[#FFD800] animate-pulse',
           icon: <AlertTriangle className="w-4 h-4 text-[#FFD800]" />,
-          label: 'PELIGRO EN PISTA • BANDERA AMARILLA',
+          label: t.live.flags.yellow,
         };
       case 'VSC':
         return {
@@ -121,7 +124,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-[#FF9500]',
           indicator: 'bg-[#FF9500] animate-ping',
           icon: <ShieldAlert className="w-4 h-4 text-[#FF9500]" />,
-          label: 'VIRTUAL SAFETY CAR (VSC)',
+          label: t.live.flags.vsc,
         };
       case 'SC':
         return {
@@ -129,7 +132,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-[#FF9500]',
           indicator: 'bg-[#FF9500] animate-ping',
           icon: <ShieldAlert className="w-4 h-4 text-[#FF9500]" />,
-          label: 'SAFETY CAR EN PISTA',
+          label: t.live.flags.sc,
         };
       case 'RED':
         return {
@@ -137,7 +140,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-[#E10600]',
           indicator: 'bg-[#E10600] animate-ping',
           icon: <AlertTriangle className="w-4 h-4 text-[#E10600]" />,
-          label: 'SESIÓN DETENIDA • BANDERA ROJA',
+          label: t.live.flags.red,
         };
       case 'CHEQUERED':
         return {
@@ -145,7 +148,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-white',
           indicator: 'bg-white',
           icon: <Flag className="w-4 h-4 text-white" />,
-          label: 'SESIÓN FINALIZADA • BANDERA A CUADROS',
+          label: t.live.flags.chequered,
         };
       default:
         return {
@@ -153,7 +156,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           text: 'text-zinc-400',
           indicator: 'bg-zinc-400',
           icon: <Flag className="w-4 h-4 text-zinc-400" />,
-          label: 'SESIÓN EN CURSO',
+          label: t.live.flags.inProgress,
         };
     }
   };
@@ -177,9 +180,9 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
               ? `${session.location} `
               : ''}
             {session.sessionType === 'Qualifying'
-              ? 'QUALY'
+              ? (lang === 'es' ? 'QUALY' : 'QUALIFYING')
               : session.sessionType === 'Practice'
-              ? 'PRÁCTICA LIBRE'
+              ? (lang === 'es' ? 'PRÁCTICA LIBRE' : 'FREE PRACTICE')
               : session.sessionName && session.sessionName !== 'Gran Premio'
               ? session.sessionName
               : 'GRAND PRIX'}
@@ -190,7 +193,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
         {session.sessionType === 'Qualifying' ? (
           <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-cyan-500/30 px-3 py-1.5 rounded-lg shadow-xs">
             <span className="text-[9px] font-mono font-bold tracking-widest text-[#27F4D2] uppercase">
-              FASE QUALY
+              {t.live.qualyPhase}
             </span>
             <div className="text-xl sm:text-2xl font-mono font-black tracking-tight text-[#FFD60A] tabular-nums">
               {session.qualifyingPhase || 'Q1'}
@@ -199,7 +202,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
         ) : (
           <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
             <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
-              VUELTA
+              {t.live.lap}
             </span>
             <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
               {session.currentLap}
@@ -216,24 +219,24 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
         <div className="flex items-center justify-between text-[10px] font-mono">
           <span className="text-zinc-400 uppercase tracking-wider font-semibold">
             {session.sessionType === 'Qualifying'
-              ? `QUALY OFICIAL • FASE ${session.qualifyingPhase || 'Q1'}`
-              : 'PROGRESO DEL GP'}
+              ? `${t.live.qualyProgress} ${session.qualifyingPhase || 'Q1'}`
+              : t.live.gpProgress}
           </span>
           <span className="font-bold text-white tabular-nums">
             {session.sessionType === 'Qualifying' ? (
               session.poleDriver ? (
                 <>
-                  POLE PROVISIONAL:{' '}
+                  {t.live.provisionalPole}{' '}
                   <span className="text-[#FFD60A] font-bold font-mono">
                     {session.poleDriver} ({session.poleLapTime || '--:--.---'})
                   </span>
                 </>
               ) : (
-                <span className="text-[#27F4D2]">TIEMPOS EN VIVO</span>
+                <span className="text-[#27F4D2]">{t.live.liveTimes}</span>
               )
             ) : (
               <>
-                {session.currentLap} / {resolvedTotalLaps} VUELTAS •{' '}
+                {session.currentLap} / {resolvedTotalLaps} {lang === 'es' ? 'VUELTAS' : 'LAPS'} •{' '}
                 <span className="text-[#FFD60A]">{progressPercent}%</span>
               </>
             )}

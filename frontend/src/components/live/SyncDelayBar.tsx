@@ -1,5 +1,6 @@
 import React from 'react';
 import { FastForward, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface SyncDelayBarProps {
   delaySeconds: number;
@@ -14,6 +15,8 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
   onDelayChange,
   onNudge,
 }) => {
+  const { lang, t } = useLanguage();
+
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 shadow-sm">
       {/* Header */}
@@ -21,7 +24,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-3.5 h-3.5 text-[#E10600]" />
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
-            Sincronización TV (Anti-Spoilers)
+            {t.live.delay.title}
           </span>
         </div>
 
@@ -29,11 +32,11 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
         <div className="flex items-center gap-1.5">
           {delaySeconds === 0 ? (
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest uppercase">
-              EN VIVO (0s)
+              {t.live.delay.live}
             </span>
           ) : (
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider font-tabular">
-              -{delaySeconds}s RETRASO
+              -{delaySeconds}s {lang === 'es' ? 'RETRASO' : 'DELAY'}
             </span>
           )}
 
@@ -41,7 +44,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             <button
               type="button"
               onClick={() => onDelayChange(0)}
-              title="Restablecer a tiempo real (0s)"
+              title={lang === 'es' ? 'Restablecer a tiempo real (0s)' : 'Reset to real time (0s)'}
               className="p-1 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-[#1C2230] transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
@@ -58,7 +61,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
           onClick={() => onNudge(-2)}
           disabled={delaySeconds <= 0}
           className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer select-none"
-          title="Restar 2 segundos de retraso"
+          title={lang === 'es' ? 'Restar 2 segundos de retraso' : 'Subtract 2 seconds of delay'}
         >
           -2s
         </button>
@@ -73,7 +76,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             value={delaySeconds}
             onChange={(e) => onDelayChange(Number(e.target.value))}
             className="f1-range-slider"
-            title={`Retraso: ${delaySeconds}s`}
+            title={`${lang === 'es' ? 'Retraso' : 'Delay'}: ${delaySeconds}s`}
           />
 
           {/* Broadcast Ruler Marks with Exact Pixel Alignment */}
@@ -91,7 +94,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             <button
               type="button"
               onClick={() => onDelayChange(0)}
-              title="Sincronizar en tiempo real con pista (0s)"
+              title={lang === 'es' ? 'Sincronizar en tiempo real con pista (0s)' : 'Sync live with track (0s)'}
               className="absolute top-0 left-0 flex flex-col items-start cursor-pointer group text-left"
             >
               <span
@@ -108,7 +111,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
                     : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
                 }`}
               >
-                0s (PISTA)
+                0s ({t.live.delay.track})
               </span>
             </button>
 
@@ -116,7 +119,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             <button
               type="button"
               onClick={() => onDelayChange(15)}
-              title="Sincronizar con transmisión de F1 TV (15s)"
+              title="F1 TV (15s)"
               className="absolute top-0 -translate-x-1/2 flex flex-col items-center cursor-pointer group text-center"
               style={{ left: 'calc(8px + (100% - 16px) * (15 / 45))' }}
             >
@@ -142,7 +145,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             <button
               type="button"
               onClick={() => onDelayChange(30)}
-              title="Sincronizar con transmisión de Disney+ (30s)"
+              title="Disney+ (30s)"
               className="absolute top-0 -translate-x-1/2 flex flex-col items-center cursor-pointer group text-center"
               style={{ left: 'calc(8px + (100% - 16px) * (30 / 45))' }}
             >
@@ -168,7 +171,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             <button
               type="button"
               onClick={() => onDelayChange(45)}
-              title="Retraso máximo (45s)"
+              title={lang === 'es' ? 'Retraso máximo (45s)' : 'Max delay (45s)'}
               className="absolute top-0 right-0 flex flex-col items-end cursor-pointer group text-right"
             >
               <span
@@ -197,7 +200,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
           onClick={() => onNudge(2)}
           disabled={delaySeconds >= 45}
           className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer select-none"
-          title="Sumar 2 segundos de retraso"
+          title={lang === 'es' ? 'Sumar 2 segundos de retraso' : 'Add 2 seconds of delay'}
         >
           <span>+2s</span>
           <FastForward className="w-3 h-3 text-[#E10600]" />

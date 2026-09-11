@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Calendar,
   CheckCircle2,
@@ -11,8 +11,10 @@ import {
 } from 'lucide-react';
 import { fetchRaceResultsByRound, fetchSchedule } from '../../services/api';
 import type { JolpicaRace, JolpicaRaceDetail } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export const ScheduleView: React.FC = () => {
+  const { lang, t } = useLanguage();
   const [races, setRaces] = useState<JolpicaRace[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedRound, setExpandedRound] = useState<number | null>(null);
@@ -32,9 +34,9 @@ export const ScheduleView: React.FC = () => {
     fetchSchedule().then((data) => {
       setRaces(data);
       setLoading(false);
-      const nextRace = data.find((r) => r.isNext);
-      if (nextRace) {
-        setExpandedRound(nextRace.round);
+      const next = data.find((r) => r.isNext);
+      if (next) {
+        setExpandedRound(next.round);
       }
     });
   }, []);
@@ -99,17 +101,17 @@ export const ScheduleView: React.FC = () => {
   };
 
   const formatLocalDate = (dateStr: string) => {
-    if (!dateStr) return 'A confirmar';
+    if (!dateStr) return t.betweenRaces.toConfirm;
     try {
       const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return 'A confirmar';
-      return d.toLocaleDateString(undefined, {
+      if (isNaN(d.getTime())) return t.betweenRaces.toConfirm;
+      return d.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
         weekday: 'short',
         day: '2-digit',
         month: 'short',
       });
     } catch {
-      return 'A confirmar';
+      return t.betweenRaces.toConfirm;
     }
   };
 
@@ -124,11 +126,25 @@ export const ScheduleView: React.FC = () => {
     }
   };
 
+  const translateSessionName = (name: string) => {
+    if (lang === 'es') return name;
+    const map: Record<string, string> = {
+      'Carrera': 'Race',
+      'Clasificación': 'Qualifying',
+      'Práctica 1': 'Practice 1',
+      'Práctica 2': 'Practice 2',
+      'Práctica 3': 'Practice 3',
+      'Sprint': 'Sprint',
+      'Clasificación Sprint': 'Sprint Shootout',
+    };
+    return map[name] || name;
+  };
+
   if (loading) {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
         <Calendar className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
-        <span>SINCRONIZANDO CALENDARIO OFICIAL...</span>
+        <span>{t.schedule.loading}</span>
       </div>
     );
   }
@@ -140,10 +156,10 @@ export const ScheduleView: React.FC = () => {
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 relative shadow-sm">
           <div className="flex items-center justify-between gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest">
-              PRÓXIMO GP • ROUND {nextRace.round}
+              {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
             <span className="text-[11px] text-zinc-400 font-mono">
-              HORA LOCAL ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+              {t.schedule.localTime} ({Intl.DateTimeFormat().resolvedOptions().timeZone})
             </span>
           </div>
 
@@ -167,7 +183,7 @@ export const ScheduleView: React.FC = () => {
                   {timeLeft.days}
                 </span>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
-                  DÍAS
+                  {t.schedule.countdown.days}
                 </span>
               </div>
               <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
@@ -175,7 +191,7 @@ export const ScheduleView: React.FC = () => {
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
-                  HS
+                  {t.schedule.countdown.hours}
                 </span>
               </div>
               <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
@@ -183,7 +199,7 @@ export const ScheduleView: React.FC = () => {
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
-                  MIN
+                  {t.schedule.countdown.minutes}
                 </span>
               </div>
               <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
@@ -191,7 +207,7 @@ export const ScheduleView: React.FC = () => {
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
-                  SEG
+                  {t.schedule.countdown.seconds}
                 </span>
               </div>
             </div>
@@ -204,10 +220,10 @@ export const ScheduleView: React.FC = () => {
         <div className="px-4 py-2.5 bg-[#131722] border-b border-white/[0.08] flex items-center justify-between text-xs font-mono font-bold text-zinc-400">
           <div className="flex items-center gap-2 tracking-wider">
             <Calendar className="w-3.5 h-3.5 text-[#E10600]" />
-            <span>CALENDARIO DE LA TEMPORADA</span>
+            <span>{t.schedule.seasonCalendar}</span>
           </div>
           <span className="text-[10px] text-zinc-400 font-mono tracking-widest">
-            {races.length} RONDAS
+            {races.length} {t.schedule.rounds}
           </span>
         </div>
 
@@ -240,12 +256,12 @@ export const ScheduleView: React.FC = () => {
                         </span>
                         {r.isNext && (
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30">
-                            PRÓXIMO
+                            {t.schedule.nextBadge}
                           </span>
                         )}
                         {isPast && (
                           <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.2 rounded">
-                            <CheckCircle2 className="w-3 h-3" /> RESULTADOS DISPONIBLES
+                            <CheckCircle2 className="w-3 h-3" /> {t.schedule.resultsAvailable}
                           </span>
                         )}
                       </div>
@@ -285,7 +301,7 @@ export const ScheduleView: React.FC = () => {
                           }`}
                         >
                           <Trophy className="w-3 h-3" />
-                          <span>Desglose de Carrera</span>
+                          <span>{t.schedule.raceBreakdownTab}</span>
                         </button>
                         <button
                           type="button"
@@ -299,7 +315,7 @@ export const ScheduleView: React.FC = () => {
                           }`}
                         >
                           <Clock className="w-3 h-3" />
-                          <span>Horarios de Sesiones</span>
+                          <span>{t.schedule.sessionTimesTab}</span>
                         </button>
                       </div>
                     )}
@@ -309,7 +325,7 @@ export const ScheduleView: React.FC = () => {
                       <div>
                         {isLoadingDetail ? (
                           <div className="p-6 text-center text-zinc-500 font-mono text-xs">
-                            <span className="animate-pulse">CARGANDO DESGLOSE DEL GP...</span>
+                            <span className="animate-pulse">{t.schedule.loadingBreakdown}</span>
                           </div>
                         ) : detail && detail.results && detail.results.length > 0 ? (
                           <div className="flex flex-col gap-2.5">
@@ -319,7 +335,7 @@ export const ScheduleView: React.FC = () => {
                                 <span className="w-5 h-5 rounded-md bg-[#FFD60A] text-black font-black flex items-center justify-center text-xs">
                                   1
                                 </span>
-                                <span className="text-zinc-400">GANADOR:</span>
+                                <span className="text-zinc-400">{t.schedule.winner}</span>
                                 <strong className="text-white">
                                   {detail.winner.fullName} ({detail.winner.code})
                                 </strong>
@@ -330,7 +346,7 @@ export const ScheduleView: React.FC = () => {
                               {detail.fastestLap && (
                                 <div className="flex items-center gap-1.5 text-purple-300 text-[11px]">
                                   <Zap className="w-3 h-3 text-purple-400" />
-                                  <span>V. Rápida:</span>
+                                  <span>{t.schedule.fastestLap}</span>
                                   <strong className="text-white">
                                     {detail.fastestLap.code} ({detail.fastestLap.time})
                                   </strong>
@@ -341,10 +357,10 @@ export const ScheduleView: React.FC = () => {
                             {/* Classification Mini Table */}
                             <div className="bg-[#131722] border border-white/[0.08] rounded-lg overflow-hidden shadow-xs">
                               <div className="grid grid-cols-12 gap-1 px-3 py-1.5 bg-[#1C2230] border-b border-white/[0.06] text-[9px] font-mono font-bold uppercase text-zinc-400 select-none">
-                                <div className="col-span-1 text-center">POS</div>
-                                <div className="col-span-5 sm:col-span-5">PILOTO</div>
-                                <div className="col-span-2 text-center">LARGADA</div>
-                                <div className="col-span-2 text-right sm:text-center">TIEMPO</div>
+                                <div className="col-span-1 text-center">{t.live.table.pos}</div>
+                                <div className="col-span-5 sm:col-span-5">{t.live.table.driver}</div>
+                                <div className="col-span-2 text-center">{lang === 'es' ? 'LARGADA' : 'START'}</div>
+                                <div className="col-span-2 text-right sm:text-center">{lang === 'es' ? 'TIEMPO' : 'TIME'}</div>
                                 <div className="col-span-2 text-right">PTS</div>
                               </div>
 
@@ -430,15 +446,17 @@ export const ScheduleView: React.FC = () => {
                                   className="w-full py-2 bg-white/[0.02] hover:bg-white/[0.05] border-t border-white/[0.06] text-center font-mono text-[10px] font-bold text-zinc-400 hover:text-white uppercase transition-colors cursor-pointer"
                                 >
                                   {showFull
-                                    ? '▲ Ver solo Top 10'
-                                    : `▼ Ver parrilla completa (P11 - P${detail.results.length})`}
+                                    ? t.schedule.viewTop10
+                                    : lang === 'es'
+                                    ? `▼ Ver parrilla completa (P11 - P${detail.results.length})`
+                                    : `▼ View full grid (P11 - P${detail.results.length})`}
                                 </button>
                               )}
                             </div>
                           </div>
                         ) : (
                           <div className="p-4 text-center text-zinc-500 font-mono text-xs">
-                            <span>No hay datos de resultados disponibles para esta ronda.</span>
+                            <span>{t.schedule.noBreakdownData}</span>
                           </div>
                         )}
                       </div>
@@ -448,7 +466,7 @@ export const ScheduleView: React.FC = () => {
                     {(!isPast || currentTab === 'schedule') && (
                       <div>
                         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-[#E10600]" /> HORARIOS DE SESIÓN (HORA LOCAL)
+                          <Clock className="w-3 h-3 text-[#E10600]" /> {t.schedule.sessionScheduleTitle}
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                           {r.sessions?.map((s, idx) => (
@@ -460,7 +478,7 @@ export const ScheduleView: React.FC = () => {
                                   : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
                               }`}
                             >
-                              <span className="font-semibold uppercase">{s.name}</span>
+                              <span className="font-semibold uppercase">{translateSessionName(s.name)}</span>
                               <div className="flex items-center gap-2 tabular-nums">
                                 <span className="text-zinc-400 text-[11px]">
                                   {formatLocalDate(s.dateTime)}
@@ -471,7 +489,7 @@ export const ScheduleView: React.FC = () => {
                                   </span>
                                 ) : (
                                   <span className="text-zinc-500 bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md text-[10px]">
-                                    A CONFIRMAR
+                                    {t.schedule.toConfirm}
                                   </span>
                                 )}
                               </div>

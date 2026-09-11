@@ -6,6 +6,7 @@ import {
   getFlagBadgeConfig,
   translateFIAMessage,
 } from '../../utils/fiaTranslation';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface RaceControlFeedProps {
   messages: RaceControlMessage[];
@@ -14,11 +15,12 @@ interface RaceControlFeedProps {
 
 export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, drivers }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { lang, t } = useLanguage();
 
   if (!messages || messages.length === 0) return null;
 
   const latestMessage = messages[0];
-  const latestFlagBadge = getFlagBadgeConfig(latestMessage.flag);
+  const latestFlagBadge = getFlagBadgeConfig(latestMessage.flag, lang);
 
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
@@ -32,10 +34,10 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, driv
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
           <Radio className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
           <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex-shrink-0">
-            Control de Carrera:
+            {t.live.raceControl.title}:
           </span>
           <span className="text-xs text-zinc-200 font-mono truncate">
-            {translateFIAMessage(latestMessage.text, drivers)}
+            {translateFIAMessage(latestMessage.text, drivers, lang)}
           </span>
           {latestFlagBadge && (
             <span
@@ -62,7 +64,7 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, driv
       {isOpen && (
         <div className="max-h-56 overflow-y-auto divide-y divide-white/[0.04] bg-[#0B0E14] border-t border-white/[0.06]">
           {messages.map((m) => {
-            const flagBadge = getFlagBadgeConfig(m.flag);
+            const flagBadge = getFlagBadgeConfig(m.flag, lang);
             return (
               <div key={m.id || m.time} className="px-3 py-2 flex items-start gap-2.5 text-xs">
                 <span className="font-mono text-[10px] text-zinc-500 font-tabular flex-shrink-0 mt-0.5">
@@ -70,7 +72,7 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, driv
                 </span>
                 <div className="flex-1 flex items-center justify-between gap-2">
                   <span className="font-mono text-zinc-300 text-xs leading-relaxed">
-                    {translateFIAMessage(m.text, drivers)}
+                    {translateFIAMessage(m.text, drivers, lang)}
                   </span>
                   {flagBadge && (
                     <span

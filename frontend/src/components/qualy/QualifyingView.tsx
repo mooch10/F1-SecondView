@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Flag, MapPin, Sparkles, Timer } from 'lucide-react';
 import { fetchQualifying } from '../../services/api';
 import type { JolpicaQualifyingResult, JolpicaQualifyingSession } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export const QualifyingView: React.FC = () => {
+  const { lang: _lang, t } = useLanguage();
   const [session, setSession] = useState<JolpicaQualifyingSession | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [phaseFilter, setPhaseFilter] = useState<'ALL' | 'Q3' | 'Q2' | 'Q1'>('ALL');
@@ -20,7 +22,7 @@ export const QualifyingView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
         <Timer className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
-        <span>CARGANDO RESULTADOS DE QUALY OFICIAL...</span>
+        <span>{t.qualy.loading}</span>
       </div>
     );
   }
@@ -29,7 +31,7 @@ export const QualifyingView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-400 font-mono text-xs">
         <Flag className="w-6 h-6 text-zinc-500 mx-auto mb-2" />
-        <span>NO HAY RESULTADOS DE QUALY DISPONIBLES EN ESTE MOMENTO.</span>
+        <span>{t.qualy.noData}</span>
       </div>
     );
   }
@@ -57,7 +59,7 @@ export const QualifyingView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30 tracking-widest">
-                ROUND {session.round} • QUALY
+                {t.qualy.round} {session.round} • {t.qualy.qualyTitle}
               </span>
               <span className="text-[11px] text-zinc-400 font-mono">
                 {session.date}
@@ -83,7 +85,7 @@ export const QualifyingView: React.FC = () => {
               </div>
               <div className="flex flex-col leading-tight min-w-0">
                 <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" /> POLE POSITION 🥇
+                  <Sparkles className="w-2.5 h-2.5" /> {t.qualy.poleBadge}
                 </span>
                 <span className="text-sm font-bold text-white truncate font-sans">
                   {poleDriver.fullName}
@@ -110,7 +112,7 @@ export const QualifyingView: React.FC = () => {
                 : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
             }`}
           >
-            PARRILLA COMPLETA
+            {t.qualy.filters.all}
           </button>
           <button
             type="button"
@@ -121,7 +123,7 @@ export const QualifyingView: React.FC = () => {
                 : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
             }`}
           >
-            <span>Q3 (TOP 10 • POLE)</span>
+            <span>{t.qualy.filters.q3}</span>
           </button>
           <button
             type="button"
@@ -132,7 +134,7 @@ export const QualifyingView: React.FC = () => {
                 : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
             }`}
           >
-            Q2 (P11 - P15)
+            {t.qualy.filters.q2}
           </button>
           <button
             type="button"
@@ -143,7 +145,7 @@ export const QualifyingView: React.FC = () => {
                 : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
             }`}
           >
-            Q1 (P16 - P20)
+            {t.qualy.filters.q1}
           </button>
         </div>
       </div>
@@ -152,12 +154,12 @@ export const QualifyingView: React.FC = () => {
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-          <div className="col-span-1 text-center">POS</div>
-          <div className="col-span-4 sm:col-span-3">PILOTO</div>
-          <div className="col-span-2 text-center">Q1</div>
-          <div className="col-span-2 text-center">Q2</div>
-          <div className="col-span-2 text-center">Q3</div>
-          <div className="col-span-1 sm:col-span-1 text-right">GAP</div>
+          <div className="col-span-1 text-center">{t.qualy.headers.pos}</div>
+          <div className="col-span-4 sm:col-span-3">{t.qualy.headers.driver}</div>
+          <div className="col-span-2 text-center">{t.qualy.headers.q1}</div>
+          <div className="col-span-2 text-center">{t.qualy.headers.q2}</div>
+          <div className="col-span-2 text-center">{t.qualy.headers.q3}</div>
+          <div className="col-span-1 sm:col-span-1 text-right">{t.qualy.headers.gap}</div>
         </div>
 
         {/* Rows */}
@@ -311,33 +313,33 @@ export const QualifyingView: React.FC = () => {
                         </span>
                       </div>
                       <span className="text-zinc-400 font-mono text-[10px]">
-                        Posición de largada provisional: <strong className="text-white">P{d.pos}</strong>
+                        {t.qualy.provisionalGrid} <strong className="text-white">P{d.pos}</strong>
                       </span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center font-mono mt-2">
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Tanda Q1
+                          {t.qualy.q1Run}
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
-                          {d.q1 || 'Sin tiempo'}
+                          {d.q1 || t.qualy.noTime}
                         </span>
                       </div>
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Tanda Q2
+                          {t.qualy.q2Run}
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
-                          {d.q2 || (d.pos >= 16 ? 'No clasificó a Q2' : '-')}
+                          {d.q2 || (d.pos >= 16 ? t.qualy.noQ2 : '-')}
                         </span>
                       </div>
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Tanda Q3
+                          {t.qualy.q3Run}
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
-                          {d.q3 || (d.pos >= 11 ? 'No clasificó a Q3' : '-')}
+                          {d.q3 || (d.pos >= 11 ? t.qualy.noQ3 : '-')}
                         </span>
                       </div>
                     </div>

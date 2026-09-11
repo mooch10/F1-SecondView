@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -10,8 +10,10 @@ import {
 } from 'lucide-react';
 import { fetchLastRaceDetail } from '../../services/api';
 import type { JolpicaRaceDetail, JolpicaRaceResult } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export const LastRaceView: React.FC = () => {
+  const { lang, t } = useLanguage();
   const [raceDetail, setRaceDetail] = useState<JolpicaRaceDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
@@ -27,7 +29,7 @@ export const LastRaceView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
         <Timer className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
-        <span>CARGANDO RESULTADOS DEL ÚLTIMO GRAN PREMIO...</span>
+        <span>{t.lastRace.loading}</span>
       </div>
     );
   }
@@ -36,7 +38,7 @@ export const LastRaceView: React.FC = () => {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-400 font-mono text-xs">
         <Flag className="w-6 h-6 text-zinc-500 mx-auto mb-2" />
-        <span>NO HAY RESULTADOS DISPONIBLES DEL ÚLTIMO GRAN PREMIO.</span>
+        <span>{t.lastRace.noData}</span>
       </div>
     );
   }
@@ -57,7 +59,7 @@ export const LastRaceView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest">
-                ROUND {raceDetail.round} • ÚLTIMO GP
+                {t.lastRace.round} {raceDetail.round} • {t.lastRace.lastGp}
               </span>
               <span className="text-[11px] text-zinc-400 font-mono">
                 {raceDetail.date}
@@ -83,7 +85,7 @@ export const LastRaceView: React.FC = () => {
               </div>
               <div className="flex flex-col leading-tight min-w-0">
                 <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                  <Trophy className="w-2.5 h-2.5" /> GANADOR DE CARRERA 🥇
+                  <Trophy className="w-2.5 h-2.5" /> {t.lastRace.winnerBadge}
                 </span>
                 <span className="text-sm font-bold text-white truncate font-sans">
                   {winner.fullName}
@@ -150,7 +152,7 @@ export const LastRaceView: React.FC = () => {
             <div className="flex items-center gap-2 text-purple-300">
               <Zap className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
               <span className="font-bold uppercase tracking-wider text-[10px] sm:text-[11px]">
-                VUELTA RÁPIDA DE CARRERA:
+                {t.lastRace.fastestLapTitle}
               </span>
               <strong className="text-white font-sans">
                 {fastestLap.driverName} ({fastestLap.code})
@@ -158,7 +160,7 @@ export const LastRaceView: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-zinc-400 text-[10px] hidden sm:inline">
-                Vta {fastestLap.lap}
+                {t.lastRace.lap} {fastestLap.lap}
               </span>
               <span className="font-black text-purple-300 bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 rounded text-[11px]">
                 {fastestLap.time} 🟣
@@ -172,12 +174,12 @@ export const LastRaceView: React.FC = () => {
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-          <div className="col-span-1 text-center">POS</div>
-          <div className="col-span-5 sm:col-span-4">PILOTO</div>
-          <div className="col-span-2 sm:col-span-2 text-center">LARGADA</div>
-          <div className="col-span-2 sm:col-span-1 text-center">VTAS</div>
-          <div className="col-span-2 sm:col-span-2 text-right sm:text-center">TIEMPO / ESTADO</div>
-          <div className="hidden sm:block sm:col-span-2 text-right">PUNTOS</div>
+          <div className="col-span-1 text-center">{t.lastRace.headers.pos}</div>
+          <div className="col-span-5 sm:col-span-4">{t.lastRace.headers.driver}</div>
+          <div className="col-span-2 sm:col-span-2 text-center">{t.lastRace.headers.start}</div>
+          <div className="col-span-2 sm:col-span-1 text-center">{t.lastRace.headers.laps}</div>
+          <div className="col-span-2 sm:col-span-2 text-right sm:text-center">{t.lastRace.headers.timeStatus}</div>
+          <div className="hidden sm:block sm:col-span-2 text-right">{t.lastRace.headers.points}</div>
         </div>
 
         {/* Rows */}
@@ -195,10 +197,10 @@ export const LastRaceView: React.FC = () => {
                   <div className="bg-[#152018] border-y border-emerald-500/30 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-emerald-300 select-none shadow-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>🏁 LÍMITE ZONA DE PUNTOS · TOP 10 SUMAN AL CAMPEONATO</span>
+                      <span>{t.lastRace.pointsCutoff}</span>
                     </div>
                     <span className="text-[9px] uppercase tracking-wider text-emerald-200 bg-emerald-900/50 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold">
-                      P11 - P{raceDetail.results.length} SIN PUNTOS
+                      P11 - P{raceDetail.results.length} {t.lastRace.noPoints}
                     </span>
                   </div>
                 )}
@@ -244,12 +246,12 @@ export const LastRaceView: React.FC = () => {
                         </span>
                         {d.isWinner && (
                           <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight">
-                            VICTORIA 🥇
+                            {t.lastRace.victory}
                           </span>
                         )}
                         {d.isFastestLap && (
                           <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight">
-                            V. RÁPIDA 🟣
+                            {t.live.table.fastestLap}
                           </span>
                         )}
                       </div>
@@ -340,14 +342,14 @@ export const LastRaceView: React.FC = () => {
                         </span>
                       </div>
                       <span className="text-zinc-400 font-mono text-[10px]">
-                        Posición final: <strong className="text-white">P{d.pos}</strong> ({d.points} puntos)
+                        {lang === 'es' ? 'Posición final:' : 'Final position:'} <strong className="text-white">P{d.pos}</strong> ({d.points} {lang === 'es' ? 'puntos' : 'points'})
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono mt-2">
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Largó desde
+                          {t.lastRace.startedFrom}
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
                           P{d.grid} {d.posChange > 0 ? `(▲ +${d.posChange})` : d.posChange < 0 ? `(▼ ${d.posChange})` : '(=)'}
@@ -356,16 +358,16 @@ export const LastRaceView: React.FC = () => {
 
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Vueltas Completadas
+                          {t.lastRace.lapsCompleted}
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
-                          {d.laps} vueltas
+                          {d.laps} {lang === 'es' ? 'vueltas' : 'laps'}
                         </span>
                       </div>
 
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Mejor Vuelta
+                          {t.lastRace.bestLap}
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
                           {d.fastestLapTime ? (
@@ -380,7 +382,7 @@ export const LastRaceView: React.FC = () => {
 
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
                         <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                          Estado Oficial
+                          {t.lastRace.officialStatus}
                         </span>
                         <span
                           className={`font-bold text-xs font-tabular ${

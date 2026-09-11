@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Gauge, Zap } from 'lucide-react';
 import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface TimingTableProps {
   drivers: DriverLive[];
@@ -24,6 +25,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   drivers,
   sessionType = 'Race',
 }) => {
+  const { lang, t } = useLanguage();
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
 
   const isQualy = sessionType === 'Qualifying';
@@ -59,7 +61,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     return (
       <div
         className="inline-flex items-center gap-1.5 select-none"
-        title={`Compuesto Pirelli ${tyre.compound} (${tyre.laps} vueltas)`}
+        title={
+          lang === 'es'
+            ? `Compuesto Pirelli ${tyre.compound} (${tyre.laps} vueltas)`
+            : `Pirelli compound ${tyre.compound} (${tyre.laps} laps)`
+        }
       >
         {/* Círculo oficial Pirelli con la letra S / M / H / I / W */}
         <span
@@ -67,9 +73,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
         >
           {letter}
         </span>
-        {/* Vueltas al costado, bien legible (ej: 38v) */}
+        {/* Vueltas al costado, bien legible (ej: 38v / 38l) */}
         <span className="font-mono text-xs font-bold text-zinc-300 tabular-nums">
-          {tyre.laps}v
+          {tyre.laps}{lang === 'es' ? 'v' : 'l'}
         </span>
       </div>
     );
@@ -85,7 +91,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   if (!drivers || drivers.length === 0) {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-500 text-sm">
-        No hay datos de telemetría disponibles en este momento.
+        {lang === 'es'
+          ? 'No hay datos de telemetría disponibles en este momento.'
+          : 'No telemetry data available at this moment.'}
       </div>
     );
   }
@@ -106,20 +114,20 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       {/* Table Header (Polymorphic: Qualy vs Race) */}
       {isQualy ? (
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-          <div className="col-span-1 text-center">POS</div>
-          <div className="col-span-4 sm:col-span-4">PILOTO</div>
-          <div className="col-span-2 sm:col-span-2 text-center">GOMA</div>
-          <div className="col-span-2 sm:col-span-2 text-right">GAP POLE</div>
-          <div className="col-span-3 sm:col-span-3 text-right">MEJOR TIEMPO</div>
+          <div className="col-span-1 text-center">{t.live.table.pos}</div>
+          <div className="col-span-4 sm:col-span-4">{t.live.table.driver}</div>
+          <div className="col-span-2 sm:col-span-2 text-center">{t.live.table.tyre}</div>
+          <div className="col-span-2 sm:col-span-2 text-right">{lang === 'es' ? 'GAP POLE' : 'GAP TO POLE'}</div>
+          <div className="col-span-3 sm:col-span-3 text-right">{lang === 'es' ? 'MEJOR TIEMPO' : 'BEST TIME'}</div>
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-          <div className="col-span-1 text-center">POS</div>
-          <div className="col-span-4 sm:col-span-3">PILOTO</div>
-          <div className="col-span-2 sm:col-span-2 text-center">GOMA</div>
-          <div className="col-span-1 sm:col-span-1 text-center">PIT</div>
+          <div className="col-span-1 text-center">{t.live.table.pos}</div>
+          <div className="col-span-4 sm:col-span-3">{t.live.table.driver}</div>
+          <div className="col-span-2 sm:col-span-2 text-center">{t.live.table.tyre}</div>
+          <div className="col-span-1 sm:col-span-1 text-center">{t.live.table.pit}</div>
           <div className="col-span-2 sm:col-span-3 text-right">GAP / INT</div>
-          <div className="col-span-2 sm:col-span-2 text-right">VUELTA</div>
+          <div className="col-span-2 sm:col-span-2 text-right">{t.live.table.lastLap}</div>
         </div>
       )}
 
@@ -183,7 +191,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     {!isQualy && d.posChange > 0 && (
                       <span
                         className="absolute left-full ml-0.5 top-1/2 -translate-y-1/2 text-[9px] text-emerald-400 font-bold font-mono leading-none whitespace-nowrap select-none"
-                        title={`Largó P${d.gridPosition ?? d.pos}`}
+                        title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos}` : `Started P${d.gridPosition ?? d.pos}`}
                       >
                         ▲{d.posChange}
                       </span>
@@ -191,7 +199,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     {!isQualy && d.posChange < 0 && (
                       <span
                         className="absolute left-full ml-0.5 top-1/2 -translate-y-1/2 text-[9px] text-rose-400 font-bold font-mono leading-none whitespace-nowrap select-none"
-                        title={`Largó P${d.gridPosition ?? d.pos}`}
+                        title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos}` : `Started P${d.gridPosition ?? d.pos}`}
                       >
                         ▼{Math.abs(d.posChange)}
                       </span>
@@ -227,8 +235,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           }`}
                           title={
                             hasFastestLapBonus
-                              ? `Zona de puntos: +${basePoints} pts (P${d.pos}) + 1 pt (Vuelta Rápida) = +${totalPoints} pts`
-                              : `Zona de puntos: +${basePoints} pts para el Campeonato Mundial`
+                              ? lang === 'es'
+                                ? `Zona de puntos: +${basePoints} pts (P${d.pos}) + 1 pt (Vuelta Rápida) = +${totalPoints} pts`
+                                : `Points zone: +${basePoints} pts (P${d.pos}) + 1 pt (Fastest Lap) = +${totalPoints} pts`
+                              : lang === 'es'
+                              ? `Zona de puntos: +${basePoints} pts para el Campeonato Mundial`
+                              : `Points zone: +${basePoints} pts for World Championship`
                           }
                         >
                           +{totalPoints} PTS
@@ -238,9 +250,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span
                           className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs"
-                          title={`Penalización oficial FIA: +${d.penaltySeconds}s`}
+                          title={lang === 'es' ? `Penalización oficial FIA: +${d.penaltySeconds}s` : `Official FIA penalty: +${d.penaltySeconds}s`}
                         >
-                          +{d.penaltySeconds}s PEN
+                          +{d.penaltySeconds}s {t.live.table.penalty}
                         </span>
                       )}
                       {/* Elimination Phase Tag in Qualy */}
@@ -295,7 +307,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                         {d.isPole && (
                           <span className="text-[9px] font-extrabold text-[#FFD60A] uppercase tracking-tighter">
-                            POLE PROVISIONAL 🥇
+                            {lang === 'es' ? 'POLE PROVISIONAL 🥇' : 'PROVISIONAL POLE 🥇'}
                           </span>
                         )}
                       </div>
@@ -315,9 +327,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {d.inPit ? (
                         <span
                           className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse"
-                          title="En calle de boxes"
+                          title={lang === 'es' ? 'En calle de boxes' : 'In pit lane'}
                         >
-                          BOX
+                          {lang === 'es' ? 'BOX' : 'PIT'}
                         </span>
                       ) : (
                         <span
@@ -326,9 +338,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                               ? 'bg-[#1C2230] text-zinc-200 border-white/[0.12] shadow-xs'
                               : 'bg-[#0B0E14] text-zinc-500 border-white/[0.05]'
                           }`}
-                          title={`${d.pitStops ?? 0} ${
-                            d.pitStops === 1 ? 'parada' : 'paradas'
-                          } en boxes`}
+                          title={
+                            lang === 'es'
+                              ? `${d.pitStops ?? 0} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
+                              : `${d.pitStops ?? 0} pit ${d.pitStops === 1 ? 'stop' : 'stops'}`
+                          }
                         >
                           {d.pitStops ?? 0}P
                         </span>
@@ -368,7 +382,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                         {d.isFastestLap && (
                           <span className="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
-                            V. RÁPIDA 🟣
+                            {t.live.table.fastestLap}
                           </span>
                         )}
                       </div>
@@ -413,20 +427,22 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         >
                           {totalPoints > 0
                             ? hasFastestLapBonus
-                              ? `+${basePoints} PTS (P${d.pos}) + 1 PT (V. RÁPIDA) = ${totalPoints} PTS`
-                              : `+${totalPoints} PTS CAMPEONATO`
+                              ? `+${basePoints} PTS (P${d.pos}) + 1 PT (${lang === 'es' ? 'V. RÁPIDA' : 'FASTEST LAP'}) = ${totalPoints} PTS`
+                              : `+${totalPoints} ${t.live.table.pointsChampionship}`
                             : d.isFastestLap
-                            ? 'V. RÁPIDA (0 PTS · FUERA DEL TOP 10)'
-                            : 'FUERA DE PUNTOS (0 PTS)'}
+                            ? lang === 'es'
+                              ? 'V. RÁPIDA (0 PTS · FUERA DEL TOP 10)'
+                              : 'FASTEST LAP (0 PTS · OUT OF TOP 10)'
+                            : t.live.table.outOfPoints}
                         </span>
                       )}
                       {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40">
-                          PENALIZACIÓN: +{d.penaltySeconds}s
+                          {lang === 'es' ? 'PENALIZACIÓN' : 'PENALTY'}: +{d.penaltySeconds}s
                         </span>
                       )}
                       <span className="font-mono text-[10px] text-zinc-400">
-                        Paradas: <strong className="text-white">{d.pitStops ?? 0}</strong>
+                        {t.live.table.pitStops} <strong className="text-white">{d.pitStops ?? 0}</strong>
                       </span>
                       {d.status !== 'ACTIVE' && (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
@@ -488,10 +504,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           <div className="flex items-center justify-between px-3 py-2 bg-[#171B26] border-b border-white/[0.08] select-none">
             <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-rose-400 uppercase">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-              <span>Abandonos / DNF</span>
+              <span>{lang === 'es' ? 'Abandonos / DNF' : 'Retirements / DNF'}</span>
             </div>
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 tracking-widest uppercase">
-              {retiredDrivers.length} {retiredDrivers.length === 1 ? 'PILOTO' : 'PILOTOS'}
+              {retiredDrivers.length} {retiredDrivers.length === 1 ? (lang === 'es' ? 'PILOTO' : 'DRIVER') : (lang === 'es' ? 'PILOTOS' : 'DRIVERS')}
             </span>
           </div>
 
@@ -557,10 +573,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     {/* Retired Lap / Status */}
                     <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight">
                       <span className="font-mono text-xs font-semibold text-zinc-300">
-                        {d.retiredLap ? `Vta ${d.retiredLap}` : 'RET'}
+                        {d.retiredLap ? `${lang === 'es' ? 'Vta' : 'Lap'} ${d.retiredLap}` : 'RET'}
                       </span>
                       <span className="text-[9px] text-zinc-500 font-mono">
-                        RETIRO
+                        {lang === 'es' ? 'RETIRO' : 'RETIRED'}
                       </span>
                     </div>
 
@@ -568,9 +584,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     <div className="col-span-2 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
                       <span
                         className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 truncate max-w-[120px] sm:max-w-[170px]"
-                        title={d.retirementReason || 'Abandono'}
+                        title={d.retirementReason || (lang === 'es' ? 'Abandono' : 'Retired')}
                       >
-                        {d.retirementReason || 'Abandono'}
+                        {d.retirementReason || (lang === 'es' ? 'Abandono' : 'Retired')}
                       </span>
                       <div className="text-zinc-500 hidden sm:block">
                         {isExpanded ? (
@@ -603,12 +619,25 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                       </div>
                       <div className="text-zinc-400 text-xs font-mono">
-                        Cese de telemetría registrado en la vuelta{' '}
-                        <strong className="text-white">{d.retiredLap || '--'}</strong>. Motivo:{' '}
-                        <span className="text-rose-300 font-semibold">
-                          {d.retirementReason || 'Abandono'}
-                        </span>
-                        .
+                        {lang === 'es' ? (
+                          <>
+                            Cese de telemetría registrado en la vuelta{' '}
+                            <strong className="text-white">{d.retiredLap || '--'}</strong>. Motivo:{' '}
+                            <span className="text-rose-300 font-semibold">
+                              {d.retirementReason || 'Abandono'}
+                            </span>
+                            .
+                          </>
+                        ) : (
+                          <>
+                            Telemetry loss recorded on lap{' '}
+                            <strong className="text-white">{d.retiredLap || '--'}</strong>. Reason:{' '}
+                            <span className="text-rose-300 font-semibold">
+                              {d.retirementReason || 'Retired'}
+                            </span>
+                            .
+                          </>
+                        )}
                       </div>
                     </div>
                   )}

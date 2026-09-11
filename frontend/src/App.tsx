@@ -11,6 +11,7 @@ import { QualifyingView } from './components/qualy/QualifyingView';
 import { LastRaceView } from './components/race/LastRaceView';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { StandingsView } from './components/standings/StandingsView';
+import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
 import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
@@ -20,6 +21,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('live');
   const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
+  const { t } = useLanguage();
 
   const {
     snapshot,
@@ -79,7 +81,7 @@ export function App() {
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                TELEMETRÍA EN VIVO
+                {t.live.telemetryTab}
               </button>
 
               <button
@@ -91,7 +93,7 @@ export function App() {
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                ENTRE CARRERAS
+                {t.live.betweenRacesTab}
               </button>
             </div>
 
@@ -99,7 +101,7 @@ export function App() {
               <BetweenRacesView onSwitchToLiveTiming={() => setUserSubView('timing')} />
             ) : isLoading ? (
               <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-500 font-mono text-xs">
-                <span>SINTONIZANDO TELEMETRÍA EN VIVO...</span>
+                <span>{t.live.loadingTelemetry}</span>
               </div>
             ) : drivers.length > 0 ? (
               <>
@@ -136,13 +138,13 @@ export function App() {
                 </div>
                 <div className="max-w-md">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#FFD60A] px-2.5 py-0.5 rounded-full bg-[#FFD60A]/10 border border-[#FFD60A]/20">
-                    SESIÓN EN ESPERA (STANDBY)
+                    {t.live.standbyBadge}
                   </span>
                   <h3 className="text-lg font-bold text-white uppercase tracking-tight mt-2 font-sans">
-                    Sin Actividad en Pista en Este Momento
+                    {t.live.standbyTitle}
                   </h3>
                   <p className="text-xs text-zinc-400 mt-1.5 font-mono leading-relaxed">
-                    La telemetría y el cronometraje vuelta a vuelta se conectan automáticamente en tiempo real durante las sesiones oficiales de Gran Premio (Prácticas, Qualy y Carrera).
+                    {t.live.standbyDesc}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
@@ -151,14 +153,14 @@ export function App() {
                     onClick={() => setUserSubView('betweenRaces')}
                     className="px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-white/10"
                   >
-                    📅 Próxima Carrera y Horarios
+                    {t.live.nextScheduleBtn}
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveTab('qualy')}
                     className="px-3.5 py-2 rounded-lg bg-[#FFD60A]/15 hover:bg-[#FFD60A]/25 text-[#FFD60A] font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-[#FFD60A]/30"
                   >
-                    ⏱️ Resultados de Qualy
+                    {t.live.qualyResultsBtn}
                   </button>
                 </div>
               </div>
@@ -179,10 +181,10 @@ export function App() {
       <footer className="border-t border-white/[0.06] py-4 px-4 text-center text-[10px] text-zinc-500 font-mono bg-[#0B0E14]">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-zinc-300">
-            <span className="text-[#E10600]">REBUFO</span> • El Promiedos de la Fórmula 1
+            <span className="text-[#E10600]">REBUFO</span> • {t.footer.subtitle}
           </div>
           <p className="text-[10px] text-zinc-500">
-            Plataforma comunitaria independiente. Datos estadísticos y de cronometraje de dominio público.
+            {t.footer.disclaimer}
           </p>
         </div>
       </footer>

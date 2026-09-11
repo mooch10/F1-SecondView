@@ -138,7 +138,7 @@ export function resolveDriverSurname(
   return 'Auto';
 }
 
-function replaceCarsWithSurnames(rawCarList: string, drivers?: DriverLive[]): string {
+function replaceCarsWithSurnames(rawCarList: string, drivers?: DriverLive[], lang: 'es' | 'en' = 'es'): string {
   let result = rawCarList;
   result = result.replace(/(?:CAR\s*)?(\d+)\s*\(([A-Z]+)\)/gi, (_, num, code) => {
     return resolveDriverSurname(num, code, drivers);
@@ -153,7 +153,9 @@ function replaceCarsWithSurnames(rawCarList: string, drivers?: DriverLive[]): st
     }
     return match;
   });
-  result = result.replace(/\bAND\b/gi, 'y');
+  if (lang === 'es') {
+    result = result.replace(/\bAND\b/gi, 'y');
+  }
   return result.trim();
 }
 
@@ -169,9 +171,71 @@ function translateInfraction(raw: string): string {
   return text;
 }
 
-export function translateFIAMessage(raw?: string, drivers?: DriverLive[]): string {
+export function translateFIAMessage(raw?: string, drivers?: DriverLive[], lang: 'es' | 'en' = 'es'): string {
   if (!raw) return '';
   let text = raw.trim();
+
+  if (lang === 'en') {
+    text = text.replace(
+      /WAVED BLUE FLAG FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?(?: TIMED AT .*)?/gi,
+      (_, num, code) => `Waved blue flag for ${resolveDriverSurname(num, code, drivers)}`
+    );
+    text = text.replace(
+      /BLUE FLAG FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?/gi,
+      (_, num, code) => `Blue flag for ${resolveDriverSurname(num, code, drivers)}`
+    );
+    text = text.replace(
+      /(?:FIA STEWARDS:\s*)?CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*(\d+)\s*SECOND TIME PENALTY FOR (.*)/gi,
+      (_, num, code, sec, reason) =>
+        `${sec}s time penalty for ${resolveDriverSurname(num, code, drivers)} (${reason.trim()})`
+    );
+    text = text.replace(
+      /(?:FIA STEWARDS:\s*)?(\d+)\s*SECOND TIME PENALTY FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?(?:\s*-\s*(.*))?/gi,
+      (_, sec, num, code, reason) =>
+        `${sec}s time penalty for ${resolveDriverSurname(num, code, drivers)}${reason ? ` (${reason.trim()})` : ''}`
+    );
+    text = text.replace(
+      /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*DRIVE THROUGH PENALTY/gi,
+      (_, num, code) => `Drive-through penalty for ${resolveDriverSurname(num, code, drivers)}`
+    );
+    text = text.replace(
+      /(?:TURN\s*(\d+)\s*)?INCIDENT INVOLVING CARS?\s*(.*?)\s*UNDER INVESTIGATION/gi,
+      (_, turn, cars) =>
+        `Incident${turn ? ` in Turn ${turn}` : ''} involving ${replaceCarsWithSurnames(cars, drivers, 'en')} under investigation`
+    );
+    text = text.replace(
+      /(?:TURN\s*(\d+)\s*)?INCIDENT INVOLVING CARS?\s*(.*?)\s*-\s*NOTED/gi,
+      (_, turn, cars) =>
+        `Incident${turn ? ` in Turn ${turn}` : ''} involving ${replaceCarsWithSurnames(cars, drivers, 'en')} noted`
+    );
+    text = text.replace(
+      /INCIDENT INVOLVING CARS?\s*(.*?)\s*-\s*NO FURTHER INVESTIGATION/gi,
+      (_, cars) => `No further investigation for ${replaceCarsWithSurnames(cars, drivers, 'en')}`
+    );
+    text = text.replace(
+      /NO FURTHER ACTION FOR CARS?\s*(.*)/gi,
+      (_, cars) => `No further action for ${replaceCarsWithSurnames(cars, drivers, 'en')}`
+    );
+    text = text.replace(
+      /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+STOPPED IN PIT\s*-\s*RETIRED/gi,
+      (_, num, code) => `${resolveDriverSurname(num, code, drivers)} stopped in pit - Retired`
+    );
+    text = text.replace(
+      /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+STOPPED ON TRACK(?: IN SECTOR (\d+))?/gi,
+      (_, num, code, sector) =>
+        `${resolveDriverSurname(num, code, drivers)} stopped on track${sector ? ` in Sector ${sector}` : ''}`
+    );
+    text = text.replace(
+      /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+LAP TIME (.*?) DELETED\s*-\s*(.*)/gi,
+      (_, num, code, lapTime, reason) =>
+        `Lap time deleted (${lapTime}) for ${resolveDriverSurname(num, code, drivers)} - ${reason.trim()}`
+    );
+    text = text.replace(
+      /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*(.*)/gi,
+      (_, num, code, rest) => `${resolveDriverSurname(num, code, drivers)} - ${rest.trim()}`
+    );
+    return text;
+  }
 
   // 1. Blue Flags (Banderas azules) -> Usar Apellido del corredor
   text = text.replace(
@@ -328,44 +392,47 @@ export function translateFIAMessage(raw?: string, drivers?: DriverLive[]): strin
   return text;
 }
 
-export function getFlagBadgeConfig(flag?: string | null): { text: string; badgeClass: string } | null {
+export function getFlagBadgeConfig(
+  flag?: string | null,
+  lang: 'es' | 'en' = 'es'
+): { text: string; badgeClass: string } | null {
   if (!flag) return null;
   const f = flag.toUpperCase().trim();
 
   switch (f) {
     case 'BLUE':
       return {
-        text: 'AZUL',
+        text: lang === 'es' ? 'AZUL' : 'BLUE',
         badgeClass: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
       };
     case 'YELLOW':
       return {
-        text: 'AMARILLA',
+        text: lang === 'es' ? 'AMARILLA' : 'YELLOW',
         badgeClass: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
       };
     case 'DOUBLE YELLOW':
       return {
-        text: 'DOBLE AMARILLA',
+        text: lang === 'es' ? 'DOBLE AMARILLA' : 'DBL YELLOW',
         badgeClass: 'bg-amber-500/30 text-amber-200 border border-amber-500/50',
       };
     case 'GREEN':
       return {
-        text: 'VERDE',
+        text: lang === 'es' ? 'VERDE' : 'GREEN',
         badgeClass: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
       };
     case 'RED':
       return {
-        text: 'ROJA',
+        text: lang === 'es' ? 'ROJA' : 'RED',
         badgeClass: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
       };
     case 'CHEQUERED':
       return {
-        text: 'CUADROS',
+        text: lang === 'es' ? 'CUADROS' : 'CHEQUERED',
         badgeClass: 'bg-white/10 text-white border border-white/20',
       };
     case 'BLACK AND WHITE':
       return {
-        text: 'ADVERTENCIA',
+        text: lang === 'es' ? 'ADVERTENCIA' : 'WARNING',
         badgeClass: 'bg-zinc-800 text-zinc-200 border border-zinc-600',
       };
     default:
