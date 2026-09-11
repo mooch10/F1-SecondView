@@ -6,6 +6,8 @@ interface RaceSimulatorBarProps {
   simLap: number;
   totalLaps: number;
   simSpeed: number;
+  simPreset?: 'race' | 'qualy';
+  onPresetChange?: (preset: 'race' | 'qualy') => void;
   onPlay: () => void;
   onPause: () => void;
   onReset: () => void;
@@ -19,6 +21,8 @@ export const RaceSimulatorBar: React.FC<RaceSimulatorBarProps> = ({
   simLap,
   totalLaps,
   simSpeed,
+  simPreset = 'race',
+  onPresetChange,
   onPlay,
   onPause,
   onReset,
@@ -30,13 +34,40 @@ export const RaceSimulatorBar: React.FC<RaceSimulatorBarProps> = ({
     <div className="bg-[#14161A] border-2 border-[#27F4D2]/40 rounded-sm p-3 flex flex-col gap-2 font-mono select-none shadow-lg">
       {/* Top row: Mode badge & control buttons */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="w-2 h-2 rounded-full bg-[#27F4D2] animate-ping" />
           <span className="text-xs font-bold text-[#27F4D2] uppercase tracking-wider">
             SIMULADOR EN VIVO (MONZA 2024)
           </span>
+
+          {/* Preset Switcher: Carrera vs Clasificación */}
+          <div className="flex items-center bg-[#0B0C0E] border border-white/10 rounded-xs p-0.5 text-[10px] font-bold">
+            <button
+              type="button"
+              onClick={() => onPresetChange?.('race')}
+              className={`px-2 py-0.5 rounded-xs transition-colors cursor-pointer ${
+                simPreset === 'race'
+                  ? 'bg-[#E10600] text-white shadow-xs'
+                  : 'text-[#8E929B] hover:text-white'
+              }`}
+            >
+              CARRERA
+            </button>
+            <button
+              type="button"
+              onClick={() => onPresetChange?.('qualy')}
+              className={`px-2 py-0.5 rounded-xs transition-colors cursor-pointer ${
+                simPreset === 'qualy'
+                  ? 'bg-[#27F4D2] text-[#0B0C0E] font-black shadow-xs'
+                  : 'text-[#8E929B] hover:text-white'
+              }`}
+            >
+              CLASIFICACIÓN
+            </button>
+          </div>
+
           <span className="text-[10px] text-[#8E929B] bg-[#0B0C0E] border border-white/10 px-1.5 py-0.5 rounded-xs">
-            VTA {simLap} / {totalLaps}
+            {simPreset === 'qualy' ? 'RUN' : 'VTA'} {simLap} / {totalLaps}
           </span>
         </div>
 

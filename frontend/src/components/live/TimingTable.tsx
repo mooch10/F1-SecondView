@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Gauge, Zap } from 'lucide-react';
-import type { DriverLive, TyreCompound } from '../../types/f1';
+import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
 
 interface TimingTableProps {
   drivers: DriverLive[];
+  sessionType?: SessionType;
+  qualifyingPhase?: 'Q1' | 'Q2' | 'Q3' | null;
 }
 
-export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
+export const TimingTable: React.FC<TimingTableProps> = ({
+  drivers,
+  sessionType = 'Race',
+}) => {
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
+
+  const isQualy = sessionType === 'Qualifying';
 
   const toggleExpand = (driverNumber: number) => {
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
@@ -17,33 +24,41 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
     if (!tyre) return null;
     const compound = tyre.compound.toUpperCase();
     let letter = 'H';
-    let colorClass = 'border-white text-white bg-white/10';
+    let ringClass = 'border-white text-white bg-white/10';
 
     if (compound.includes('SOFT')) {
       letter = 'S';
-      colorClass = 'border-red-500 text-red-400 bg-red-500/10';
+      ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
     } else if (compound.includes('MEDIUM')) {
       letter = 'M';
-      colorClass = 'border-amber-400 text-amber-300 bg-amber-400/10';
+      ringClass = 'border-[#FFD60A] text-[#FFD60A] bg-[#FFD60A]/10';
     } else if (compound.includes('HARD')) {
       letter = 'H';
-      colorClass = 'border-zinc-200 text-zinc-100 bg-white/10';
+      ringClass = 'border-white text-white bg-white/10';
     } else if (compound.includes('INTER')) {
       letter = 'I';
-      colorClass = 'border-emerald-400 text-emerald-300 bg-emerald-400/10';
+      ringClass = 'border-[#34C759] text-[#34C759] bg-[#34C759]/10';
     } else if (compound.includes('WET')) {
       letter = 'W';
-      colorClass = 'border-blue-500 text-blue-400 bg-blue-500/10';
+      ringClass = 'border-[#007AFF] text-[#007AFF] bg-[#007AFF]/10';
     }
 
     return (
-      <span
-        className={`inline-flex items-center justify-center font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border ${colorClass}`}
-        title={`Neumático ${tyre.compound} (${tyre.laps} vueltas)`}
+      <div
+        className="inline-flex items-center gap-1.5 select-none"
+        title={`Compuesto Pirelli ${tyre.compound} (${tyre.laps} vueltas)`}
       >
-        <span className="font-extrabold">{letter}</span>
-        <span className="text-[8px] opacity-70 ml-0.5 font-tabular">{tyre.laps}v</span>
-      </span>
+        {/* Círculo oficial Pirelli con la letra S / M / H / I / W */}
+        <span
+          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center font-mono font-black text-[11px] leading-none shrink-0 ${ringClass}`}
+        >
+          {letter}
+        </span>
+        {/* Vueltas al costado, bien legible (ej: 38v) */}
+        <span className="font-mono text-xs font-bold text-zinc-300 tabular-nums">
+          {tyre.laps}v
+        </span>
+      </div>
     );
   };
 
@@ -75,23 +90,62 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
 
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
-      {/* Table Header (Promiedos Style) */}
-      <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-        <div className="col-span-1 text-center">POS</div>
-        <div className="col-span-4 sm:col-span-3">PILOTO</div>
-        <div className="col-span-2 text-center">GOMA / PIT</div>
-        <div className="col-span-3 text-right">GAP / INT</div>
-        <div className="col-span-2 sm:col-span-3 text-right">VUELTA</div>
-      </div>
+      {/* Table Header (Polymorphic: Qualy vs Race) */}
+      {isQualy ? (
+        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+          <div className="col-span-1 text-center">POS</div>
+          <div className="col-span-4 sm:col-span-4">PILOTO</div>
+          <div className="col-span-2 sm:col-span-2 text-center">GOMA</div>
+          <div className="col-span-2 sm:col-span-2 text-right">GAP POLE</div>
+          <div className="col-span-3 sm:col-span-3 text-right">MEJOR TIEMPO</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+          <div className="col-span-1 text-center">POS</div>
+          <div className="col-span-4 sm:col-span-3">PILOTO</div>
+          <div className="col-span-2 sm:col-span-2 text-center">GOMA</div>
+          <div className="col-span-1 sm:col-span-1 text-center">PIT</div>
+          <div className="col-span-2 sm:col-span-3 text-right">GAP / INT</div>
+          <div className="col-span-2 sm:col-span-2 text-right">VUELTA</div>
+        </div>
+      )}
 
       {/* Active Driver Rows (P1..P19) */}
       <div className="divide-y divide-white/[0.04]">
         {activeDrivers.map((d) => {
           const isExpanded = expandedDriver === d.driverNumber;
-          const drsActive = isDrsDanger(d.interval, d.isDrsZone);
+          const drsActive = !isQualy && isDrsDanger(d.interval, d.isDrsZone);
+          const showQ2Cutoff = isQualy && d.pos === 11;
+          const showQ1Cutoff = isQualy && d.pos === 16;
 
           return (
             <div key={d.driverNumber} className="flex flex-col">
+              {/* Promiedos-Style Q2 Elimination Barrier (Between P10 and P11) */}
+              {showQ2Cutoff && (
+                <div className="bg-[#2A1215] border-y border-rose-500/40 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                    <span>⛔ ZONA DE CORTE Q2 (ELIMINACIÓN P11 - P15)</span>
+                  </div>
+                  <span className="text-[9px] uppercase tracking-wider text-rose-200 bg-rose-900/60 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold">
+                    TOP 10 A Q3
+                  </span>
+                </div>
+              )}
+
+              {/* Promiedos-Style Q1 Elimination Barrier (Between P15 and P16) */}
+              {showQ1Cutoff && (
+                <div className="bg-[#351014] border-y border-rose-600/50 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                    <span>⛔ ZONA DE CORTE Q1 (ELIMINACIÓN P16 - P20)</span>
+                  </div>
+                  <span className="text-[9px] uppercase tracking-wider text-rose-200 bg-rose-900/60 border border-rose-500/30 px-1.5 py-0.5 rounded font-bold">
+                    ELIMINADOS EN Q1
+                  </span>
+                </div>
+              )}
+
               {/* Level 1: Main Row (Tap to expand) */}
               <button
                 type="button"
@@ -113,35 +167,55 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
                   >
                     {d.pos}
                   </span>
-                  {d.posChange > 0 && (
-                    <span className="text-[9px] text-emerald-400 font-bold font-mono leading-none">
+                  {!isQualy && d.posChange > 0 && (
+                    <span
+                      className="text-[9px] text-emerald-400 font-bold font-mono leading-none"
+                      title={`Largó P${d.gridPosition ?? d.pos}`}
+                    >
                       ▲{d.posChange}
                     </span>
                   )}
-                  {d.posChange < 0 && (
-                    <span className="text-[9px] text-rose-400 font-bold font-mono leading-none">
+                  {!isQualy && d.posChange < 0 && (
+                    <span
+                      className="text-[9px] text-rose-400 font-bold font-mono leading-none"
+                      title={`Largó P${d.gridPosition ?? d.pos}`}
+                    >
                       ▼{Math.abs(d.posChange)}
                     </span>
                   )}
                 </div>
 
                 {/* Team stripe + Code & Number */}
-                <div className="col-span-4 sm:col-span-3 flex items-center gap-2 overflow-hidden">
+                <div
+                  className={`${
+                    isQualy ? 'col-span-4 sm:col-span-4' : 'col-span-4 sm:col-span-3'
+                  } flex items-center gap-2 overflow-hidden`}
+                >
                   <span
                     className="w-1 h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
                   />
                   <div className="flex flex-col leading-tight truncate">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-mono text-sm font-bold text-white tracking-tight">
                         {d.code}
                       </span>
                       <span className="text-[10px] text-zinc-500 font-mono">
                         #{d.driverNumber}
                       </span>
-                      {d.inPit && (
-                        <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
-                          PIT
+                      {/* Active FIA Penalty Badge in Race */}
+                      {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
+                        <span
+                          className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight"
+                          title={`Penalización oficial FIA: +${d.penaltySeconds}s`}
+                        >
+                          +{d.penaltySeconds}s PEN
+                        </span>
+                      )}
+                      {/* Elimination Phase Tag in Qualy */}
+                      {isQualy && d.eliminatedPhase && (
+                        <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                          {d.eliminatedPhase}
                         </span>
                       )}
                     </div>
@@ -151,74 +225,132 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
                   </div>
                 </div>
 
-                {/* Tyre Compound Badge + Pit Stops Count Badge (1P, 2P) */}
-                <div className="col-span-2 flex items-center justify-center gap-1.5">
+                {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado */}
+                <div className="col-span-2 sm:col-span-2 flex items-center justify-center">
                   {getTyreBadge(d.tyre) || (
                     <span className="text-[10px] text-zinc-600 font-mono">-</span>
                   )}
-                  <span
-                    className={`inline-flex items-center justify-center font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border ${
-                      d.inPit
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse'
-                        : (d.pitStops ?? 0) > 0
-                          ? 'bg-[#1C2230] text-zinc-200 border-white/[0.12] shadow-xs'
-                          : 'bg-[#0B0E14] text-zinc-500 border-white/[0.05]'
-                    }`}
-                    title={
-                      d.inPit
-                        ? 'En calle de boxes'
-                        : `${d.pitStops ?? 0} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
-                    }
-                  >
-                    {d.inPit ? 'BOX' : `${d.pitStops ?? 0}P`}
-                  </span>
                 </div>
 
-                {/* Gap & Interval (DRS highlight) */}
-                <div className="col-span-3 text-right flex flex-col justify-center leading-tight">
-                  <span className="font-mono text-xs font-semibold text-zinc-200 font-tabular truncate">
-                    {d.gap}
-                  </span>
-                  {d.interval && d.interval !== 'LEADER' && (
-                    <span
-                      className={`font-mono text-[10px] font-tabular flex items-center justify-end gap-0.5 ${
-                        drsActive
-                          ? 'text-[#27F4D2] font-extrabold animate-pulse'
-                          : 'text-zinc-500'
-                      }`}
-                    >
-                      {drsActive && <Zap className="w-2.5 h-2.5 fill-[#27F4D2]" />}
-                      {d.interval}
-                    </span>
-                  )}
-                </div>
-
-                {/* Last Lap & Fastest Lap Badge */}
-                <div className="col-span-2 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
-                  <div className="flex flex-col leading-tight">
-                    <span
-                      className={`font-mono text-xs font-tabular ${
-                        d.isFastestLap
-                          ? 'text-purple-400 font-extrabold'
-                          : 'text-zinc-300'
-                      }`}
-                    >
-                      {d.lastLapTime || '--:--.---'}
-                    </span>
-                    {d.isFastestLap && (
-                      <span className="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
-                        V. Rápida 🟣
+                {isQualy ? (
+                  <>
+                    {/* Qualy GAP POLE */}
+                    <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight">
+                      <span
+                        className={`font-mono text-xs font-bold font-tabular truncate ${
+                          d.isPole ? 'text-[#FFD60A]' : 'text-zinc-200'
+                        }`}
+                      >
+                        {d.gap}
                       </span>
-                    )}
-                  </div>
-                  <div className="text-zinc-500 hidden sm:block">
-                    {isExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    )}
-                  </div>
-                </div>
+                      {d.interval && d.interval !== 'POLE' && (
+                        <span className="font-mono text-[10px] font-tabular text-zinc-500">
+                          {d.interval}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Qualy MEJOR TIEMPO */}
+                    <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
+                      <div className="flex flex-col leading-tight">
+                        <span
+                          className={`font-mono text-xs font-tabular ${
+                            d.isPole
+                              ? 'text-[#FFD60A] font-black'
+                              : 'text-zinc-200 font-bold'
+                          }`}
+                        >
+                          {d.bestLapTime || d.lastLapTime || '--:--.---'}
+                        </span>
+                        {d.isPole && (
+                          <span className="text-[9px] font-extrabold text-[#FFD60A] uppercase tracking-tighter">
+                            POLE PROVISIONAL 🥇
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-zinc-500 hidden sm:block">
+                        {isExpanded ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Race PIT Stop Counter */}
+                    <div className="col-span-1 sm:col-span-1 flex items-center justify-center">
+                      {d.inPit ? (
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse"
+                          title="En calle de boxes"
+                        >
+                          BOX
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex items-center justify-center font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
+                            (d.pitStops ?? 0) > 0
+                              ? 'bg-[#1C2230] text-zinc-200 border-white/[0.12] shadow-xs'
+                              : 'bg-[#0B0E14] text-zinc-500 border-white/[0.05]'
+                          }`}
+                          title={`${d.pitStops ?? 0} ${
+                            d.pitStops === 1 ? 'parada' : 'paradas'
+                          } en boxes`}
+                        >
+                          {d.pitStops ?? 0}P
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Race Gap & Interval (DRS highlight) */}
+                    <div className="col-span-2 sm:col-span-3 text-right flex flex-col justify-center leading-tight">
+                      <span className="font-mono text-xs font-semibold text-zinc-200 font-tabular truncate">
+                        {d.gap}
+                      </span>
+                      {d.interval && d.interval !== 'LEADER' && (
+                        <span
+                          className={`font-mono text-[10px] font-tabular flex items-center justify-end gap-0.5 ${
+                            drsActive
+                              ? 'text-[#27F4D2] font-extrabold animate-pulse'
+                              : 'text-zinc-500'
+                          }`}
+                        >
+                          {drsActive && <Zap className="w-2.5 h-2.5 fill-[#27F4D2]" />}
+                          {d.interval}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Race Last Lap & Fastest Lap Badge */}
+                    <div className="col-span-2 sm:col-span-2 text-right flex items-center justify-end gap-1.5">
+                      <div className="flex flex-col leading-tight">
+                        <span
+                          className={`font-mono text-xs font-tabular ${
+                            d.isFastestLap
+                              ? 'text-purple-400 font-extrabold'
+                              : 'text-zinc-300'
+                          }`}
+                        >
+                          {d.lastLapTime || '--:--.---'}
+                        </span>
+                        {d.isFastestLap && (
+                          <span className="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
+                            V. Rápida 🟣
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-zinc-500 hidden sm:block">
+                        {isExpanded ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </button>
 
               {/* Level 2: Expanded Micro-Sectors & Details */}
@@ -353,18 +485,22 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
                       </div>
                     </div>
 
-                    {/* Tyre Compound Badge + Pit */}
-                    <div className="col-span-2 flex items-center justify-center gap-1.5">
+                    {/* Columna GOMA: Círculo Oficial Pirelli + Vueltas */}
+                    <div className="col-span-2 sm:col-span-2 flex items-center justify-center">
                       {getTyreBadge(d.tyre) || (
                         <span className="text-[10px] text-zinc-600 font-mono">-</span>
                       )}
-                      <span className="inline-flex items-center justify-center font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border bg-[#0B0E14] text-zinc-500 border-white/[0.05]">
+                    </div>
+
+                    {/* Columna PIT: Separada, conteo de paradas */}
+                    <div className="col-span-1 sm:col-span-1 flex items-center justify-center">
+                      <span className="inline-flex items-center justify-center font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md border bg-[#0B0E14] text-zinc-500 border-white/[0.05]">
                         {d.pitStops ?? 0}P
                       </span>
                     </div>
 
                     {/* Retired Lap / Status */}
-                    <div className="col-span-2 text-right flex flex-col justify-center leading-tight">
+                    <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight">
                       <span className="font-mono text-xs font-semibold text-zinc-300">
                         {d.retiredLap ? `Vta ${d.retiredLap}` : 'RET'}
                       </span>
@@ -374,9 +510,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
                     </div>
 
                     {/* Retirement Cause Badge */}
-                    <div className="col-span-3 text-right flex items-center justify-end gap-1.5">
+                    <div className="col-span-2 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
                       <span
-                        className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 truncate max-w-[130px] sm:max-w-[180px]"
+                        className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 truncate max-w-[120px] sm:max-w-[170px]"
                         title={d.retirementReason || 'Abandono'}
                       >
                         {d.retirementReason || 'Abandono'}

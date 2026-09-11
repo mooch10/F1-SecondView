@@ -103,7 +103,9 @@ export class OpenF1Client {
         }
 
         if (!response.ok) {
-          console.warn(`[OpenF1] Warning: ${endpoint} returned status ${response.status}`);
+          if (response.status !== 404) {
+            console.warn(`[OpenF1] Warning: ${endpoint} returned status ${response.status}`);
+          }
           return [];
         }
 

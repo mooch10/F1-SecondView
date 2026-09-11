@@ -162,47 +162,77 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Session Title & Digital Lap Instrument */}
+      {/* Session Title & Digital Instrument Box */}
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm">
         <div>
           <div className="text-xs font-mono tracking-wider uppercase text-zinc-400">
-            ROUND 16 • {session.circuit.toUpperCase()} ({session.country.toUpperCase()})
+            {session.circuit.toUpperCase()} ({session.country.toUpperCase()})
           </div>
           <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white mt-0.5 uppercase">
-            {session.location} GRAND PRIX
+            {session.location} {session.sessionType === 'Qualifying' ? 'CLASIFICACIÓN' : session.sessionType === 'Practice' ? 'PRÁCTICA' : 'GRAND PRIX'}
           </h1>
         </div>
 
-        {/* Lap Instrument Box */}
-        <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
-          <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
-            VUELTA
-          </span>
-          <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
-            {session.currentLap}
-            <span className="text-xs sm:text-sm font-normal text-zinc-500 ml-1">
-              / {resolvedTotalLaps}
+        {/* Lap / Phase Instrument Box */}
+        {session.sessionType === 'Qualifying' ? (
+          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-cyan-500/30 px-3 py-1.5 rounded-lg shadow-xs">
+            <span className="text-[9px] font-mono font-bold tracking-widest text-[#27F4D2] uppercase">
+              FASE QUALY
             </span>
+            <div className="text-xl sm:text-2xl font-mono font-black tracking-tight text-[#FFD60A] tabular-nums">
+              {session.qualifyingPhase || 'Q1'}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
+            <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+              VUELTA
+            </span>
+            <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
+              {session.currentLap}
+              <span className="text-xs sm:text-sm font-normal text-zinc-500 ml-1">
+                / {resolvedTotalLaps}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Race Progress Bar (Mapeo fidedigno 24 circuitos + gradiente tricolor) */}
+      {/* Progress / Status Bar */}
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-3 py-2 flex flex-col gap-1.5 shadow-sm">
         <div className="flex items-center justify-between text-[10px] font-mono">
           <span className="text-zinc-400 uppercase tracking-wider font-semibold">
-            PROGRESO DEL GRAN PREMIO
+            {session.sessionType === 'Qualifying'
+              ? `CLASIFICACIÓN OFICIAL • FASE ${session.qualifyingPhase || 'Q1'}`
+              : 'PROGRESO DEL GP'}
           </span>
           <span className="font-bold text-white tabular-nums">
-            {session.currentLap} / {resolvedTotalLaps} VUELTAS •{' '}
-            <span className="text-[#FFD60A]">
-              {progressPercent}%
-            </span>
+            {session.sessionType === 'Qualifying' ? (
+              session.poleDriver ? (
+                <>
+                  POLE PROVISIONAL:{' '}
+                  <span className="text-[#FFD60A] font-bold font-mono">
+                    {session.poleDriver} ({session.poleLapTime || '--:--.---'})
+                  </span>
+                </>
+              ) : (
+                <span className="text-[#27F4D2]">TIEMPOS EN VIVO</span>
+              )
+            ) : (
+              <>
+                {session.currentLap} / {resolvedTotalLaps} VUELTAS •{' '}
+                <span className="text-[#FFD60A]">{progressPercent}%</span>
+              </>
+            )}
           </span>
         </div>
         <div className="w-full h-2 bg-[#0B0E14] border border-white/[0.08] rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#E10600] via-[#FF8000] to-[#34C759] transition-all duration-500 rounded-full"
+            className={`h-full transition-all duration-500 rounded-full ${
+              session.sessionType === 'Qualifying'
+                ? 'bg-gradient-to-r from-[#27F4D2] via-[#FFD800] to-[#E10600]'
+                : 'bg-gradient-to-r from-[#E10600] via-[#FF8000] to-[#34C759]'
+            }`}
             style={{
               width: `${progressPercent}%`,
             }}

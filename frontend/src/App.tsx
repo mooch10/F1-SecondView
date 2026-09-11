@@ -31,12 +31,7 @@ export function App() {
     isLiveConnected,
   } = useLiveTelemetry();
 
-  const {
-    isLocked: isWakeLocked,
-    toggleWakeLock,
-    supported: isWakeLockSupported,
-    requestLock,
-  } = useWakeLock();
+  const { requestLock } = useWakeLock();
 
   // Auto-acquire wake lock on live tab so phone screen doesn't sleep while watching TV
   useEffect(() => {
@@ -49,7 +44,10 @@ export function App() {
   const {
     isPlaying: isSimPlaying,
     simLap,
+    totalLaps: simTotalLaps,
     simSpeed,
+    simPreset,
+    setSimPreset,
     simSnapshot,
     toggleSimulation,
     play: playSim,
@@ -80,9 +78,6 @@ export function App() {
         isLiveConnected={isLiveConnected}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
-        isWakeLocked={isWakeLocked}
-        onToggleWakeLock={toggleWakeLock}
-        isWakeLockSupported={isWakeLockSupported}
       />
 
       {/* Main Content Area */}
@@ -146,8 +141,10 @@ export function App() {
                   <RaceSimulatorBar
                     isPlaying={isSimPlaying}
                     simLap={simLap}
-                    totalLaps={53}
+                    totalLaps={simTotalLaps}
                     simSpeed={simSpeed}
+                    simPreset={simPreset}
+                    onPresetChange={setSimPreset}
                     onPlay={playSim}
                     onPause={pauseSim}
                     onReset={resetSim}
@@ -187,7 +184,11 @@ export function App() {
                     <span>SINTONIZANDO TELEMETRÍA EN VIVO...</span>
                   </div>
                 ) : (
-                  <TimingTable drivers={effectiveDrivers} />
+                  <TimingTable
+                    drivers={effectiveDrivers}
+                    sessionType={effectiveSnapshot?.session.sessionType}
+                    qualifyingPhase={effectiveSnapshot?.session.qualifyingPhase}
+                  />
                 )}
               </>
             )}

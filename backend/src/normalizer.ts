@@ -16,9 +16,43 @@ import type {
   RaceControlMessage,
   SessionLive,
   SessionState,
+  SessionType,
   TrackWeather,
   TyreCompound,
 } from './types.js';
+
+function getSessionType(sessionName?: string, sessionType?: string): SessionType {
+  const text = `${sessionName || ''} ${sessionType || ''}`.toLowerCase();
+  if (text.includes('qualifying') || text.includes('shootout') || text.includes('qualy')) {
+    return 'Qualifying';
+  }
+  if (text.includes('practice')) {
+    return 'Practice';
+  }
+  return 'Race';
+}
+
+function getQualifyingPhase(messages: OpenF1RaceControl[] = []): 'Q1' | 'Q2' | 'Q3' | null {
+  if (!Array.isArray(messages) || messages.length === 0) return 'Q1';
+  let phase: 'Q1' | 'Q2' | 'Q3' = 'Q1';
+  for (const m of messages) {
+    const text = m.message?.toUpperCase() || '';
+    if (
+      text.includes('Q3 WILL START') ||
+      text.includes('START OF Q3') ||
+      text.includes('Q3 STARTED')
+    ) {
+      phase = 'Q3';
+    } else if (
+      text.includes('Q2 WILL START') ||
+      text.includes('START OF Q2') ||
+      text.includes('Q2 STARTED')
+    ) {
+      if (phase !== 'Q3') phase = 'Q2';
+    }
+  }
+  return phase;
+}
 
 const CIRCUIT_LAPS: Record<string, number> = {
   bahrain: 57,
@@ -123,31 +157,62 @@ function parseTrackWeather(rawWeather?: OpenF1Weather[]): TrackWeather | null {
 
 export function buildLiveSnapshot(
   session: OpenF1Session | null,
-  rawDrivers: OpenF1Driver[],
-  rawPositions: OpenF1Position[],
-  rawIntervals: OpenF1Interval[],
-  rawStints: OpenF1Stint[],
-  rawLaps: OpenF1Lap[],
-  rawRaceControl: OpenF1RaceControl[],
+  rawDrivers: OpenF1Driver[] = [],
+  rawPositions: OpenF1Position[] = [],
+  rawIntervals: OpenF1Interval[] = [],
+  rawStints: OpenF1Stint[] = [],
+  rawLaps: OpenF1Lap[] = [],
+  rawRaceControl: OpenF1RaceControl[] = [],
   rawWeather: OpenF1Weather[] = [],
 ): LiveSnapshot {
-  // 1. Get latest position per driver
+  const safeDrivers = Array.isArray(rawDrivers) ? rawDrivers : [];
+  const safePositions = Array.isArray(rawPositions) ? rawPositions : [];
+  const safeIntervals = Array.isArray(rawIntervals) ? rawIntervals : [];
+  const safeStints = Array.isArray(rawStints) ? rawStints : [];
+  const safeLaps = Array.isArray(rawLaps) ? rawLaps : [];
+  const safeRaceControl = Array.isArray(rawRaceControl) ? rawRaceControl : [];
+  const safeWeather = Array.isArray(rawWeather) ? rawWeather : [];
+
+  const sessionType = getSessionType(session?.session_name, session?.session_type);
+  const qualifyingPhase = sessionType === 'Qualifying' ? getQualifyingPhase(safeRaceControl) : null;
+
+  // 1. Starting grid mapping (earliest recorded position per driver)
+  const gridPositionByDriver = new Map<number, number>();
+  for (const p of safePositions) {
+    if (!gridPositionByDriver.has(p.driver_number)) {
+      gridPositionByDriver.set(p.driver_number, p.position);
+    }
+  }
+
+  // 2. Steward penalties mapping (sum of time penalties from race control)
+  const penaltiesByDriver = new Map<number, number>();
+  for (const msg of safeRaceControl) {
+    const text = msg.message;
+    const match = text.match(/(\d+)\s*SECOND\s*TIME\s*PENALTY.*?FOR\s*CAR\s*(\d+)/i);
+    if (match) {
+      const sec = Number.parseInt(match[1], 10);
+      const carNum = Number.parseInt(match[2], 10);
+      penaltiesByDriver.set(carNum, (penaltiesByDriver.get(carNum) || 0) + sec);
+    }
+  }
+
+  // 3. Get latest position per driver
   const latestPositionByDriver = new Map<number, number>();
-  for (const p of rawPositions) {
+  for (const p of safePositions) {
     latestPositionByDriver.set(p.driver_number, p.position);
   }
 
-  // 2. Get latest interval per driver
+  // 4. Get latest interval per driver
   const latestIntervalByDriver = new Map<number, OpenF1Interval>();
-  for (const item of rawIntervals) {
+  for (const item of safeIntervals) {
     latestIntervalByDriver.set(item.driver_number, item);
   }
 
-  // 3. Stints grouping & max stint number per driver (to calculate pit stops & tyres)
+  // 5. Stints grouping & max stint number per driver (to calculate pit stops & tyres)
   const latestStintByDriver = new Map<number, OpenF1Stint>();
   const maxStintByDriver = new Map<number, number>();
 
-  for (const s of rawStints) {
+  for (const s of safeStints) {
     const prevMax = maxStintByDriver.get(s.driver_number) || 0;
     if (s.stint_number && s.stint_number > prevMax) {
       maxStintByDriver.set(s.driver_number, s.stint_number);
@@ -158,13 +223,14 @@ export function buildLiveSnapshot(
     }
   }
 
-  // 4. Group all laps by driver & determine overall fastest lap
+  // 6. Group all laps by driver & determine overall fastest lap and best lap per driver
   const lapsByDriver = new Map<number, OpenF1Lap[]>();
+  const bestLapByDriver = new Map<number, number>();
   let fastestLapOverall = Number.POSITIVE_INFINITY;
   let fastestLapDriverNumber: number | null = null;
   let maxLapNumber = 0;
 
-  for (const lap of rawLaps) {
+  for (const lap of safeLaps) {
     if (!lapsByDriver.has(lap.driver_number)) {
       lapsByDriver.set(lap.driver_number, []);
     }
@@ -174,16 +240,24 @@ export function buildLiveSnapshot(
       maxLapNumber = lap.lap_number;
     }
 
-    if (lap.lap_duration && lap.lap_duration > 0 && lap.lap_duration < fastestLapOverall) {
-      fastestLapOverall = lap.lap_duration;
-      fastestLapDriverNumber = lap.driver_number;
+    if (lap.lap_duration && lap.lap_duration > 0) {
+      const currentBest = bestLapByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+      if (lap.lap_duration < currentBest) {
+        bestLapByDriver.set(lap.driver_number, lap.lap_duration);
+      }
+
+      if (lap.lap_duration < fastestLapOverall) {
+        fastestLapOverall = lap.lap_duration;
+        fastestLapDriverNumber = lap.driver_number;
+      }
     }
   }
 
-  // 5. Build DriverLive array with DNF detection and pit stop counts
-  const drivers: DriverLive[] = rawDrivers.map((driver) => {
+  // 7. Build DriverLive array with DNF detection, grid deltas and penalties
+  const drivers: DriverLive[] = safeDrivers.map((driver) => {
     const num = driver.driver_number;
     const pos = latestPositionByDriver.get(num) ?? 99;
+    const gridPos = gridPositionByDriver.get(num);
     const intervalData = latestIntervalByDriver.get(num);
     const stint = latestStintByDriver.get(num);
     const driverLaps = lapsByDriver.get(num) || [];
@@ -192,12 +266,13 @@ export function buildLiveSnapshot(
     const driverMaxLap =
       driverLaps.length > 0 ? Math.max(...driverLaps.map((l) => l.lap_number)) : 0;
 
-    // A driver who stopped recording laps >= 4 laps behind the leader is retired (DNF)
-    const isDnf = maxLapNumber >= 5 && maxLapNumber - driverMaxLap >= 4;
+    // DNF detection: In race, driver stopped recording laps >= 4 behind leader. In qualy, only if explicitly retired
+    const isDnf =
+      sessionType === 'Race' ? maxLapNumber >= 5 && maxLapNumber - driverMaxLap >= 4 : false;
 
     let retirementReason: string | undefined;
     if (isDnf) {
-      const driverRc = rawRaceControl.find((m) => {
+      const driverRc = safeRaceControl.find((m) => {
         const msg = m.message.toUpperCase();
         return (
           msg.includes(`CAR ${num}`) ||
@@ -236,7 +311,12 @@ export function buildLiveSnapshot(
 
     const intervalNum = intervalData?.interval ?? null;
     const isDrsZone =
-      !isDnf && !isLeader && intervalNum !== null && intervalNum > 0 && intervalNum <= 1.0;
+      sessionType === 'Race' &&
+      !isDnf &&
+      !isLeader &&
+      intervalNum !== null &&
+      intervalNum > 0 &&
+      intervalNum <= 1.0;
 
     // Tyre calculations
     let tyreInfo = null;
@@ -260,9 +340,18 @@ export function buildLiveSnapshot(
         : `#${driver.team_colour}`
       : '#71717A';
 
+    const bestLapDuration = bestLapByDriver.get(num) ?? null;
+    const bestLapTime = formatLapTime(bestLapDuration);
+    const penaltySeconds = penaltiesByDriver.get(num);
+
+    // Delta vs starting grid in race: gridPos - pos (e.g. Started 18, now 12 -> +6)
+    const posChange =
+      sessionType === 'Race' && typeof gridPos === 'number' && !isDnf ? gridPos - pos : 0;
+
     return {
       pos: isDnf ? 99 : pos,
-      posChange: 0,
+      posChange,
+      gridPosition: gridPos,
       driverNumber: num,
       code: driver.name_acronym || 'DRV',
       fullName: driver.full_name || driver.broadcast_name || 'Unknown',
@@ -272,7 +361,10 @@ export function buildLiveSnapshot(
       interval: intervalStr,
       isDrsZone,
       lastLapTime: isDnf ? 'OUT' : formatLapTime(latestLap?.lap_duration),
+      bestLapTime,
+      bestLapDuration,
       isFastestLap: !isDnf && fastestLapDriverNumber === num,
+      penaltySeconds,
       tyre: tyreInfo,
       pitStops,
       inPit: latestLap?.is_pit_out_lap || false,
@@ -288,60 +380,138 @@ export function buildLiveSnapshot(
     };
   });
 
-  // Sort drivers: Active drivers by position, DNF drivers at the end
-  drivers.sort((a, b) => {
-    if (a.status === 'DNF' && b.status !== 'DNF') return 1;
-    if (a.status !== 'DNF' && b.status === 'DNF') return -1;
-    return a.pos - b.pos;
-  });
+  // Polymorphic sorting and metrics assignment
+  if (sessionType === 'Qualifying' || sessionType === 'Practice') {
+    // Sort by bestLapDuration ascending (valid lap times first, then drivers without times)
+    drivers.sort((a, b) => {
+      const aDur = typeof a.bestLapDuration === 'number' ? a.bestLapDuration : null;
+      const bDur = typeof b.bestLapDuration === 'number' ? b.bestLapDuration : null;
+      if (aDur !== null && bDur !== null) {
+        return aDur - bDur;
+      }
+      if (aDur !== null && bDur === null) return -1;
+      if (aDur === null && bDur !== null) return 1;
+      return a.driverNumber - b.driverNumber;
+    });
 
-  // Re-index positions for active drivers
-  let currentActivePos = 1;
-  for (const d of drivers) {
-    if (d.status !== 'DNF') {
-      d.pos = currentActivePos++;
+    const poleLapDuration =
+      drivers.length > 0 && typeof drivers[0].bestLapDuration === 'number'
+        ? drivers[0].bestLapDuration
+        : null;
+
+    drivers.forEach((driver, idx) => {
+      driver.pos = idx + 1;
+      const driverDuration =
+        typeof driver.bestLapDuration === 'number' ? driver.bestLapDuration : null;
+
+      if (idx === 0 && poleLapDuration !== null) {
+        driver.isPole = sessionType === 'Qualifying';
+        driver.gap = sessionType === 'Qualifying' ? 'POLE' : 'LÍDER';
+        driver.interval = sessionType === 'Qualifying' ? 'POLE' : 'LÍDER';
+      } else if (poleLapDuration !== null && driverDuration !== null) {
+        driver.isPole = false;
+        driver.gap = formatGap(driverDuration - poleLapDuration, false);
+        const prevDuration =
+          typeof drivers[idx - 1]?.bestLapDuration === 'number'
+            ? (drivers[idx - 1].bestLapDuration as number)
+            : null;
+        driver.interval =
+          prevDuration !== null ? formatGap(driverDuration - prevDuration, false) : '- - -';
+      } else {
+        driver.gap = 'SIN TIEMPO';
+        driver.interval = '- - -';
+      }
+
+      if (sessionType === 'Qualifying') {
+        if (driver.pos > 15) {
+          driver.eliminatedPhase = 'Q1';
+        } else if (driver.pos > 10) {
+          driver.eliminatedPhase = 'Q2';
+        } else {
+          driver.eliminatedPhase = null;
+        }
+      }
+    });
+  } else {
+    // Race: Sort active drivers by position, DNF drivers at the end
+    drivers.sort((a, b) => {
+      if (a.status === 'DNF' && b.status !== 'DNF') return 1;
+      if (a.status !== 'DNF' && b.status === 'DNF') return -1;
+      return a.pos - b.pos;
+    });
+
+    // Re-index positions for active drivers
+    let currentActivePos = 1;
+    for (const d of drivers) {
+      if (d.status !== 'DNF') {
+        d.pos = currentActivePos++;
+      }
     }
   }
 
-  // 6. Build Session Status & Flags
+  // 8. Build Session Status & Flags
   let flag: FlagStatus = 'GREEN';
   let sessionState: SessionState = 'IN_PROGRESS';
 
-  const messages: RaceControlMessage[] = rawRaceControl
+  for (const m of safeRaceControl) {
+    const textUpper = m.message.toUpperCase();
+    if (textUpper.includes('CHEQUERED')) {
+      flag = 'CHEQUERED';
+      sessionState = 'FINISHED';
+    } else if (textUpper.includes('RED FLAG')) {
+      flag = 'RED';
+      sessionState = 'SUSPENDED';
+    } else if (textUpper.includes('SAFETY CAR') && !textUpper.includes('VIRTUAL')) {
+      flag = 'SC';
+    } else if (textUpper.includes('VIRTUAL SAFETY CAR')) {
+      flag = 'VSC';
+    } else if (textUpper.includes('YELLOW')) {
+      flag = 'YELLOW';
+    }
+  }
+
+  const messages: RaceControlMessage[] = safeRaceControl
     .slice(-20)
     .reverse()
-    .map((m, idx) => {
-      const textUpper = m.message.toUpperCase();
-      if (textUpper.includes('CHEQUERED')) {
-        flag = 'CHEQUERED';
-        sessionState = 'FINISHED';
-      } else if (textUpper.includes('RED FLAG')) {
-        flag = 'RED';
-        sessionState = 'SUSPENDED';
-      } else if (textUpper.includes('SAFETY CAR') && !textUpper.includes('VIRTUAL')) {
-        flag = 'SC';
-      } else if (textUpper.includes('VIRTUAL SAFETY CAR')) {
-        flag = 'VSC';
-      } else if (textUpper.includes('YELLOW')) {
-        flag = 'YELLOW';
-      }
+    .map((m, idx) => ({
+      id: idx + 1,
+      time: m.date ? m.date.substring(11, 19) : '--:--:--',
+      text: m.message,
+      flag: m.flag,
+    }));
 
-      return {
-        id: idx + 1,
-        time: m.date ? m.date.substring(11, 19) : '--:--:--',
-        text: m.message,
-        flag: m.flag,
-      };
-    });
-
-  const totalCircuitLaps = getCircuitTotalLaps(session, maxLapNumber);
-  const currentLap = Math.min(maxLapNumber, totalCircuitLaps);
+  const totalCircuitLaps = sessionType === 'Race' ? getCircuitTotalLaps(session, maxLapNumber) : 0;
+  const currentLap =
+    sessionType === 'Race' ? Math.min(maxLapNumber, totalCircuitLaps) : maxLapNumber;
   const progressPercentage =
-    totalCircuitLaps > 0 ? Math.min(100, Math.round((currentLap / totalCircuitLaps) * 100)) : 0;
+    sessionType === 'Race'
+      ? totalCircuitLaps > 0
+        ? Math.min(100, Math.round((currentLap / totalCircuitLaps) * 100))
+        : 0
+      : sessionState === 'FINISHED'
+        ? 100
+        : qualifyingPhase === 'Q3'
+          ? 80
+          : qualifyingPhase === 'Q2'
+            ? 50
+            : 20;
+
+  const poleDriver =
+    sessionType !== 'Race' && drivers.length > 0 && drivers[0].bestLapDuration
+      ? drivers[0].code
+      : null;
+  const poleLapTime =
+    sessionType !== 'Race' && drivers.length > 0 && drivers[0].bestLapDuration
+      ? drivers[0].bestLapTime
+      : null;
 
   const sessionLive: SessionLive = {
     sessionKey: session?.session_key ?? 0,
     sessionName: session?.session_name ?? 'Gran Premio',
+    sessionType,
+    qualifyingPhase,
+    poleDriver,
+    poleLapTime,
     location: session?.location ?? 'Circuito',
     country: session?.country_name ?? '',
     circuit: session?.circuit_short_name ?? '',
@@ -353,7 +523,7 @@ export function buildLiveSnapshot(
     timestamp: Math.floor(Date.now() / 1000),
   };
 
-  const weather = parseTrackWeather(rawWeather);
+  const weather = parseTrackWeather(safeWeather);
 
   return {
     session: sessionLive,

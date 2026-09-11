@@ -6,6 +6,8 @@ export type FlagStatus = 'GREEN' | 'YELLOW' | 'VSC' | 'SC' | 'RED' | 'CHEQUERED'
 
 export type SessionState = 'SCHEDULED' | 'IN_PROGRESS' | 'FINISHED' | 'SUSPENDED';
 
+export type SessionType = 'Race' | 'Qualifying' | 'Practice';
+
 export interface TrackWeather {
   airTemp: number;
   trackTemp: number;
@@ -18,6 +20,7 @@ export interface TrackWeather {
 export interface DriverLive {
   pos: number;
   posChange: number;
+  gridPosition?: number;
   driverNumber: number;
   code: string;
   fullName: string;
@@ -27,7 +30,12 @@ export interface DriverLive {
   interval: string;
   isDrsZone: boolean;
   lastLapTime: string;
+  bestLapTime?: string;
+  bestLapDuration?: number | null;
+  isPole?: boolean;
   isFastestLap: boolean;
+  penaltySeconds?: number;
+  eliminatedPhase?: 'Q1' | 'Q2' | null;
   tyre: {
     compound: TyreCompound;
     laps: number;
@@ -48,6 +56,10 @@ export interface DriverLive {
 export interface SessionLive {
   sessionKey: number;
   sessionName: string;
+  sessionType: SessionType;
+  qualifyingPhase?: 'Q1' | 'Q2' | 'Q3' | null;
+  poleLapTime?: string | null;
+  poleDriver?: string | null;
   location: string;
   country: string;
   circuit: string;

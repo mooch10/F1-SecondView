@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 
 interface NavbarProps {
@@ -9,9 +9,6 @@ interface NavbarProps {
   isLiveConnected: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
-  isWakeLocked?: boolean;
-  onToggleWakeLock?: () => void;
-  isWakeLockSupported?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,9 +18,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   isLiveConnected,
   isDarkMode,
   onToggleTheme,
-  isWakeLocked = false,
-  onToggleWakeLock,
-  isWakeLockSupported = false,
 }) => {
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
@@ -46,34 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Right Status Controls */}
-          <div className="flex items-center gap-2.5">
-            {/* Screen Wake Lock Indicator / Toggle */}
-            {isWakeLockSupported && onToggleWakeLock && (
-              <button
-                type="button"
-                onClick={onToggleWakeLock}
-                title={
-                  isWakeLocked
-                    ? 'Pantalla siempre activa (evita que el celular se apague)'
-                    : 'Activar pantalla encendida continua'
-                }
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono font-bold transition-all border select-none cursor-pointer ${
-                  isWakeLocked
-                    ? 'bg-[#FFD800]/15 text-[#FFD800] border-[#FFD800]/30 shadow-xs'
-                    : 'bg-[#131722] text-zinc-400 border-white/[0.08] hover:text-zinc-200'
-                }`}
-              >
-                <Sun
-                  className={`w-3 h-3 ${
-                    isWakeLocked ? 'text-[#FFD800] fill-[#FFD800]' : 'text-zinc-400'
-                  }`}
-                />
-                <span className="hidden xs:inline">
-                  {isWakeLocked ? 'PANTALLA ON' : 'PANTALLA AUTO'}
-                </span>
-              </button>
-            )}
-
+          <div className="flex items-center gap-3">
             {/* Live Feed Status (Compact pro telemetry style) */}
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-400 tracking-tight select-none">
               <span
@@ -89,14 +56,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </div>
 
-            {/* Discrete Settings / Theme Gear */}
+            {/* Theme Toggle Button: Sol (modo claro) / Luna (modo oscuro) */}
             <button
               type="button"
               onClick={onToggleTheme}
               title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors cursor-pointer"
             >
-              <Settings className="w-3.5 h-3.5" />
+              {isDarkMode ? (
+                <Moon className="w-4 h-4 text-zinc-300 hover:text-white transition-colors" />
+              ) : (
+                <Sun className="w-4 h-4 text-[#FFD60A] hover:text-amber-300 transition-colors" />
+              )}
             </button>
           </div>
         </div>

@@ -158,7 +158,7 @@ export class JolpicaClient {
         sessions.push({
           name: 'Práctica 3',
           dateTime: r.ThirdPractice.time
-            ? `${r.ThirdPractice.date}T${r.ThirdPractice.date}`
+            ? `${r.ThirdPractice.date}T${r.ThirdPractice.time}`
             : `${r.ThirdPractice.date}T11:00:00Z`,
         });
       }

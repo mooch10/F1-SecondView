@@ -6,6 +6,8 @@ interface SyncDelayBarProps {
   onDelayChange: (delay: number) => void;
   onNudge: (delta: number) => void;
 }
+ 
+const MINOR_TICKS = [5, 10, 20, 25, 35, 40];
 
 export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
   delaySeconds,
@@ -13,7 +15,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
   onNudge,
 }) => {
   return (
-    <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3">
+    <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
@@ -30,7 +32,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
               EN VIVO (0s)
             </span>
           ) : (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider font-tabular">
               -{delaySeconds}s RETRASO
             </span>
           )}
@@ -40,7 +42,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
               type="button"
               onClick={() => onDelayChange(0)}
               title="Restablecer a tiempo real (0s)"
-              className="p-1 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-[#1C2230] transition-colors"
+              className="p-1 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-[#1C2230] transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
             </button>
@@ -55,14 +57,14 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
           type="button"
           onClick={() => onNudge(-2)}
           disabled={delaySeconds <= 0}
-          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all"
+          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer select-none"
           title="Restar 2 segundos de retraso"
         >
           -2s
         </button>
 
-        {/* Timeline Scrubber */}
-        <div className="flex-1 flex flex-col justify-center px-1">
+        {/* Timeline Scrubber with Subpixel Alignment */}
+        <div className="flex-1 flex flex-col justify-center">
           <input
             type="range"
             min="0"
@@ -70,26 +72,122 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
             step="1"
             value={delaySeconds}
             onChange={(e) => onDelayChange(Number(e.target.value))}
-            className="w-full h-2 bg-[#0B0E14] rounded-lg appearance-none cursor-pointer accent-[#E10600] border border-white/[0.08]"
+            className="f1-range-slider"
+            title={`Retraso: ${delaySeconds}s`}
           />
-          {/* Broadcast Ruler Marks */}
-          <div className="flex justify-between text-[9px] text-zinc-400 font-mono mt-1 tabular-nums select-none">
-            <span className="flex flex-col items-start">
-              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
-              0s (PISTA)
-            </span>
-            <span className="flex flex-col items-center">
-              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
-              15s (F1 TV)
-            </span>
-            <span className="flex flex-col items-center">
-              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
-              30s (DISNEY+)
-            </span>
-            <span className="flex flex-col items-end">
-              <span className="w-px h-1 bg-white/[0.12] mb-0.5" />
-              45s
-            </span>
+
+          {/* Broadcast Ruler Marks with Exact Pixel Alignment */}
+          <div className="relative w-full h-7 mt-0.5 select-none">
+            {/* Minor calibration ticks at every 5s */}
+            {MINOR_TICKS.map((tickVal) => (
+              <div
+                key={tickVal}
+                className="absolute top-0 w-px h-1.5 bg-zinc-600 dark:bg-white/20 -translate-x-1/2 pointer-events-none"
+                style={{ left: `calc(8px + (100% - 16px) * (${tickVal} / 45))` }}
+              />
+            ))}
+
+            {/* Major Preset 1: 0s (PISTA) */}
+            <button
+              type="button"
+              onClick={() => onDelayChange(0)}
+              title="Sincronizar en tiempo real con pista (0s)"
+              className="absolute top-0 left-0 flex flex-col items-start cursor-pointer group text-left"
+            >
+              <span
+                className={`w-0.5 h-2 rounded-full mb-0.5 ml-[7px] transition-colors ${
+                  delaySeconds === 0
+                    ? 'bg-[#E10600] h-2.5 shadow-sm'
+                    : 'bg-zinc-400 dark:bg-white/35 group-hover:bg-[#E10600]'
+                }`}
+              />
+              <span
+                className={`text-[9px] sm:text-[10px] font-mono leading-none tracking-tight transition-colors ${
+                  delaySeconds === 0
+                    ? 'text-[#E10600] font-bold'
+                    : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
+                }`}
+              >
+                0s (PISTA)
+              </span>
+            </button>
+
+            {/* Major Preset 2: 15s (F1 TV) */}
+            <button
+              type="button"
+              onClick={() => onDelayChange(15)}
+              title="Sincronizar con transmisión de F1 TV (15s)"
+              className="absolute top-0 -translate-x-1/2 flex flex-col items-center cursor-pointer group text-center"
+              style={{ left: 'calc(8px + (100% - 16px) * (15 / 45))' }}
+            >
+              <span
+                className={`w-0.5 h-2 rounded-full mb-0.5 transition-colors ${
+                  delaySeconds === 15
+                    ? 'bg-[#E10600] h-2.5 shadow-sm'
+                    : 'bg-zinc-400 dark:bg-white/35 group-hover:bg-[#E10600]'
+                }`}
+              />
+              <span
+                className={`text-[9px] sm:text-[10px] font-mono leading-none tracking-tight whitespace-nowrap transition-colors ${
+                  delaySeconds === 15
+                    ? 'text-[#E10600] font-bold'
+                    : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
+                }`}
+              >
+                15s (F1 TV)
+              </span>
+            </button>
+
+            {/* Major Preset 3: 30s (DISNEY+) */}
+            <button
+              type="button"
+              onClick={() => onDelayChange(30)}
+              title="Sincronizar con transmisión de Disney+ (30s)"
+              className="absolute top-0 -translate-x-1/2 flex flex-col items-center cursor-pointer group text-center"
+              style={{ left: 'calc(8px + (100% - 16px) * (30 / 45))' }}
+            >
+              <span
+                className={`w-0.5 h-2 rounded-full mb-0.5 transition-colors ${
+                  delaySeconds === 30
+                    ? 'bg-[#E10600] h-2.5 shadow-sm'
+                    : 'bg-zinc-400 dark:bg-white/35 group-hover:bg-[#E10600]'
+                }`}
+              />
+              <span
+                className={`text-[9px] sm:text-[10px] font-mono leading-none tracking-tight whitespace-nowrap transition-colors ${
+                  delaySeconds === 30
+                    ? 'text-[#E10600] font-bold'
+                    : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
+                }`}
+              >
+                30s (DISNEY+)
+              </span>
+            </button>
+
+            {/* Major Preset 4: 45s */}
+            <button
+              type="button"
+              onClick={() => onDelayChange(45)}
+              title="Retraso máximo (45s)"
+              className="absolute top-0 right-0 flex flex-col items-end cursor-pointer group text-right"
+            >
+              <span
+                className={`w-0.5 h-2 rounded-full mb-0.5 mr-[7px] transition-colors ${
+                  delaySeconds === 45
+                    ? 'bg-[#E10600] h-2.5 shadow-sm'
+                    : 'bg-zinc-400 dark:bg-white/35 group-hover:bg-[#E10600]'
+                }`}
+              />
+              <span
+                className={`text-[9px] sm:text-[10px] font-mono leading-none tracking-tight whitespace-nowrap transition-colors ${
+                  delaySeconds === 45
+                    ? 'text-[#E10600] font-bold'
+                    : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
+                }`}
+              >
+                45s
+              </span>
+            </button>
           </div>
         </div>
 
@@ -98,7 +196,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
           type="button"
           onClick={() => onNudge(2)}
           disabled={delaySeconds >= 45}
-          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1"
+          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer select-none"
           title="Sumar 2 segundos de retraso"
         >
           <span>+2s</span>
