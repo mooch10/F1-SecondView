@@ -55,11 +55,48 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
   }
 }
 
+// In-memory IP Rate Limiter (sliding window 60s, max 120 reqs/min)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + 60000 });
+    return true;
+  }
+  if (record.count >= 120) {
+    return false;
+  }
+  record.count++;
+  return true;
+}
+
+// Clean up expired rate limit entries every 5 minutes
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [ip, record] of rateLimitMap.entries()) {
+      if (now > record.resetTime) {
+        rateLimitMap.delete(ip);
+      }
+    }
+  },
+  5 * 60 * 1000,
+);
+
 const server = createServer(async (req, res) => {
-  // Global CORS Headers
+  const clientIp =
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    req.socket.remoteAddress ||
+    '127.0.0.1';
+
+  // Global Security & CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -67,84 +104,110 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  const url = new URL(req.url || '/', `http://${req.headers.host}`);
+  // Rate Limiting (Healthcheck is exempted)
+  if (req.url !== '/health' && !checkRateLimit(clientIp)) {
+    res.writeHead(429, {
+      'Content-Type': 'application/json',
+      'Retry-After': '60',
+    });
+    res.end(JSON.stringify({ error: 'Too Many Requests. Rate limit exceeded.' }));
+    return;
+  }
 
-  // Endpoint 1: Live Timing (High-frequency, 1s Edge Cache)
-  if (url.pathname === '/api/live.json' || url.pathname === '/api/live') {
-    if (!cachedSnapshot) {
-      await updateSnapshot();
+  try {
+    const url = new URL(req.url || '/', `http://${req.headers.host}`);
+
+    // Endpoint 1: Live Timing (High-frequency, 1s Edge Cache)
+    if (url.pathname === '/api/live.json' || url.pathname === '/api/live') {
+      if (!cachedSnapshot) {
+        await updateSnapshot();
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=1, stale-while-revalidate=1',
+      });
+      res.end(JSON.stringify(cachedSnapshot || { error: 'No data available' }, null, 2));
+      return;
     }
 
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=1, stale-while-revalidate=1',
-    });
-    res.end(JSON.stringify(cachedSnapshot || { error: 'No data available' }, null, 2));
-    return;
-  }
+    // Endpoint 2: Schedule & Race Calendar (Low-frequency, 1h Edge Cache)
+    if (url.pathname === '/api/schedule.json' || url.pathname === '/api/schedule') {
+      const [races, lastRace] = await Promise.all([
+        jolpica.getSchedule(),
+        jolpica.getLastRacePodium(),
+      ]);
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      });
+      res.end(JSON.stringify({ races, total: races.length, lastRace }, null, 2));
+      return;
+    }
 
-  // Endpoint 2: Schedule & Race Calendar (Low-frequency, 1h Edge Cache)
-  if (url.pathname === '/api/schedule.json' || url.pathname === '/api/schedule') {
-    const [races, lastRace] = await Promise.all([
-      jolpica.getSchedule(),
-      jolpica.getLastRacePodium(),
-    ]);
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-    });
-    res.end(JSON.stringify({ races, total: races.length, lastRace }, null, 2));
-    return;
-  }
+    // Endpoint 3: World Championship Standings (Low-frequency, 1h Edge Cache)
+    if (url.pathname === '/api/standings.json' || url.pathname === '/api/standings') {
+      const standings = await jolpica.getStandings();
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      });
+      res.end(JSON.stringify(standings, null, 2));
+      return;
+    }
 
-  // Endpoint 3: World Championship Standings (Low-frequency, 1h Edge Cache)
-  if (url.pathname === '/api/standings.json' || url.pathname === '/api/standings') {
-    const standings = await jolpica.getStandings();
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-    });
-    res.end(JSON.stringify(standings, null, 2));
-    return;
-  }
+    // Endpoint 4: Qualifying Session Results (Low-frequency, 1h Edge Cache)
+    if (url.pathname === '/api/qualifying.json' || url.pathname === '/api/qualifying') {
+      const qualifying = await jolpica.getQualifying();
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      });
+      res.end(JSON.stringify(qualifying || { error: 'No data available' }, null, 2));
+      return;
+    }
 
-  // Endpoint 4: Qualifying Session Results (Low-frequency, 1h Edge Cache)
-  if (url.pathname === '/api/qualifying.json' || url.pathname === '/api/qualifying') {
-    const qualifying = await jolpica.getQualifying();
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-    });
-    res.end(JSON.stringify(qualifying || { error: 'No data available' }, null, 2));
-    return;
-  }
+    // Endpoint 5: Race Results (Last GP or by ?round=X) (Low-frequency, 1h Edge Cache)
+    if (
+      url.pathname === '/api/race-results.json' ||
+      url.pathname === '/api/race-results' ||
+      url.pathname === '/api/last-race.json' ||
+      url.pathname === '/api/last-race'
+    ) {
+      let roundParam = url.searchParams.get('round') || 'last';
+      if (roundParam !== 'last') {
+        const roundNum = Number.parseInt(roundParam, 10);
+        if (Number.isNaN(roundNum) || roundNum < 1 || roundNum > 35) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Parámetro de ronda inválido (1-35 o "last")' }));
+          return;
+        }
+        roundParam = String(roundNum);
+      }
 
-  // Endpoint 5: Race Results (Last GP or by ?round=X) (Low-frequency, 1h Edge Cache)
-  if (
-    url.pathname === '/api/race-results.json' ||
-    url.pathname === '/api/race-results' ||
-    url.pathname === '/api/last-race.json' ||
-    url.pathname === '/api/last-race'
-  ) {
-    const roundParam = url.searchParams.get('round') || 'last';
-    const raceDetail = await jolpica.getRaceResults(roundParam);
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-    });
-    res.end(JSON.stringify(raceDetail || { error: 'No data available' }, null, 2));
-    return;
-  }
+      const raceDetail = await jolpica.getRaceResults(roundParam);
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      });
+      res.end(JSON.stringify(raceDetail || { error: 'No data available' }, null, 2));
+      return;
+    }
 
-  // Healthcheck Endpoint
-  if (url.pathname === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
-    return;
-  }
+    // Healthcheck Endpoint
+    if (url.pathname === '/health') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
+      return;
+    }
 
-  res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ error: 'Not Found' }));
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not Found' }));
+  } catch (error) {
+    console.error('[Server] Unhandled request error:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Internal Server Error' }));
+  }
 });
 
 // Initial update and server start
