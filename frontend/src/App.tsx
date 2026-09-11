@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { BetweenRacesView } from './components/live/BetweenRacesView';
 import { FlagBanner } from './components/live/FlagBanner';
-import { FolkloreReactions } from './components/live/FolkloreReactions';
 import { RaceControlFeed } from './components/live/RaceControlFeed';
 import { RaceSimulatorBar } from './components/live/RaceSimulatorBar';
 import { SyncDelayBar } from './components/live/SyncDelayBar';
@@ -174,9 +173,6 @@ export function App() {
 
                 {/* FIA Race Control Official Ticker */}
                 <RaceControlFeed messages={effectiveSnapshot?.messages || []} />
-
-                {/* Live Folklore Reactions (Promiedos Style) */}
-                <FolkloreReactions />
 
                 {/* 2-Tier Timing Table (Promiedos Style) with Pit Stops & DNF */}
                 {isLoading && !isSimulating ? (

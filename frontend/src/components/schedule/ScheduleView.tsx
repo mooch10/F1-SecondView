@@ -27,6 +27,7 @@ export const ScheduleView: React.FC = () => {
     if (!nextRace?.raceDateTime) return;
 
     const targetDate = new Date(nextRace.raceDateTime).getTime();
+    if (isNaN(targetDate)) return;
 
     const updateCountdown = () => {
       const now = Date.now();
@@ -55,24 +56,28 @@ export const ScheduleView: React.FC = () => {
   };
 
   const formatLocalDate = (dateStr: string) => {
+    if (!dateStr) return 'A confirmar';
     try {
       const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'A confirmar';
       return d.toLocaleDateString(undefined, {
         weekday: 'short',
         day: '2-digit',
         month: 'short',
       });
     } catch {
-      return dateStr;
+      return 'A confirmar';
     }
   };
 
-  const formatLocalTime = (dateStr: string) => {
+  const formatLocalTime = (dateStr: string): string | null => {
+    if (!dateStr) return null;
     try {
       const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return null;
       return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch {
-      return '';
+      return null;
     }
   };
 
@@ -234,9 +239,15 @@ export const ScheduleView: React.FC = () => {
                             <span className="text-zinc-400 text-[11px]">
                               {formatLocalDate(s.dateTime)}
                             </span>
-                            <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
-                              {formatLocalTime(s.dateTime)} HS
-                            </span>
+                            {formatLocalTime(s.dateTime) ? (
+                              <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
+                                {formatLocalTime(s.dateTime)} HS
+                              </span>
+                            ) : (
+                              <span className="text-zinc-500 bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md text-[10px]">
+                                A CONFIRMAR
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))}

@@ -56,6 +56,13 @@ function getTeamColor(constructorId: string): string {
   return '#71717A';
 }
 
+function formatSessionDateTime(date?: string, time?: string, defaultTime = '12:00:00Z'): string {
+  if (!date) return '';
+  if (!time) return `${date}T${defaultTime}`;
+  const cleanTime = time.endsWith('Z') ? time : `${time}Z`;
+  return `${date}T${cleanTime}`;
+}
+
 export class JolpicaClient {
   private baseUrl = 'https://api.jolpi.ca/ergast/f1';
   private timeoutMs = 7000;
@@ -120,7 +127,7 @@ export class JolpicaClient {
     let foundNext = false;
 
     const races: JolpicaRace[] = raw.MRData.RaceTable.Races.map((r) => {
-      const raceDateTime = r.time ? `${r.date}T${r.time}` : `${r.date}T12:00:00Z`;
+      const raceDateTime = formatSessionDateTime(r.date, r.time, '12:00:00Z');
       const isPast = raceDateTime < now;
       let isNext = false;
 
@@ -133,41 +140,35 @@ export class JolpicaClient {
       if (r.FirstPractice) {
         sessions.push({
           name: 'Práctica 1',
-          dateTime: r.FirstPractice.time
-            ? `${r.FirstPractice.date}T${r.FirstPractice.time}`
-            : `${r.FirstPractice.date}T10:00:00Z`,
+          dateTime: formatSessionDateTime(r.FirstPractice.date, r.FirstPractice.time, '10:00:00Z'),
         });
       }
       if (r.SecondPractice) {
         sessions.push({
           name: 'Práctica 2',
-          dateTime: r.SecondPractice.time
-            ? `${r.SecondPractice.date}T${r.SecondPractice.time}`
-            : `${r.SecondPractice.date}T14:00:00Z`,
+          dateTime: formatSessionDateTime(
+            r.SecondPractice.date,
+            r.SecondPractice.time,
+            '14:00:00Z',
+          ),
         });
       }
       if (r.Sprint) {
         sessions.push({
           name: 'Sprint',
-          dateTime: r.Sprint.time
-            ? `${r.Sprint.date}T${r.Sprint.time}`
-            : `${r.Sprint.date}T11:00:00Z`,
+          dateTime: formatSessionDateTime(r.Sprint.date, r.Sprint.time, '11:00:00Z'),
         });
       }
       if (r.ThirdPractice) {
         sessions.push({
           name: 'Práctica 3',
-          dateTime: r.ThirdPractice.time
-            ? `${r.ThirdPractice.date}T${r.ThirdPractice.time}`
-            : `${r.ThirdPractice.date}T11:00:00Z`,
+          dateTime: formatSessionDateTime(r.ThirdPractice.date, r.ThirdPractice.time, '11:00:00Z'),
         });
       }
       if (r.Qualifying) {
         sessions.push({
           name: 'Clasificación',
-          dateTime: r.Qualifying.time
-            ? `${r.Qualifying.date}T${r.Qualifying.time}`
-            : `${r.Qualifying.date}T15:00:00Z`,
+          dateTime: formatSessionDateTime(r.Qualifying.date, r.Qualifying.time, '15:00:00Z'),
         });
       }
       sessions.push({

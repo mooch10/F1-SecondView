@@ -8,6 +8,19 @@ interface TimingTableProps {
   qualifyingPhase?: 'Q1' | 'Q2' | 'Q3' | null;
 }
 
+const F1_POINTS: Record<number, number> = {
+  1: 25,
+  2: 18,
+  3: 15,
+  4: 12,
+  5: 10,
+  6: 8,
+  7: 6,
+  8: 4,
+  9: 2,
+  10: 1,
+};
+
 export const TimingTable: React.FC<TimingTableProps> = ({
   drivers,
   sessionType = 'Race',
@@ -15,6 +28,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
 
   const isQualy = sessionType === 'Qualifying';
+  const isRace = sessionType === 'Race';
 
   const toggleExpand = (driverNumber: number) => {
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
@@ -112,14 +126,30 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
       {/* Active Driver Rows (P1..P19) */}
       <div className="divide-y divide-white/[0.04]">
-        {activeDrivers.map((d) => {
+        {activeDrivers.map((d, index) => {
           const isExpanded = expandedDriver === d.driverNumber;
           const drsActive = !isQualy && isDrsDanger(d.interval, d.isDrsZone);
-          const showQ2Cutoff = isQualy && d.pos === 11;
-          const showQ1Cutoff = isQualy && d.pos === 16;
+          const prevDriver = index > 0 ? activeDrivers[index - 1] : null;
+          const isPointsZone = isRace && d.pos <= 10;
+          const showPointsCutoff = isRace && d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
+          const showQ2Cutoff = isQualy && d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
+          const showQ1Cutoff = isQualy && d.pos > 15 && (!prevDriver || prevDriver.pos <= 15);
 
           return (
             <div key={d.driverNumber} className="flex flex-col">
+              {/* Promiedos-Style Official F1 Points Cutoff Barrier (Between P10 and P11) */}
+              {showPointsCutoff && (
+                <div className="bg-[#0b1c14] border-y border-emerald-500/40 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-emerald-300 select-none shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>🏁 LÍMITE ZONA DE PUNTOS · TOP 10 SUMAN AL CAMPEONATO</span>
+                  </div>
+                  <span className="text-[9px] uppercase tracking-wider text-emerald-200 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                    P11 - P20 SIN PUNTOS
+                  </span>
+                </div>
+              )}
+
               {/* Promiedos-Style Q2 Elimination Barrier (Between P10 and P11) */}
               {showQ2Cutoff && (
                 <div className="bg-[#2A1215] border-y border-rose-500/40 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300 select-none shadow-xs">
@@ -152,37 +182,43 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 onClick={() => toggleExpand(d.driverNumber)}
                 className={`w-full text-left grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors select-none ${
                   isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
-                } ${drsActive ? 'bg-emerald-950/10' : ''}`}
+                } ${drsActive ? 'bg-emerald-950/10' : ''} ${
+                  isPointsZone ? 'border-l-2 border-emerald-500/60' : 'border-l-2 border-transparent'
+                }`}
               >
-                {/* Pos & Movement */}
-                <div className="col-span-1 flex items-center justify-center gap-0.5">
-                  <span
-                    className={`font-mono text-sm font-black font-tabular ${
-                      d.pos === 1
-                        ? 'text-[#FFD60A]'
-                        : d.pos <= 3
-                        ? 'text-white'
-                        : 'text-zinc-300'
-                    }`}
-                  >
-                    {d.pos}
-                  </span>
-                  {!isQualy && d.posChange > 0 && (
+                {/* Pos & Movement (Posición fija e inmutable; badge flotante sin desplazamiento) */}
+                <div className="col-span-1 flex items-center justify-center">
+                  <div className="relative flex items-center justify-center w-5">
                     <span
-                      className="text-[9px] text-emerald-400 font-bold font-mono leading-none"
-                      title={`Largó P${d.gridPosition ?? d.pos}`}
+                      className={`font-mono text-sm font-black font-tabular text-center ${
+                        d.pos === 1
+                          ? 'text-[#FFD60A]'
+                          : d.pos <= 3
+                          ? 'text-white'
+                          : isPointsZone
+                          ? 'text-emerald-300'
+                          : 'text-zinc-400'
+                      }`}
                     >
-                      ▲{d.posChange}
+                      {d.pos}
                     </span>
-                  )}
-                  {!isQualy && d.posChange < 0 && (
-                    <span
-                      className="text-[9px] text-rose-400 font-bold font-mono leading-none"
-                      title={`Largó P${d.gridPosition ?? d.pos}`}
-                    >
-                      ▼{Math.abs(d.posChange)}
-                    </span>
-                  )}
+                    {!isQualy && d.posChange > 0 && (
+                      <span
+                        className="absolute left-full ml-0.5 top-1/2 -translate-y-1/2 text-[9px] text-emerald-400 font-bold font-mono leading-none whitespace-nowrap select-none"
+                        title={`Largó P${d.gridPosition ?? d.pos}`}
+                      >
+                        ▲{d.posChange}
+                      </span>
+                    )}
+                    {!isQualy && d.posChange < 0 && (
+                      <span
+                        className="absolute left-full ml-0.5 top-1/2 -translate-y-1/2 text-[9px] text-rose-400 font-bold font-mono leading-none whitespace-nowrap select-none"
+                        title={`Largó P${d.gridPosition ?? d.pos}`}
+                      >
+                        ▼{Math.abs(d.posChange)}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Team stripe + Code & Number */}
@@ -203,6 +239,15 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       <span className="text-[10px] text-zinc-500 font-mono">
                         #{d.driverNumber}
                       </span>
+                      {/* Official Championship Points Badge in Race */}
+                      {isRace && F1_POINTS[d.pos] && (
+                        <span
+                          className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 tracking-tight shadow-xs"
+                          title={`Zona de puntos: +${F1_POINTS[d.pos]} pts para el Campeonato Mundial`}
+                        >
+                          +{F1_POINTS[d.pos]} PTS
+                        </span>
+                      )}
                       {/* Active FIA Penalty Badge in Race */}
                       {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span
@@ -369,7 +414,20 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         ({d.teamName})
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {isRace && (
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                            F1_POINTS[d.pos]
+                              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                              : 'bg-white/[0.04] text-zinc-500 border border-white/[0.06]'
+                          }`}
+                        >
+                          {F1_POINTS[d.pos]
+                            ? `+${F1_POINTS[d.pos]} PTS CAMPEONATO`
+                            : 'FUERA DE PUNTOS (0 PTS)'}
+                        </span>
+                      )}
                       <span className="font-mono text-[10px] text-zinc-400">
                         Paradas: <strong className="text-white">{d.pitStops ?? 0}</strong>
                       </span>
