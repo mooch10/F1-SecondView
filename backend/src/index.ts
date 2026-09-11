@@ -31,6 +31,8 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       data.laps,
       data.raceControl,
       data.weather,
+      data.locations,
+      data.trackOutline,
     );
 
     // Maintain a 45-second sliding history in memory (up to 30 snapshots)
@@ -213,9 +215,9 @@ const server = createServer(async (req, res) => {
 // Initial update and server start
 await updateSnapshot();
 
-server.listen(PORT, () => {
-  console.log(`[Rebufo API] Server running at http://localhost:${PORT}`);
-  console.log('[Rebufo API] Endpoints available:');
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[Delta API] Server running at http://localhost:${PORT}`);
+  console.log('[Delta API] Endpoints available:');
   console.log(`- GET http://localhost:${PORT}/api/live.json`);
   console.log(`- GET http://localhost:${PORT}/api/schedule.json`);
   console.log(`- GET http://localhost:${PORT}/api/standings.json`);

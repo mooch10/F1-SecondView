@@ -2,6 +2,7 @@ import { Radio } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { BetweenRacesView } from './components/live/BetweenRacesView';
+import { CircuitMap } from './components/live/CircuitMap';
 import { FlagBanner } from './components/live/FlagBanner';
 import { RaceControlFeed } from './components/live/RaceControlFeed';
 import { SyncDelayBar } from './components/live/SyncDelayBar';
@@ -124,7 +125,15 @@ function App() {
                   drivers={drivers}
                 />
 
-                {/* 2-Tier Timing Table (Promiedos Style) with Pit Stops & DNF */}
+                {/* Real-time 2D Interactive Circuit Map */}
+                <CircuitMap
+                  circuitTrack={snapshot?.circuitTrack}
+                  drivers={drivers}
+                  sessionName={snapshot?.session.sessionName}
+                  circuitName={snapshot?.session.circuit}
+                />
+
+                {/* 2-Tier Timing Table with Pit Stops & DNF */}
                 <TimingTable
                   drivers={drivers}
                   sessionType={snapshot?.session.sessionType}
@@ -170,7 +179,9 @@ function App() {
 
         {activeTab === 'last-race' && <LastRaceView />}
 
-        {activeTab === 'qualy' && <QualifyingView />}
+        {activeTab === 'qualy' && (
+          <QualifyingView liveSnapshot={snapshot} liveDrivers={drivers} />
+        )}
 
         {activeTab === 'schedule' && <ScheduleView />}
 
@@ -178,12 +189,12 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-4 px-4 text-center text-[10px] text-zinc-500 font-mono bg-[#0B0E14]">
+      <footer className="border-t border-white/[0.06] py-3.5 px-4 text-[10px] text-zinc-500 font-mono bg-[#0B0E14]">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-zinc-300">
-            <span className="text-[#E10600]">REBUFO</span> • {t.footer.subtitle}
+          <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-zinc-300 whitespace-nowrap">
+            <span className="text-[#E10600]">DELTA</span> • {t.footer.subtitle}
           </div>
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-zinc-500 whitespace-nowrap">
             {t.footer.disclaimer}
           </p>
         </div>

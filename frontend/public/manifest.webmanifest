@@ -1,7 +1,7 @@
 {
-  "name": "Rebufo • F1 Second-Screen",
-  "short_name": "Rebufo",
-  "description": "Telemetría y cronometraje en tiempo real para Fórmula 1",
+  "name": "Delta • F1 Second-Screen",
+  "short_name": "Delta",
+  "description": "Telemetría y datos en tiempo real para Fórmula 1",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B0E14",

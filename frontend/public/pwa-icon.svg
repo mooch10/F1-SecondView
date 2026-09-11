@@ -17,15 +17,14 @@
   <!-- Background Base -->
   <rect width="512" height="512" rx="110" fill="url(#bg)" stroke="#222836" stroke-width="8" />
 
-  <!-- Speed Streaks (Rebufo Aerodynamic Airflow) -->
+  <!-- Speed Streaks (Delta Aerodynamic Airflow) -->
   <path d="M70 380 L180 130 L225 130 L115 380 Z" fill="url(#cyanStreak)" opacity="0.85" />
   <path d="M150 380 L260 130 L305 130 L195 380 Z" fill="url(#redGlow)" />
 
-  <!-- Stylized "R" Monogram -->
+  <!-- Stylized "D" Monogram -->
   <g transform="translate(195, 140) skewX(-16)" fill="#FFFFFF">
     <rect x="30" y="0" width="38" height="230" rx="6" />
-    <path d="M68 0 H140 C175 0 200 22 200 58 C200 94 175 116 140 116 H68 Z" />
-    <path d="M110 110 L180 230 H135 L70 120 Z" />
+    <path d="M68 0 H130 C185 0 215 45 215 115 C215 185 185 230 130 230 H68 Z M98 38 V192 H125 C160 192 178 165 178 115 C178 65 160 38 125 38 Z" />
   </g>
 
   <!-- DRS Pulse Dot -->

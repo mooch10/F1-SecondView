@@ -44,14 +44,29 @@ export interface OpenF1Stint {
 }
 
 export interface OpenF1Lap {
+  date_start?: string;
   driver_number: number;
   lap_number: number;
   lap_duration: number | null;
   duration_sector_1: number | null;
   duration_sector_2: number | null;
   duration_sector_3: number | null;
+  segments_sector_1?: (number | null)[];
+  segments_sector_2?: (number | null)[];
+  segments_sector_3?: (number | null)[];
+  i1_speed?: number | null;
+  i2_speed?: number | null;
   st_speed: number | null;
   is_pit_out_lap: boolean;
+}
+
+export interface OpenF1Location {
+  date: string;
+  session_key: number;
+  driver_number: number;
+  x: number;
+  y: number;
+  z: number;
 }
 
 export interface OpenF1RaceControl {
@@ -60,6 +75,7 @@ export interface OpenF1RaceControl {
   flag: string | null;
   message: string;
   scope: string | null;
+  qualifying_phase?: number | null;
 }
 
 export interface OpenF1Weather {
@@ -79,6 +95,14 @@ export class OpenF1Client {
   private timeoutMs = 8000;
   private driversCache = new Map<number, OpenF1Driver[]>();
   private sessionCache = new Map<number, OpenF1Session>();
+  private trackOutlineCache = new Map<
+    number,
+    {
+      circuitName: string;
+      outline: [number, number][];
+      bounds: { minX: number; maxX: number; minY: number; maxY: number };
+    }
+  >();
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -173,6 +197,75 @@ export class OpenF1Client {
     return this.fetchJson<OpenF1Weather>(`/weather?session_key=${sessionKey}`);
   }
 
+  async getCarLocations(sessionKey: number, dateStart?: string): Promise<OpenF1Location[]> {
+    const query = dateStart
+      ? `/location?session_key=${sessionKey}&date>=${encodeURIComponent(dateStart)}`
+      : `/location?session_key=${sessionKey}`;
+    return this.fetchJson<OpenF1Location>(query);
+  }
+
+  async getTrackOutline(
+    sessionKey: number,
+    circuitName: string,
+    laps: OpenF1Lap[],
+  ): Promise<{
+    circuitName: string;
+    outline: [number, number][];
+    bounds: { minX: number; maxX: number; minY: number; maxY: number };
+  } | null> {
+    if (this.trackOutlineCache.has(sessionKey)) {
+      return this.trackOutlineCache.get(sessionKey) || null;
+    }
+
+    const validLap = laps.find(
+      (l) =>
+        !l.is_pit_out_lap &&
+        typeof l.lap_duration === 'number' &&
+        l.lap_duration > 60 &&
+        l.lap_duration < 130 &&
+        Boolean(l.date_start),
+    );
+
+    if (!validLap || !validLap.date_start) return null;
+
+    try {
+      const startTime = new Date(validLap.date_start);
+      const lapDur = typeof validLap.lap_duration === 'number' ? validLap.lap_duration : 90;
+      const endTime = new Date(startTime.getTime() + (lapDur + 3) * 1000);
+
+      const locs = await this.fetchJson<OpenF1Location>(
+        `/location?session_key=${sessionKey}&driver_number=${validLap.driver_number}&date>=${encodeURIComponent(
+          startTime.toISOString(),
+        )}&date<=${encodeURIComponent(endTime.toISOString())}`,
+      );
+
+      const validPoints = locs.filter((p) => p.x !== 0 || p.y !== 0);
+      if (validPoints.length < 30) return null;
+
+      const step = Math.max(1, Math.ceil(validPoints.length / 180));
+      const outline: [number, number][] = validPoints
+        .filter((_, idx) => idx % step === 0)
+        .map((p) => [p.x, p.y]);
+
+      const minX = Math.min(...outline.map((p) => p[0]));
+      const maxX = Math.max(...outline.map((p) => p[0]));
+      const minY = Math.min(...outline.map((p) => p[1]));
+      const maxY = Math.max(...outline.map((p) => p[1]));
+
+      const result = {
+        circuitName,
+        outline,
+        bounds: { minX, maxX, minY, maxY },
+      };
+
+      this.trackOutlineCache.set(sessionKey, result);
+      return result;
+    } catch (err) {
+      console.warn('[OpenF1] Failed to generate track outline:', err);
+      return null;
+    }
+  }
+
   /**
    * Helper that executes requests sequentially or in small batches with spacing
    * to respect OpenF1's free tier rate limits (3 req/sec).
@@ -201,6 +294,44 @@ export class OpenF1Client {
 
     const weather = await this.getWeather(sessionKey);
 
-    return { session, drivers, positions, intervals, stints, laps, raceControl, weather };
+    // Determine current session timestamp from latest position/interval/lap
+    let latestDate: string | undefined;
+    if (positions.length > 0) {
+      latestDate = positions[positions.length - 1].date;
+    } else if (intervals.length > 0) {
+      latestDate = intervals[intervals.length - 1].date;
+    } else if (laps.length > 0 && laps[laps.length - 1].date_start) {
+      latestDate = laps[laps.length - 1].date_start;
+    }
+
+    let locations: OpenF1Location[] = [];
+    if (latestDate) {
+      const dateStart = new Date(new Date(latestDate).getTime() - 25000).toISOString();
+      await this.delay(350);
+      locations = await this.getCarLocations(sessionKey, dateStart);
+    }
+
+    let trackOutline = this.trackOutlineCache.get(sessionKey) || null;
+    if (!trackOutline && laps.length > 0) {
+      await this.delay(350);
+      trackOutline = await this.getTrackOutline(
+        sessionKey,
+        session?.circuit_short_name || 'Circuito',
+        laps,
+      );
+    }
+
+    return {
+      session,
+      drivers,
+      positions,
+      intervals,
+      stints,
+      laps,
+      raceControl,
+      weather,
+      locations,
+      trackOutline,
+    };
   }
 }

@@ -192,17 +192,9 @@ export const LastRaceView: React.FC = () => {
 
             return (
               <div key={d.driverNumber} className="flex flex-col">
-                {/* Promiedos-Style Points Cutoff Barrier between P10 and P11 */}
+                {/* Línea divisoria de zona de puntos (Top 10) */}
                 {showPointsCutoff && (
-                  <div className="bg-[#152018] border-y border-emerald-500/30 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-emerald-300 select-none shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>{t.lastRace.pointsCutoff}</span>
-                    </div>
-                    <span className="text-[9px] uppercase tracking-wider text-emerald-200 bg-emerald-900/50 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold">
-                      P11 - P{raceDetail.results.length} {t.lastRace.noPoints}
-                    </span>
-                  </div>
+                  <div className="h-[2px] bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.5)] my-0" />
                 )}
 
                 {/* Main Row */}

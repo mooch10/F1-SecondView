@@ -68,11 +68,11 @@ export const StandingsView: React.FC = () => {
       {/* DRIVERS TABLE */}
       {subTab === 'drivers' && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-          <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase select-none">
+          <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-400 uppercase select-none">
             <div className="col-span-1 text-center">{t.standings.headers.pos}</div>
             <div className="col-span-6 sm:col-span-5">{t.standings.headers.driver}</div>
             <div className="col-span-3 hidden sm:block">{t.standings.headers.team}</div>
-            <div className="col-span-3 sm:col-span-2 text-right">{t.standings.headers.points}</div>
+            <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
             <div className="col-span-2 sm:col-span-1 text-right">{t.standings.headers.wins}</div>
           </div>
 
@@ -124,7 +124,7 @@ export const StandingsView: React.FC = () => {
                 </div>
 
                 {/* Points */}
-                <div className="col-span-3 sm:col-span-2 text-right font-mono text-xs sm:text-sm font-bold text-[#FFD60A] tabular-nums">
+                <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3 font-mono text-xs sm:text-sm font-bold text-[#FFD60A] tabular-nums">
                   {d.points}
                 </div>
 
@@ -141,10 +141,10 @@ export const StandingsView: React.FC = () => {
       {/* CONSTRUCTORS TABLE */}
       {subTab === 'constructors' && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-          <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase select-none">
+          <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-400 uppercase select-none">
             <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
             <div className="col-span-6 sm:col-span-7">{t.standings.headers.team}</div>
-            <div className="col-span-2 text-right">{t.standings.headers.points}</div>
+            <div className="col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
             <div className="col-span-2 text-right">{t.standings.headers.wins}</div>
           </div>
 
@@ -181,7 +181,7 @@ export const StandingsView: React.FC = () => {
                 </div>
 
                 {/* Points */}
-                <div className="col-span-2 text-right font-mono text-xs sm:text-sm font-bold text-[#FFD60A] tabular-nums">
+                <div className="col-span-2 text-right pr-2 sm:pr-3 font-mono text-xs sm:text-sm font-bold text-[#FFD60A] tabular-nums">
                   {c.points}
                 </div>
 

@@ -2,6 +2,7 @@ import type {
   OpenF1Driver,
   OpenF1Interval,
   OpenF1Lap,
+  OpenF1Location,
   OpenF1Position,
   OpenF1RaceControl,
   OpenF1Session,
@@ -13,10 +14,13 @@ import type {
   DriverStatus,
   FlagStatus,
   LiveSnapshot,
+  MiniSectorStatus,
   RaceControlMessage,
+  SectorStatus,
   SessionLive,
   SessionState,
   SessionType,
+  TrackOutline,
   TrackWeather,
   TyreCompound,
 } from './types.js';
@@ -52,6 +56,59 @@ function getQualifyingPhase(messages: OpenF1RaceControl[] = []): 'Q1' | 'Q2' | '
     }
   }
   return phase;
+}
+
+function getQualifyingPhaseBoundaries(messages: OpenF1RaceControl[] = []): {
+  q2StartTime?: string;
+  q3StartTime?: string;
+} {
+  let q2StartTime: string | undefined;
+  let q3StartTime: string | undefined;
+
+  for (const m of messages) {
+    const text = m.message?.toUpperCase() || '';
+    if (
+      (m.qualifying_phase === 3 &&
+        (m.category === 'SessionStatus' ||
+          text.includes('GREEN LIGHT') ||
+          text.includes('PIT EXIT OPEN'))) ||
+      text.includes('START OF Q3') ||
+      text.includes('Q3 STARTED')
+    ) {
+      if (!q3StartTime && m.date) q3StartTime = m.date;
+    } else if (
+      (m.qualifying_phase === 2 &&
+        (m.category === 'SessionStatus' ||
+          text.includes('GREEN LIGHT') ||
+          text.includes('PIT EXIT OPEN'))) ||
+      text.includes('START OF Q2') ||
+      text.includes('Q2 STARTED')
+    ) {
+      if (!q2StartTime && m.date) q2StartTime = m.date;
+    }
+  }
+
+  // Fallback: If no explicit green light / session started, check any message with qualifying_phase 2 or 3
+  if (!q2StartTime) {
+    const q2Msg = messages.find((m) => m.qualifying_phase === 2 && m.date);
+    if (q2Msg?.date) q2StartTime = q2Msg.date;
+  }
+  if (!q3StartTime) {
+    const q3Msg = messages.find((m) => m.qualifying_phase === 3 && m.date);
+    if (q3Msg?.date) q3StartTime = q3Msg.date;
+  }
+
+  return { q2StartTime, q3StartTime };
+}
+
+function getLapQualifyingPhase(
+  lapDate?: string,
+  boundaries?: { q2StartTime?: string; q3StartTime?: string },
+): 'Q1' | 'Q2' | 'Q3' {
+  if (!lapDate || !boundaries) return 'Q1';
+  if (boundaries.q3StartTime && lapDate >= boundaries.q3StartTime) return 'Q3';
+  if (boundaries.q2StartTime && lapDate >= boundaries.q2StartTime) return 'Q2';
+  return 'Q1';
 }
 
 const CIRCUIT_LAPS: Record<string, number> = {
@@ -155,6 +212,14 @@ function parseTrackWeather(rawWeather?: OpenF1Weather[]): TrackWeather | null {
   };
 }
 
+function mapSegmentStatus(val: number | null | undefined): MiniSectorStatus {
+  if (val === 2051) return 'purple';
+  if (val === 2049) return 'green';
+  if (val === 2048 || val === 2050) return 'yellow';
+  if (val === 2064) return 'blue';
+  return 'none';
+}
+
 export function buildLiveSnapshot(
   session: OpenF1Session | null,
   rawDrivers: OpenF1Driver[] = [],
@@ -164,6 +229,8 @@ export function buildLiveSnapshot(
   rawLaps: OpenF1Lap[] = [],
   rawRaceControl: OpenF1RaceControl[] = [],
   rawWeather: OpenF1Weather[] = [],
+  rawLocations: OpenF1Location[] = [],
+  trackOutline: TrackOutline | null = null,
 ): LiveSnapshot {
   const safeDrivers = Array.isArray(rawDrivers) ? rawDrivers : [];
   const safePositions = Array.isArray(rawPositions) ? rawPositions : [];
@@ -172,9 +239,20 @@ export function buildLiveSnapshot(
   const safeLaps = Array.isArray(rawLaps) ? rawLaps : [];
   const safeRaceControl = Array.isArray(rawRaceControl) ? rawRaceControl : [];
   const safeWeather = Array.isArray(rawWeather) ? rawWeather : [];
+  const safeLocations = Array.isArray(rawLocations) ? rawLocations : [];
 
   const sessionType = getSessionType(session?.session_name, session?.session_type);
   const qualifyingPhase = sessionType === 'Qualifying' ? getQualifyingPhase(safeRaceControl) : null;
+  const qualyBoundaries =
+    sessionType === 'Qualifying' ? getQualifyingPhaseBoundaries(safeRaceControl) : undefined;
+
+  // Latest car location coordinates mapping
+  const latestLocationByDriver = new Map<number, { x: number; y: number }>();
+  for (const loc of safeLocations) {
+    if (loc.x !== 0 || loc.y !== 0) {
+      latestLocationByDriver.set(loc.driver_number, { x: loc.x, y: loc.y });
+    }
+  }
 
   // 1. Starting grid mapping (earliest recorded position per driver)
   const gridPositionByDriver = new Map<number, number>();
@@ -226,9 +304,20 @@ export function buildLiveSnapshot(
   // 6. Group all laps by driver & determine overall fastest lap and best lap per driver
   const lapsByDriver = new Map<number, OpenF1Lap[]>();
   const bestLapByDriver = new Map<number, number>();
+  const bestLapObjByDriver = new Map<number, OpenF1Lap>();
+  const bestQ1ByDriver = new Map<number, number>();
+  const bestQ2ByDriver = new Map<number, number>();
+  const bestQ3ByDriver = new Map<number, number>();
   let fastestLapOverall = Number.POSITIVE_INFINITY;
   let fastestLapDriverNumber: number | null = null;
   let maxLapNumber = 0;
+
+  let overallBestS1 = Number.POSITIVE_INFINITY;
+  let overallBestS2 = Number.POSITIVE_INFINITY;
+  let overallBestS3 = Number.POSITIVE_INFINITY;
+  const bestS1ByDriver = new Map<number, number>();
+  const bestS2ByDriver = new Map<number, number>();
+  const bestS3ByDriver = new Map<number, number>();
 
   for (const lap of safeLaps) {
     if (!lapsByDriver.has(lap.driver_number)) {
@@ -240,15 +329,66 @@ export function buildLiveSnapshot(
       maxLapNumber = lap.lap_number;
     }
 
+    if (lap.duration_sector_1 && lap.duration_sector_1 > 0) {
+      if (lap.duration_sector_1 < overallBestS1) {
+        overallBestS1 = lap.duration_sector_1;
+      }
+      const curS1 = bestS1ByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+      if (lap.duration_sector_1 < curS1) {
+        bestS1ByDriver.set(lap.driver_number, lap.duration_sector_1);
+      }
+    }
+
+    if (lap.duration_sector_2 && lap.duration_sector_2 > 0) {
+      if (lap.duration_sector_2 < overallBestS2) {
+        overallBestS2 = lap.duration_sector_2;
+      }
+      const curS2 = bestS2ByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+      if (lap.duration_sector_2 < curS2) {
+        bestS2ByDriver.set(lap.driver_number, lap.duration_sector_2);
+      }
+    }
+
+    if (lap.duration_sector_3 && lap.duration_sector_3 > 0) {
+      if (lap.duration_sector_3 < overallBestS3) {
+        overallBestS3 = lap.duration_sector_3;
+      }
+      const curS3 = bestS3ByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+      if (lap.duration_sector_3 < curS3) {
+        bestS3ByDriver.set(lap.driver_number, lap.duration_sector_3);
+      }
+    }
+
     if (lap.lap_duration && lap.lap_duration > 0) {
       const currentBest = bestLapByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
       if (lap.lap_duration < currentBest) {
         bestLapByDriver.set(lap.driver_number, lap.lap_duration);
+        bestLapObjByDriver.set(lap.driver_number, lap);
       }
 
       if (lap.lap_duration < fastestLapOverall) {
         fastestLapOverall = lap.lap_duration;
         fastestLapDriverNumber = lap.driver_number;
+      }
+
+      if (sessionType === 'Qualifying') {
+        const phase = getLapQualifyingPhase(lap.date_start, qualyBoundaries);
+        if (phase === 'Q1') {
+          const cQ1 = bestQ1ByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+          if (lap.lap_duration < cQ1) {
+            bestQ1ByDriver.set(lap.driver_number, lap.lap_duration);
+          }
+        } else if (phase === 'Q2') {
+          const cQ2 = bestQ2ByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+          if (lap.lap_duration < cQ2) {
+            bestQ2ByDriver.set(lap.driver_number, lap.lap_duration);
+          }
+        } else if (phase === 'Q3') {
+          const cQ3 = bestQ3ByDriver.get(lap.driver_number) ?? Number.POSITIVE_INFINITY;
+          if (lap.lap_duration < cQ3) {
+            bestQ3ByDriver.set(lap.driver_number, lap.lap_duration);
+          }
+        }
       }
     }
   }
@@ -340,13 +480,75 @@ export function buildLiveSnapshot(
         : `#${driver.team_colour}`
       : '#71717A';
 
-    const bestLapDuration = bestLapByDriver.get(num) ?? null;
+    const rawBestLapDuration = bestLapByDriver.get(num) ?? null;
+    const q1Dur = bestQ1ByDriver.get(num) ?? null;
+    const q2Dur = bestQ2ByDriver.get(num) ?? null;
+    const q3Dur = bestQ3ByDriver.get(num) ?? null;
+
+    // For Qualifying, official final time is their time in the furthest phase reached
+    const bestLapDuration =
+      sessionType === 'Qualifying'
+        ? (q3Dur ?? q2Dur ?? q1Dur ?? rawBestLapDuration)
+        : rawBestLapDuration;
     const bestLapTime = formatLapTime(bestLapDuration);
+
+    const q1Time = q1Dur ? formatLapTime(q1Dur) : null;
+    const q2Time = q2Dur ? formatLapTime(q2Dur) : null;
+    const q3Time = q3Dur ? formatLapTime(q3Dur) : null;
+
+    const carLocation = latestLocationByDriver.get(num) ?? null;
     const penaltySeconds = penaltiesByDriver.get(num);
 
     // Delta vs starting grid in race: gridPos - pos (e.g. Started 18, now 12 -> +6)
     const posChange =
       sessionType === 'Race' && typeof gridPos === 'number' && !isDnf ? gridPos - pos : 0;
+
+    const bestLapObj = bestLapObjByDriver.get(num);
+
+    const isQualyOrPractice = sessionType === 'Qualifying' || sessionType === 'Practice';
+    const isFlyingLap = Boolean(
+      latestLap &&
+        !latestLap.is_pit_out_lap &&
+        latestLap.lap_duration === null &&
+        latestLap.duration_sector_1 !== null &&
+        (!bestS1ByDriver.has(num) ||
+          latestLap.duration_sector_1 <= (bestS1ByDriver.get(num) || 0) + 3.0),
+    );
+
+    const targetLap = isQualyOrPractice
+      ? isFlyingLap
+        ? latestLap
+        : bestLapObj || latestLap
+      : latestLap || bestLapObj;
+
+    const s1Val = targetLap?.duration_sector_1 ?? null;
+    const s2Val = targetLap?.duration_sector_2 ?? null;
+    const s3Val = targetLap?.duration_sector_3 ?? null;
+
+    const calcStatus = (
+      val: number | null,
+      overallBest: number,
+      driverBest?: number,
+    ): SectorStatus => {
+      if (typeof val !== 'number' || Number.isNaN(val) || val <= 0) return 'none';
+      if (val <= overallBest + 0.001) return 'purple';
+      if (driverBest && val <= driverBest + 0.001) return 'green';
+      return 'yellow';
+    };
+
+    const s1Status = calcStatus(s1Val, overallBestS1, bestS1ByDriver.get(num));
+    const s2Status = calcStatus(s2Val, overallBestS2, bestS2ByDriver.get(num));
+    const s3Status = calcStatus(s3Val, overallBestS3, bestS3ByDriver.get(num));
+
+    const segments = {
+      s1: (targetLap?.segments_sector_1 || []).map(mapSegmentStatus),
+      s2: (targetLap?.segments_sector_2 || []).map(mapSegmentStatus),
+      s3: (targetLap?.segments_sector_3 || []).map(mapSegmentStatus),
+    };
+
+    const speedTrap = targetLap?.st_speed ?? bestLapObj?.st_speed ?? null;
+    const i1Speed = targetLap?.i1_speed ?? bestLapObj?.i1_speed ?? null;
+    const i2Speed = targetLap?.i2_speed ?? bestLapObj?.i2_speed ?? null;
 
     return {
       pos: isDnf ? 99 : pos,
@@ -372,27 +574,76 @@ export function buildLiveSnapshot(
       retiredLap: isDnf ? driverMaxLap : undefined,
       retirementReason,
       sectors: {
-        s1: latestLap?.duration_sector_1 || null,
-        s2: latestLap?.duration_sector_2 || null,
-        s3: latestLap?.duration_sector_3 || null,
+        s1: s1Val,
+        s2: s2Val,
+        s3: s3Val,
+        s1Status,
+        s2Status,
+        s3Status,
+        segments,
       },
-      speedTrap: latestLap?.st_speed || null,
+      speedTrap,
+      i1Speed,
+      i2Speed,
+      location: carLocation,
+      q1Time,
+      q2Time,
+      q3Time,
+      q1Duration: q1Dur,
+      q2Duration: q2Dur,
+      q3Duration: q3Dur,
     };
   });
 
   // Polymorphic sorting and metrics assignment
   if (sessionType === 'Qualifying' || sessionType === 'Practice') {
-    // Sort by bestLapDuration ascending (valid lap times first, then drivers without times)
-    drivers.sort((a, b) => {
-      const aDur = typeof a.bestLapDuration === 'number' ? a.bestLapDuration : null;
-      const bDur = typeof b.bestLapDuration === 'number' ? b.bestLapDuration : null;
-      if (aDur !== null && bDur !== null) {
-        return aDur - bDur;
-      }
-      if (aDur !== null && bDur === null) return -1;
-      if (aDur === null && bDur !== null) return 1;
-      return a.driverNumber - b.driverNumber;
-    });
+    if (sessionType === 'Qualifying') {
+      // Sort drivers according to official F1 Qualifying rules:
+      // Drivers reaching Q3 (Tier 3), then drivers eliminated in Q2 (Tier 2), then drivers eliminated in Q1 (Tier 1)
+      drivers.sort((a, b) => {
+        const aTier = a.q3Duration ? 3 : a.q2Duration ? 2 : a.q1Duration ? 1 : 0;
+        const bTier = b.q3Duration ? 3 : b.q2Duration ? 2 : b.q1Duration ? 1 : 0;
+        if (aTier !== bTier) {
+          return bTier - aTier;
+        }
+
+        const aDur =
+          aTier === 3
+            ? a.q3Duration
+            : aTier === 2
+              ? a.q2Duration
+              : aTier === 1
+                ? a.q1Duration
+                : a.bestLapDuration;
+        const bDur =
+          bTier === 3
+            ? b.q3Duration
+            : bTier === 2
+              ? b.q2Duration
+              : bTier === 1
+                ? b.q1Duration
+                : b.bestLapDuration;
+
+        if (aDur !== null && bDur !== null && aDur !== undefined && bDur !== undefined) {
+          return aDur - bDur;
+        }
+        if (aDur !== null && aDur !== undefined) return -1;
+        if (bDur !== null && bDur !== undefined) return 1;
+        return a.driverNumber - b.driverNumber;
+      });
+    } else {
+      // Sort by bestLapDuration ascending (valid lap times first, then drivers without times)
+      drivers.sort((a, b) => {
+        const aDur = typeof a.bestLapDuration === 'number' ? a.bestLapDuration : null;
+        const bDur = typeof b.bestLapDuration === 'number' ? b.bestLapDuration : null;
+        if (aDur !== null && bDur !== null) {
+          return aDur - bDur;
+        }
+        if (aDur !== null && bDur === null) return -1;
+        if (aDur === null && bDur !== null) return 1;
+        return a.driverNumber - b.driverNumber;
+      });
+    }
 
     const poleLapDuration =
       drivers.length > 0 && typeof drivers[0].bestLapDuration === 'number'
@@ -535,6 +786,7 @@ export function buildLiveSnapshot(
     weather,
     messages,
     drivers,
+    circuitTrack: trackOutline,
     history: [
       {
         timestamp: sessionLive.timestamp,

@@ -5,7 +5,7 @@ export type Theme = 'dark' | 'light';
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'dark';
-    const saved = localStorage.getItem('rebufo_theme');
+    const saved = localStorage.getItem('delta_theme') || localStorage.getItem('rebufo_theme');
     if (saved === 'light' || saved === 'dark') return saved;
     return 'dark'; // Dark mode default for motorsport cockpit
   });
@@ -19,7 +19,7 @@ export function useTheme() {
       root.classList.remove('light');
       root.classList.add('dark');
     }
-    localStorage.setItem('rebufo_theme', theme);
+    localStorage.setItem('delta_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

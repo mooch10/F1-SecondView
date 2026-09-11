@@ -30,11 +30,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo & Racing Identity */}
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-md bg-[#E10600] flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm">
-              R
+              D
             </div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold tracking-tight text-zinc-100 text-base uppercase italic font-sans">
-                REBUFO
+                DELTA
               </span>
               <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 uppercase border border-white/[0.08] hidden min-[380px]:inline-block">
                 F1 TELEMETRY

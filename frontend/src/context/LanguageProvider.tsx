@@ -1,13 +1,14 @@
-﻿import { useState, useEffect, useMemo, type ReactNode } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { translations, type Language } from '../i18n/translations';
 import { LanguageContext } from './LanguageContext';
 
-const STORAGE_KEY = 'rebufo_lang';
+const STORAGE_KEY = 'delta_lang';
+const LEGACY_STORAGE_KEY = 'rebufo_lang';
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       if (saved === 'es' || saved === 'en') {
         return saved;
       }

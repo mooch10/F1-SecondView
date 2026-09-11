@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Gauge, Zap } from 'lucide-react';
 import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { MiniSectorsBar } from '../qualy/MiniSectorsBar';
+import { SectorPill } from '../qualy/SectorPill';
 
 interface TimingTableProps {
   drivers: DriverLive[];
@@ -113,12 +115,14 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
       {/* Table Header (Polymorphic: Qualy vs Race) */}
       {isQualy ? (
-        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
           <div className="col-span-1 text-center">{t.live.table.pos}</div>
-          <div className="col-span-4 sm:col-span-4">{t.live.table.driver}</div>
-          <div className="col-span-2 sm:col-span-2 text-center">{t.live.table.tyre}</div>
-          <div className="col-span-2 sm:col-span-2 text-right">{lang === 'es' ? 'GAP POLE' : 'GAP TO POLE'}</div>
-          <div className="col-span-3 sm:col-span-3 text-right">{lang === 'es' ? 'MEJOR TIEMPO' : 'BEST TIME'}</div>
+          <div className="col-span-3 sm:col-span-3">{t.live.table.driver}</div>
+          <div className="col-span-5 sm:col-span-5 text-center">
+            <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
+            <span className="sm:hidden">SECTORES</span>
+          </div>
+          <div className="col-span-3 sm:col-span-3 text-right">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
@@ -210,8 +214,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 {/* Team stripe + Code & Number */}
                 <div
                   className={`${
-                    isQualy ? 'col-span-4 sm:col-span-4' : 'col-span-4 sm:col-span-3'
-                  } flex items-center gap-2 overflow-hidden`}
+                    isQualy ? 'col-span-3 sm:col-span-3' : 'col-span-4 sm:col-span-3'
+                  } flex items-center gap-1.5 sm:gap-2 overflow-hidden`}
                 >
                   <span
                     className="w-1 h-6 rounded-full flex-shrink-0"
@@ -261,6 +265,24 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           {d.eliminatedPhase}
                         </span>
                       )}
+                      {d.inPit && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
+                          PIT
+                        </span>
+                      )}
+                      {/* DRS Activated Pill Badge in Race */}
+                      {drsActive && (
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 animate-pulse tracking-widest shrink-0 shadow-xs"
+                          title={
+                            lang === 'es'
+                              ? 'Zona DRS activa (< 1.0s del auto de adelante)'
+                              : 'Active DRS zone (< 1.0s from car ahead)'
+                          }
+                        >
+                          DRS
+                        </span>
+                      )}
                     </div>
                     <span className="text-[10px] text-zinc-400 truncate hidden sm:block">
                       {d.fullName}
@@ -268,50 +290,56 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </div>
                 </div>
 
-                {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado */}
-                <div className="col-span-2 sm:col-span-2 flex items-center justify-center">
-                  {getTyreBadge(d.tyre) || (
-                    <span className="text-[10px] text-zinc-600 font-mono">-</span>
-                  )}
-                </div>
-
                 {isQualy ? (
                   <>
-                    {/* Qualy GAP POLE */}
-                    <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight">
-                      <span
-                        className={`font-mono text-xs font-bold font-tabular truncate ${
-                          d.isPole ? 'text-[#FFD60A]' : 'text-zinc-200'
-                        }`}
-                      >
-                        {d.gap}
-                      </span>
-                      {d.interval && d.interval !== 'POLE' && (
-                        <span className="font-mono text-[10px] font-tabular text-zinc-500">
-                          {d.interval}
-                        </span>
-                      )}
+                    {/* Qualy Sectors & Mini-Sectors Center Column */}
+                    <div className="col-span-5 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
+                      <div className="flex items-center justify-center gap-0.5 sm:gap-1 w-full flex-nowrap">
+                        <SectorPill
+                          sectorNumber={1}
+                          time={d.sectors?.s1}
+                          status={d.sectors?.s1Status}
+                          compact
+                        />
+                        <SectorPill
+                          sectorNumber={2}
+                          time={d.sectors?.s2}
+                          status={d.sectors?.s2Status}
+                          compact
+                        />
+                        <SectorPill
+                          sectorNumber={3}
+                          time={d.sectors?.s3}
+                          status={d.sectors?.s3Status}
+                          compact
+                        />
+                      </div>
+                      <div className="w-full max-w-[240px]">
+                        <MiniSectorsBar segments={d.sectors?.segments} />
+                      </div>
                     </div>
 
-                    {/* Qualy MEJOR TIEMPO */}
+                    {/* Qualy MEJOR TIEMPO / GAP */}
                     <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
                       <div className="flex flex-col leading-tight">
                         <span
                           className={`font-mono text-xs font-tabular ${
                             d.isPole
                               ? 'text-[#FFD60A] font-black'
-                              : 'text-zinc-200 font-bold'
+                              : 'text-zinc-100 font-bold'
                           }`}
                         >
                           {d.bestLapTime || d.lastLapTime || '--:--.---'}
                         </span>
-                        {d.isPole && (
-                          <span className="text-[9px] font-extrabold text-[#FFD60A] uppercase tracking-tighter">
-                            {lang === 'es' ? 'POLE PROVISIONAL 🥇' : 'PROVISIONAL POLE 🥇'}
-                          </span>
-                        )}
+                        <span
+                          className={`font-mono text-[10px] font-tabular ${
+                            d.isPole ? 'text-[#FFD60A] font-bold' : 'text-zinc-400'
+                          }`}
+                        >
+                          {d.gap}
+                        </span>
                       </div>
-                      <div className="text-zinc-500 hidden sm:block">
+                      <div className="text-zinc-500">
                         {isExpanded ? (
                           <ChevronUp className="w-3.5 h-3.5" />
                         ) : (
@@ -322,6 +350,13 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </>
                 ) : (
                   <>
+                    {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado */}
+                    <div className="col-span-2 sm:col-span-2 flex items-center justify-center">
+                      {getTyreBadge(d.tyre) || (
+                        <span className="text-[10px] text-zinc-600 font-mono">-</span>
+                      )}
+                    </div>
+
                     {/* Race PIT Stop Counter */}
                     <div className="col-span-1 sm:col-span-1 flex items-center justify-center">
                       {d.inPit ? (
@@ -452,41 +487,54 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Sectors and Speed Trap Grid */}
-                  <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
-                      <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                        Sector 1
-                      </span>
-                      <span className="font-bold text-zinc-200 text-xs font-tabular">
-                        {d.sectors?.s1 ? `${d.sectors.s1}s` : '--.---'}
-                      </span>
-                    </div>
+                  {/* Detailed Mini-Sectors Bar */}
+                  <MiniSectorsBar segments={d.sectors?.segments} detailed />
 
-                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
-                      <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                        Sector 2
-                      </span>
-                      <span className="font-bold text-zinc-200 text-xs font-tabular">
-                        {d.sectors?.s2 ? `${d.sectors.s2}s` : '--.---'}
-                      </span>
-                    </div>
+                  {/* Sectors and Speed Trap Grid with SectorPill */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <SectorPill
+                      sectorNumber={1}
+                      time={d.sectors?.s1}
+                      status={d.sectors?.s1Status}
+                    />
+                    <SectorPill
+                      sectorNumber={2}
+                      time={d.sectors?.s2}
+                      status={d.sectors?.s2Status}
+                    />
+                    <SectorPill
+                      sectorNumber={3}
+                      time={d.sectors?.s3}
+                      status={d.sectors?.s3Status}
+                    />
+                  </div>
 
-                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2">
-                      <span className="text-[10px] text-zinc-500 block uppercase font-sans">
-                        Sector 3
+                  {/* Speed Traps & Telemetry Grid */}
+                  <div className="grid grid-cols-3 gap-2 font-mono text-center">
+                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 uppercase flex items-center gap-1">
+                        <Gauge className="w-2.5 h-2.5 text-[#27F4D2]" /> Speed Trap
                       </span>
-                      <span className="font-bold text-zinc-200 text-xs font-tabular">
-                        {d.sectors?.s3 ? `${d.sectors.s3}s` : '--.---'}
+                      <span className="font-bold text-[#27F4D2] text-xs font-tabular mt-0.5">
+                        {d.speedTrap ? `${d.speedTrap} km/h` : '---'}
                       </span>
                     </div>
 
                     <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2 flex flex-col items-center justify-center">
-                      <span className="text-[10px] text-zinc-500 block uppercase font-sans flex items-center gap-1">
-                        <Gauge className="w-2.5 h-2.5 text-[#27F4D2]" /> Trap
+                      <span className="text-[10px] text-zinc-500 uppercase">
+                        Trap Sector 1 (I1)
                       </span>
-                      <span className="font-bold text-[#27F4D2] text-xs font-tabular">
-                        {d.speedTrap ? `${d.speedTrap} km/h` : '---'}
+                      <span className="font-bold text-zinc-300 text-xs font-tabular mt-0.5">
+                        {d.i1Speed ? `${d.i1Speed} km/h` : '---'}
+                      </span>
+                    </div>
+
+                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2 flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-zinc-500 uppercase">
+                        Trap Sector 2 (I2)
+                      </span>
+                      <span className="font-bold text-zinc-300 text-xs font-tabular mt-0.5">
+                        {d.i2Speed ? `${d.i2Speed} km/h` : '---'}
                       </span>
                     </div>
                   </div>
