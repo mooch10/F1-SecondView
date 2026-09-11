@@ -25,11 +25,6 @@
 }
 
 @layer components {
-  /* Promiedos style compact table */
-  .f1-row {
-    @apply transition-colors duration-150 border-b border-white/[0.06] hover:bg-white/[0.03];
-  }
-
   /* Custom subtle scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
@@ -182,16 +177,6 @@ html.light ::-webkit-scrollbar-thumb {
 }
 html.light ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8 !important;
-}
-
-/* Animations */
-@keyframes pulse-fast {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.animate-pulse-fast {
-  animation: pulse-fast 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* ==========================================================================

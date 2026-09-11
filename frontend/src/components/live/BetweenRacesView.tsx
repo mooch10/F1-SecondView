@@ -11,7 +11,7 @@ import { fetchScheduleDetails } from '../../services/api';
 import type { JolpicaRace, LastRacePodium } from '../../types/f1';
 
 interface BetweenRacesViewProps {
-  onSwitchToLiveTiming: () => void;
+  onSwitchToLiveTiming?: () => void;
 }
 
 export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
@@ -263,25 +263,6 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
           </div>
         </div>
       )}
-
-      {/* Action Banner to inspect live timing / replay */}
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 text-center flex flex-col sm:flex-row items-center justify-between gap-3 font-mono shadow-sm">
-        <div className="text-left">
-          <div className="text-xs font-bold text-white uppercase">
-            ¿Querés ver el panel de telemetría completa?
-          </div>
-          <div className="text-[11px] text-zinc-400">
-            Podes consultar la tabla interactiva de Monza 2024 con gaps, neumáticos y radio de comisarios.
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onSwitchToLiveTiming}
-          className="px-4 py-2 rounded-lg bg-[#E10600] hover:bg-[#B30500] text-white font-bold text-xs tracking-wider uppercase transition-colors whitespace-nowrap cursor-pointer shadow-sm"
-        >
-          Ver Telemetría en Vivo
-        </button>
-      </div>
     </div>
   );
 };

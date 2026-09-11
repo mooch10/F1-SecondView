@@ -470,6 +470,11 @@ export function buildLiveSnapshot(
     }
   }
 
+  if (drivers.length === 0) {
+    sessionState = 'FINISHED';
+    flag = 'CHEQUERED';
+  }
+
   const messages: RaceControlMessage[] = safeRaceControl
     .slice(-20)
     .reverse()
@@ -512,7 +517,7 @@ export function buildLiveSnapshot(
     qualifyingPhase,
     poleDriver,
     poleLapTime,
-    location: session?.location ?? 'Circuito',
+    location: session?.location ?? '',
     country: session?.country_name ?? '',
     circuit: session?.circuit_short_name ?? '',
     status: sessionState,

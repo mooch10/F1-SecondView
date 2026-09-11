@@ -45,14 +45,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-400 tracking-tight select-none">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  isLiveConnected ? 'bg-[#39B54A]' : 'bg-[#E10600]'
+                  isLiveActive && isLiveConnected
+                    ? 'bg-[#39B54A] animate-pulse'
+                    : isLiveConnected
+                    ? 'bg-zinc-500'
+                    : 'bg-[#E10600]'
                 }`}
               />
               <span className="hidden sm:inline">
-                {isLiveConnected ? 'LIVE FEED 24ms' : 'FEED OFFLINE'}
+                {isLiveActive && isLiveConnected
+                  ? 'LIVE FEED'
+                  : isLiveConnected
+                  ? 'STANDBY'
+                  : 'OFFLINE'}
               </span>
               <span className="sm:hidden">
-                {isLiveConnected ? 'LIVE' : 'OFF'}
+                {isLiveActive && isLiveConnected ? 'LIVE' : 'STANDBY'}
               </span>
             </div>
 

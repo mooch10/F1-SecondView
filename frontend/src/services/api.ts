@@ -1,4 +1,10 @@
-import type { JolpicaRace, LiveSnapshot, ScheduleResponse, StandingsData } from '../types/f1';
+import type {
+  JolpicaQualifyingSession,
+  JolpicaRace,
+  LiveSnapshot,
+  ScheduleResponse,
+  StandingsData,
+} from '../types/f1';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -63,7 +69,7 @@ export async function fetchStandings(): Promise<StandingsData | null> {
   }
 }
 
-export async function fetchQualifying(): Promise<import('../types/f1').JolpicaQualifyingSession | null> {
+export async function fetchQualifying(): Promise<JolpicaQualifyingSession | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/api/qualifying.json`, {
       headers: { Accept: 'application/json' },
@@ -71,7 +77,7 @@ export async function fetchQualifying(): Promise<import('../types/f1').JolpicaQu
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     }
-    return (await res.json()) as import('../types/f1').JolpicaQualifyingSession;
+    return (await res.json()) as JolpicaQualifyingSession;
   } catch (err) {
     console.warn('[API] Failed to fetch qualifying results:', err);
     return null;

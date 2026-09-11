@@ -165,11 +165,24 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
       {/* Session Title & Digital Instrument Box */}
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm">
         <div>
-          <div className="text-xs font-mono tracking-wider uppercase text-zinc-400">
-            {session.circuit.toUpperCase()} ({session.country.toUpperCase()})
-          </div>
+          {(session.circuit || session.country) ? (
+            <div className="text-xs font-mono tracking-wider uppercase text-zinc-400">
+              {session.circuit ? session.circuit.toUpperCase() : ''}
+              {session.circuit && session.country ? ' • ' : ''}
+              {session.country ? session.country.toUpperCase() : ''}
+            </div>
+          ) : null}
           <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white mt-0.5 uppercase">
-            {session.location} {session.sessionType === 'Qualifying' ? 'CLASIFICACIÓN' : session.sessionType === 'Practice' ? 'PRÁCTICA' : 'GRAND PRIX'}
+            {session.location && session.location !== 'Circuito'
+              ? `${session.location} `
+              : ''}
+            {session.sessionType === 'Qualifying'
+              ? 'CLASIFICACIÓN'
+              : session.sessionType === 'Practice'
+              ? 'PRÁCTICA LIBRE'
+              : session.sessionName && session.sessionName !== 'Gran Premio'
+              ? session.sessionName
+              : 'GRAND PRIX'}
           </h1>
         </div>
 

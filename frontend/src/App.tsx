@@ -1,3 +1,4 @@
+import { Radio } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { BetweenRacesView } from './components/live/BetweenRacesView';
@@ -16,7 +17,7 @@ import type { ActiveTab } from './types/f1';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('live');
-  const [liveSubView, setLiveSubView] = useState<'timing' | 'betweenRaces'>('timing');
+  const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
 
   const {
@@ -39,11 +40,16 @@ export function App() {
   }, [activeTab, requestLock]);
 
   const isLiveSessionActive =
-    snapshot?.session.status === 'IN_PROGRESS' ||
-    snapshot?.session.flag === 'GREEN' ||
-    snapshot?.session.flag === 'YELLOW' ||
-    snapshot?.session.flag === 'SC' ||
-    snapshot?.session.flag === 'VSC';
+    Boolean(
+      snapshot?.session.status === 'IN_PROGRESS' ||
+        snapshot?.session.flag === 'GREEN' ||
+        snapshot?.session.flag === 'YELLOW' ||
+        snapshot?.session.flag === 'SC' ||
+        snapshot?.session.flag === 'VSC',
+    ) && drivers.length > 0;
+
+  // Auto-focus timing when cars are on track, otherwise default to between-races
+  const liveSubView = userSubView ?? (isLiveSessionActive ? 'timing' : 'betweenRaces');
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-zinc-100 flex flex-col font-chakra antialiased">
@@ -65,7 +71,7 @@ export function App() {
             <div className="flex items-center justify-between bg-[#131722] border border-white/[0.08] rounded-xl p-1 select-none text-xs font-mono gap-1">
               <button
                 type="button"
-                onClick={() => setLiveSubView('timing')}
+                onClick={() => setUserSubView('timing')}
                 className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold text-center transition-colors cursor-pointer truncate ${
                   liveSubView === 'timing'
                     ? 'bg-[#1C2230] text-white shadow-sm border border-white/10'
@@ -77,7 +83,7 @@ export function App() {
 
               <button
                 type="button"
-                onClick={() => setLiveSubView('betweenRaces')}
+                onClick={() => setUserSubView('betweenRaces')}
                 className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold text-center transition-colors cursor-pointer truncate ${
                   liveSubView === 'betweenRaces'
                     ? 'bg-[#1C2230] text-white shadow-sm border border-white/10'
@@ -89,8 +95,12 @@ export function App() {
             </div>
 
             {liveSubView === 'betweenRaces' ? (
-              <BetweenRacesView onSwitchToLiveTiming={() => setLiveSubView('timing')} />
-            ) : (
+              <BetweenRacesView onSwitchToLiveTiming={() => setUserSubView('timing')} />
+            ) : isLoading ? (
+              <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-500 font-mono text-xs">
+                <span>SINTONIZANDO TELEMETRÍA EN VIVO...</span>
+              </div>
+            ) : drivers.length > 0 ? (
               <>
                 {/* Header with Circuit info & Track Flag & Progress Bar */}
                 <FlagBanner session={snapshot?.session || null} />
@@ -112,18 +122,45 @@ export function App() {
                 />
 
                 {/* 2-Tier Timing Table (Promiedos Style) with Pit Stops & DNF */}
-                {isLoading ? (
-                  <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-500 font-mono text-xs">
-                    <span>SINTONIZANDO TELEMETRÍA EN VIVO...</span>
-                  </div>
-                ) : (
-                  <TimingTable
-                    drivers={drivers}
-                    sessionType={snapshot?.session.sessionType}
-                    qualifyingPhase={snapshot?.session.qualifyingPhase}
-                  />
-                )}
+                <TimingTable
+                  drivers={drivers}
+                  sessionType={snapshot?.session.sessionType}
+                />
               </>
+            ) : (
+              /* Standby state when user explicitly opens Telemetry while no cars on track */
+              <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-4 shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-zinc-400">
+                  <Radio className="w-6 h-6 text-zinc-400 animate-pulse" />
+                </div>
+                <div className="max-w-md">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#FFD60A] px-2.5 py-0.5 rounded-full bg-[#FFD60A]/10 border border-[#FFD60A]/20">
+                    SESIÓN EN ESPERA (STANDBY)
+                  </span>
+                  <h3 className="text-lg font-bold text-white uppercase tracking-tight mt-2 font-sans">
+                    Sin Actividad en Pista en Este Momento
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1.5 font-mono leading-relaxed">
+                    La telemetría y el cronometraje vuelta a vuelta se conectan automáticamente en tiempo real durante las sesiones oficiales de Gran Premio (Prácticas, Clasificación y Carrera).
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => setUserSubView('betweenRaces')}
+                    className="px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-white/10"
+                  >
+                    📅 Próxima Carrera y Horarios
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('qualy')}
+                    className="px-3.5 py-2 rounded-lg bg-[#FFD60A]/15 hover:bg-[#FFD60A]/25 text-[#FFD60A] font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-[#FFD60A]/30"
+                  >
+                    ⏱️ Resultados de Clasificación
+                  </button>
+                </div>
+              </div>
             )}
           </>
         )}

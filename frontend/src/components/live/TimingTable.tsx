@@ -5,7 +5,6 @@ import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
 interface TimingTableProps {
   drivers: DriverLive[];
   sessionType?: SessionType;
-  qualifyingPhase?: 'Q1' | 'Q2' | 'Q3' | null;
 }
 
 const F1_POINTS: Record<number, number> = {
