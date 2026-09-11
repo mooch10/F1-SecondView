@@ -155,11 +155,17 @@ export const QualifyingView: React.FC = () => {
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center">{t.qualy.headers.pos}</div>
-          <div className="col-span-4 sm:col-span-3">{t.qualy.headers.driver}</div>
-          <div className="col-span-2 text-center">{t.qualy.headers.q1}</div>
-          <div className="col-span-2 text-center">{t.qualy.headers.q2}</div>
-          <div className="col-span-2 text-center">{t.qualy.headers.q3}</div>
-          <div className="col-span-1 sm:col-span-1 text-right">{t.qualy.headers.gap}</div>
+          <div className="col-span-5 sm:col-span-3">{t.qualy.headers.driver}</div>
+
+          {/* Mobile view: Best Lap Time and Gap */}
+          <div className="col-span-3 text-right sm:hidden">{t.qualy.headers.time}</div>
+          <div className="col-span-3 text-right sm:hidden">{t.qualy.headers.gap}</div>
+
+          {/* Desktop view: Detailed Q1, Q2, Q3, GAP */}
+          <div className="hidden sm:block sm:col-span-2 text-center">{t.qualy.headers.q1}</div>
+          <div className="hidden sm:block sm:col-span-2 text-center">{t.qualy.headers.q2}</div>
+          <div className="hidden sm:block sm:col-span-2 text-center">{t.qualy.headers.q3}</div>
+          <div className="hidden sm:block sm:col-span-2 text-right">{t.qualy.headers.gap}</div>
         </div>
 
         {/* Rows */}
@@ -210,7 +216,7 @@ export const QualifyingView: React.FC = () => {
                   </div>
 
                   {/* Driver & Team */}
-                  <div className="col-span-4 sm:col-span-3 flex items-center gap-2 overflow-hidden">
+                  <div className="col-span-5 sm:col-span-3 flex items-center gap-2 overflow-hidden">
                     <span
                       className="w-1 h-6 rounded-full flex-shrink-0"
                       style={{ backgroundColor: d.teamColor || '#71717A' }}
@@ -240,15 +246,47 @@ export const QualifyingView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Q1 Lap Time */}
-                  <div className="col-span-2 text-center font-mono text-xs font-tabular">
+                  {/* Mobile view: Best Lap Time (d.q3 || d.q2 || d.q1) */}
+                  <div className="col-span-3 text-right sm:hidden flex flex-col justify-center leading-tight">
+                    <span
+                      className={`font-mono text-xs font-tabular ${
+                        d.isPole ? 'text-[#FFD60A] font-black' : 'text-zinc-200 font-bold'
+                      }`}
+                    >
+                      {d.q3 || d.q2 || d.q1 || '-'}
+                    </span>
+                    <span className="font-mono text-[9px] text-zinc-500 uppercase">
+                      {d.q3 ? 'Q3' : d.q2 ? 'Q2' : d.q1 ? 'Q1' : ''}
+                    </span>
+                  </div>
+
+                  {/* Mobile view: Gap to Pole */}
+                  <div className="col-span-3 text-right sm:hidden flex items-center justify-end gap-1 font-mono text-xs font-tabular">
+                    <span
+                      className={`truncate ${
+                        d.isPole ? 'text-[#FFD60A] font-bold text-[11px]' : 'text-zinc-400'
+                      }`}
+                    >
+                      {d.gap}
+                    </span>
+                    <div className="text-zinc-500">
+                      {isExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Desktop view: Q1 Lap Time */}
+                  <div className="hidden sm:block sm:col-span-2 text-center font-mono text-xs font-tabular">
                     <span className={d.q1 ? 'text-zinc-300' : 'text-zinc-600'}>
                       {d.q1 || '-'}
                     </span>
                   </div>
 
-                  {/* Q2 Lap Time */}
-                  <div className="col-span-2 text-center font-mono text-xs font-tabular">
+                  {/* Desktop view: Q2 Lap Time */}
+                  <div className="hidden sm:block sm:col-span-2 text-center font-mono text-xs font-tabular">
                     <span
                       className={
                         d.q2
@@ -262,8 +300,8 @@ export const QualifyingView: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Q3 Lap Time */}
-                  <div className="col-span-2 text-center font-mono text-xs font-tabular">
+                  {/* Desktop view: Q3 Lap Time */}
+                  <div className="hidden sm:block sm:col-span-2 text-center font-mono text-xs font-tabular">
                     <span
                       className={
                         d.q3
@@ -277,8 +315,8 @@ export const QualifyingView: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Gap to Pole */}
-                  <div className="col-span-1 sm:col-span-1 text-right flex items-center justify-end gap-1 font-mono text-xs font-tabular">
+                  {/* Desktop view: Gap to Pole */}
+                  <div className="hidden sm:flex sm:col-span-2 text-right items-center justify-end gap-1 font-mono text-xs font-tabular">
                     <span
                       className={
                         d.isPole ? 'text-[#FFD60A] font-bold text-[11px]' : 'text-zinc-400'
@@ -286,7 +324,7 @@ export const QualifyingView: React.FC = () => {
                     >
                       {d.gap}
                     </span>
-                    <div className="text-zinc-500 hidden sm:block">
+                    <div className="text-zinc-500">
                       {isExpanded ? (
                         <ChevronUp className="w-3.5 h-3.5" />
                       ) : (
@@ -299,10 +337,10 @@ export const QualifyingView: React.FC = () => {
                 {/* Expanded Driver Details */}
                 {isExpanded && (
                   <div className="bg-[#0B0E14] border-t border-b border-white/[0.06] px-4 py-3 text-xs">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-2 h-2 rounded-full"
+                          className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: d.teamColor }}
                         />
                         <span className="font-bold text-white text-sm">

@@ -154,8 +154,8 @@ export const ScheduleView: React.FC = () => {
       {/* Next GP Hero Countdown Card */}
       {nextRace && (
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 relative shadow-sm">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit">
               {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
             <span className="text-[11px] text-zinc-400 font-mono">
@@ -245,27 +245,27 @@ export const ScheduleView: React.FC = () => {
                     r.isNext ? 'bg-[#E10600]/[0.04]' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-bold text-zinc-400 w-7 text-center tabular-nums">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-mono text-xs font-bold text-zinc-400 w-7 text-center tabular-nums shrink-0">
                       R{String(r.round).padStart(2, '0')}
                     </span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
+                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate">
                           {r.raceName}
                         </span>
                         {r.isNext && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30 shrink-0">
                             {t.schedule.nextBadge}
                           </span>
                         )}
                         {isPast && (
-                          <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.2 rounded">
+                          <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.2 rounded shrink-0">
                             <CheckCircle2 className="w-3 h-3" /> {t.schedule.resultsAvailable}
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] text-zinc-400 font-mono">
+                      <span className="text-[11px] text-zinc-400 font-mono truncate block">
                         {r.circuitName} • {r.country}
                       </span>
                     </div>
@@ -359,9 +359,9 @@ export const ScheduleView: React.FC = () => {
                               <div className="grid grid-cols-12 gap-1 px-3 py-1.5 bg-[#1C2230] border-b border-white/[0.06] text-[9px] font-mono font-bold uppercase text-zinc-400 select-none">
                                 <div className="col-span-1 text-center">{t.live.table.pos}</div>
                                 <div className="col-span-5 sm:col-span-5">{t.live.table.driver}</div>
-                                <div className="col-span-2 text-center">{lang === 'es' ? 'LARGADA' : 'START'}</div>
-                                <div className="col-span-2 text-right sm:text-center">{lang === 'es' ? 'TIEMPO' : 'TIME'}</div>
-                                <div className="col-span-2 text-right">PTS</div>
+                                <div className="hidden sm:block sm:col-span-2 text-center">{lang === 'es' ? 'LARGADA' : 'START'}</div>
+                                <div className="col-span-3 sm:col-span-2 text-right sm:text-center">{lang === 'es' ? 'TIEMPO' : 'TIME'}</div>
+                                <div className="col-span-3 sm:col-span-2 text-right">PTS</div>
                               </div>
 
                               <div className="divide-y divide-white/[0.04]">
@@ -394,7 +394,7 @@ export const ScheduleView: React.FC = () => {
                                           {d.fullName}
                                         </span>
                                       </div>
-                                      <div className="col-span-2 text-center text-[10px] text-zinc-400">
+                                      <div className="hidden sm:block sm:col-span-2 text-center text-[10px] text-zinc-400">
                                         P{d.grid}{' '}
                                         {d.posChange > 0 ? (
                                           <span className="text-emerald-400 text-[9px]">
@@ -408,7 +408,7 @@ export const ScheduleView: React.FC = () => {
                                           '='
                                         )}
                                       </div>
-                                      <div className="col-span-2 text-right sm:text-center text-[11px] truncate">
+                                      <div className="col-span-3 sm:col-span-2 text-right sm:text-center text-[11px] truncate">
                                         <span
                                           className={
                                             d.pos === 1
@@ -421,7 +421,7 @@ export const ScheduleView: React.FC = () => {
                                           {d.timeOrStatus}
                                         </span>
                                       </div>
-                                      <div className="col-span-2 text-right font-bold text-[11px]">
+                                      <div className="col-span-3 sm:col-span-2 text-right font-bold text-[11px]">
                                         {d.points > 0 ? (
                                           <span className="text-emerald-400">+{d.points}</span>
                                         ) : (

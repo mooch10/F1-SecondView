@@ -6,6 +6,7 @@ export const translations = {
       live: 'En Vivo',
       lastRace: 'Último GP',
       qualy: 'Clasificación',
+      qualyShort: 'Qualy',
       schedule: 'Calendario',
       standings: 'Posiciones',
       liveFeed: 'LIVE FEED',
@@ -135,6 +136,7 @@ export const translations = {
       headers: {
         pos: 'POS',
         driver: 'PILOTO',
+        time: 'TIEMPO',
         q1: 'Q1',
         q2: 'Q2',
         q3: 'Q3',
@@ -204,6 +206,7 @@ export const translations = {
       live: 'Live',
       lastRace: 'Last GP',
       qualy: 'Qualifying',
+      qualyShort: 'Qualy',
       schedule: 'Schedule',
       standings: 'Standings',
       liveFeed: 'LIVE FEED',
@@ -333,6 +336,7 @@ export const translations = {
       headers: {
         pos: 'POS',
         driver: 'DRIVER',
+        time: 'TIME',
         q1: 'Q1',
         q2: 'Q2',
         q3: 'Q3',

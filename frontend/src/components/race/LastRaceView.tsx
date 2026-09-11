@@ -176,10 +176,10 @@ export const LastRaceView: React.FC = () => {
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center">{t.lastRace.headers.pos}</div>
           <div className="col-span-5 sm:col-span-4">{t.lastRace.headers.driver}</div>
-          <div className="col-span-2 sm:col-span-2 text-center">{t.lastRace.headers.start}</div>
-          <div className="col-span-2 sm:col-span-1 text-center">{t.lastRace.headers.laps}</div>
-          <div className="col-span-2 sm:col-span-2 text-right sm:text-center">{t.lastRace.headers.timeStatus}</div>
-          <div className="hidden sm:block sm:col-span-2 text-right">{t.lastRace.headers.points}</div>
+          <div className="hidden sm:block sm:col-span-2 text-center">{t.lastRace.headers.start}</div>
+          <div className="hidden sm:block sm:col-span-1 text-center">{t.lastRace.headers.laps}</div>
+          <div className="col-span-3 sm:col-span-2 text-right sm:text-center">{t.lastRace.headers.timeStatus}</div>
+          <div className="col-span-3 sm:col-span-2 text-right">{t.lastRace.headers.points}</div>
         </div>
 
         {/* Rows */}
@@ -261,8 +261,8 @@ export const LastRaceView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Grid Start & Position Change */}
-                  <div className="col-span-2 sm:col-span-2 flex items-center justify-center font-mono text-xs font-tabular">
+                  {/* Grid Start & Position Change (Desktop only, mobile visible in drawer) */}
+                  <div className="hidden sm:flex sm:col-span-2 items-center justify-center font-mono text-xs font-tabular">
                     <div className="flex items-center gap-1">
                       <span className="text-zinc-500 text-[10px]">P{d.grid}</span>
                       {d.posChange > 0 ? (
@@ -279,31 +279,31 @@ export const LastRaceView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Laps Completed */}
-                  <div className="col-span-2 sm:col-span-1 text-center font-mono text-xs font-tabular text-zinc-400">
+                  {/* Laps Completed (Desktop only, mobile visible in drawer) */}
+                  <div className="hidden sm:block sm:col-span-1 text-center font-mono text-xs font-tabular text-zinc-400">
                     {d.laps}
                   </div>
 
                   {/* Time / Status / Gap */}
-                  <div className="col-span-2 sm:col-span-2 text-right sm:text-center font-mono text-xs font-tabular">
+                  <div className="col-span-3 sm:col-span-2 text-right sm:text-center font-mono text-xs font-tabular">
                     <span
-                      className={
+                      className={`truncate block ${
                         d.isWinner
-                          ? 'text-[#FFD60A] font-bold'
+                          ? 'text-[#FFD60A] font-bold text-[11px] sm:text-xs'
                           : d.status.toLowerCase().includes('ret') || d.status.toLowerCase().includes('col')
                           ? 'text-rose-400 font-semibold text-[10px]'
-                          : 'text-zinc-300'
-                      }
+                          : 'text-zinc-300 text-[11px] sm:text-xs'
+                      }`}
                     >
                       {d.timeOrStatus}
                     </span>
                   </div>
 
-                  {/* Points Badge */}
-                  <div className="hidden sm:flex sm:col-span-2 items-center justify-end gap-1.5 font-mono text-xs font-tabular">
+                  {/* Points Badge (Visible on Mobile & Desktop) */}
+                  <div className="col-span-3 sm:col-span-2 flex items-center justify-end gap-1.5 font-mono text-xs font-tabular">
                     {d.points > 0 ? (
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        className={`px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold ${
                           d.isFastestLap && isPointsZone
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
                             : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
@@ -312,7 +312,7 @@ export const LastRaceView: React.FC = () => {
                         +{d.points} PTS
                       </span>
                     ) : (
-                      <span className="text-zinc-600 text-[11px]">0 PTS</span>
+                      <span className="text-zinc-600 text-[10px] sm:text-[11px]">0 PTS</span>
                     )}
 
                     <div className="text-zinc-500">
@@ -328,10 +328,10 @@ export const LastRaceView: React.FC = () => {
                 {/* Expanded Driver Breakdown Drawer */}
                 {isExpanded && (
                   <div className="bg-[#0B0E14] border-t border-b border-white/[0.06] px-4 py-3 text-xs">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-2 h-2 rounded-full"
+                          className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: d.teamColor }}
                         />
                         <span className="font-bold text-white text-sm">

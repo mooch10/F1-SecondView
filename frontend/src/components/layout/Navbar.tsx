@@ -36,14 +36,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-extrabold tracking-tight text-zinc-100 text-base uppercase italic font-sans">
                 REBUFO
               </span>
-              <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 uppercase border border-white/[0.08]">
+              <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 uppercase border border-white/[0.08] hidden min-[380px]:inline-block">
                 F1 TELEMETRY
               </span>
             </div>
           </div>
 
           {/* Right Status Controls */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Live Feed Status (Compact pro telemetry style) */}
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-400 tracking-tight select-none">
               <span
@@ -95,12 +95,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Tab Navigation (Broadcast Bar Style) */}
-        <nav className="flex items-center gap-4 sm:gap-8 border-t border-white/[0.08] px-1 overflow-x-auto no-scrollbar">
+        {/* Tab Navigation (Broadcast Bar Style with Smooth Edge-to-Edge Scroll on Mobile) */}
+        <nav className="flex items-center gap-1 sm:gap-6 md:gap-8 border-t border-white/[0.08] -mx-3 px-3 sm:mx-0 sm:px-1 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x">
           <button
             type="button"
             onClick={() => setActiveTab('live')}
-            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 flex items-center gap-1.5 shrink-0 ${
+            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 flex items-center gap-1.5 shrink-0 ${
               activeTab === 'live'
                 ? 'text-zinc-100 border-[#E10600]'
                 : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -115,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('last-race')}
-            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
               activeTab === 'last-race'
                 ? 'text-zinc-100 border-[#E10600]'
                 : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -127,19 +127,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('qualy')}
-            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
               activeTab === 'qualy'
                 ? 'text-zinc-100 border-[#E10600]'
                 : 'text-zinc-400 hover:text-zinc-100 border-transparent'
             }`}
           >
-            <span>{t.nav.qualy}</span>
+            <span className="sm:hidden">{t.nav.qualyShort}</span>
+            <span className="hidden sm:inline">{t.nav.qualy}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('schedule')}
-            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
               activeTab === 'schedule'
                 ? 'text-zinc-100 border-[#E10600]'
                 : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -151,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('standings')}
-            className={`py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
               activeTab === 'standings'
                 ? 'text-zinc-100 border-[#E10600]'
                 : 'text-zinc-400 hover:text-zinc-100 border-transparent'

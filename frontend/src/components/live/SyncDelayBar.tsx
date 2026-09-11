@@ -111,7 +111,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
                     : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
                 }`}
               >
-                0s ({t.live.delay.track})
+                0s <span className="hidden sm:inline">({t.live.delay.track})</span>
               </span>
             </button>
 
@@ -137,7 +137,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
                     : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
                 }`}
               >
-                15s (F1 TV)
+                15s <span className="hidden sm:inline">(F1 TV)</span><span className="sm:hidden">(F1)</span>
               </span>
             </button>
 
@@ -163,7 +163,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
                     : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100'
                 }`}
               >
-                30s (DISNEY+)
+                30s <span className="hidden sm:inline">(DISNEY+)</span><span className="sm:hidden">(D+)</span>
               </span>
             </button>
 

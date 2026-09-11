@@ -113,10 +113,10 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
   return (
     <div className="flex flex-col gap-3">
       {/* Standby Status Bar */}
-      <div className="bg-[#131722] border border-white/[0.08] border-l-4 border-l-zinc-500 rounded-xl px-3 py-2 flex items-center justify-between text-xs font-mono shadow-sm">
-        <div className="flex items-center gap-2 text-zinc-400">
-          <Flag className="w-4 h-4 text-zinc-400" />
-          <span className="font-semibold uppercase tracking-wider">
+      <div className="bg-[#131722] border border-white/[0.08] border-l-4 border-l-zinc-500 rounded-xl px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono shadow-sm">
+        <div className="flex items-center gap-2 text-zinc-400 min-w-0">
+          <Flag className="w-4 h-4 text-zinc-400 shrink-0" />
+          <span className="font-semibold uppercase tracking-wider text-[10px] sm:text-xs truncate">
             {lang === 'es'
               ? 'MODO ENTRE CARRERAS • SIN ACTIVIDAD EN PISTA'
               : 'BETWEEN RACES MODE • NO ACTIVE TRACK SESSION'}
@@ -125,7 +125,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
         <button
           type="button"
           onClick={onSwitchToLiveTiming}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#E10600]/15 hover:bg-[#E10600]/25 text-[#E10600] font-bold text-[10px] border border-[#E10600]/30 transition-colors uppercase cursor-pointer"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-[#E10600]/15 hover:bg-[#E10600]/25 text-[#E10600] font-bold text-[10px] border border-[#E10600]/30 transition-colors uppercase cursor-pointer w-full sm:w-auto shrink-0"
         >
           <Radio className="w-3 h-3 text-[#E10600] animate-pulse" />
           <span>{lang === 'es' ? 'Ver Telemetría / Replay' : 'View Telemetry / Replay'}</span>
@@ -136,11 +136,11 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       {/* Next GP Countdown Hero Card */}
       {nextRace && (
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit">
               {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
-            <span className="text-[10px] text-zinc-400 font-mono hidden xs:inline">
+            <span className="text-[10px] text-zinc-400 font-mono">
               {t.betweenRaces.localTime} ({Intl.DateTimeFormat().resolvedOptions().timeZone})
             </span>
           </div>
@@ -205,18 +205,18 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                 {nextRace.sessions.map((s, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
+                    className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono gap-2 ${
                       s.name === 'Carrera'
                         ? 'bg-[#1C2230] border-l-2 border-l-[#E10600] border-t border-b border-r border-white/[0.08] text-white font-bold'
                         : 'bg-[#0B0E14] border border-white/[0.08] text-zinc-400'
                     }`}
                   >
-                    <span className="font-semibold uppercase">{translateSessionName(s.name)}</span>
-                    <div className="flex items-center gap-2 tabular-nums">
-                      <span className="text-zinc-400 text-[11px]">
+                    <span className="font-semibold uppercase truncate">{translateSessionName(s.name)}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 tabular-nums shrink-0">
+                      <span className="text-zinc-400 text-[10px] sm:text-[11px] whitespace-nowrap">
                         {formatLocalDate(s.dateTime)}
                       </span>
-                      <span className="font-bold text-white bg-[#131722] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
+                      <span className="font-bold text-white bg-[#131722] border border-white/[0.08] px-1.5 py-0.5 rounded-md whitespace-nowrap text-[10px] sm:text-xs">
                         {formatLocalTime(s.dateTime)} HS
                       </span>
                     </div>
