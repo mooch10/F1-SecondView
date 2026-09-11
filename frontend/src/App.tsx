@@ -172,7 +172,10 @@ export function App() {
                 )}
 
                 {/* FIA Race Control Official Ticker */}
-                <RaceControlFeed messages={effectiveSnapshot?.messages || []} />
+                <RaceControlFeed
+                  messages={effectiveSnapshot?.messages || []}
+                  drivers={effectiveDrivers}
+                />
 
                 {/* 2-Tier Timing Table (Promiedos Style) with Pit Stops & DNF */}
                 {isLoading && !isSimulating ? (

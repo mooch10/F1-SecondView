@@ -28,7 +28,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
 
   const isQualy = sessionType === 'Qualifying';
-  const isRace = sessionType === 'Race';
+  const isRace = sessionType !== 'Qualifying' && sessionType !== 'Practice';
 
   const toggleExpand = (driverNumber: number) => {
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
@@ -137,17 +137,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
           return (
             <div key={d.driverNumber} className="flex flex-col">
-              {/* Promiedos-Style Official F1 Points Cutoff Barrier (Between P10 and P11) */}
+              {/* Reborde verde divisorio que delimita la zona de puntos (Top 10) */}
               {showPointsCutoff && (
-                <div className="bg-[#0b1c14] border-y border-emerald-500/40 px-3 py-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-emerald-300 select-none shadow-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>🏁 LÍMITE ZONA DE PUNTOS · TOP 10 SUMAN AL CAMPEONATO</span>
-                  </div>
-                  <span className="text-[9px] uppercase tracking-wider text-emerald-200 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
-                    P11 - P20 SIN PUNTOS
-                  </span>
-                </div>
+                <div className="h-[2px] bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.5)] my-0" />
               )}
 
               {/* Promiedos-Style Q2 Elimination Barrier (Between P10 and P11) */}
@@ -242,7 +234,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {/* Official Championship Points Badge in Race */}
                       {isRace && F1_POINTS[d.pos] && (
                         <span
-                          className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 tracking-tight shadow-xs"
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 tracking-tight shrink-0 select-none shadow-xs"
                           title={`Zona de puntos: +${F1_POINTS[d.pos]} pts para el Campeonato Mundial`}
                         >
                           +{F1_POINTS[d.pos]} PTS

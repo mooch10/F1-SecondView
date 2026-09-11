@@ -1,3 +1,5 @@
+import type { DriverLive } from '../types/f1';
+
 export function formatMessageTime(timeStr?: string): string {
   if (!timeStr) return '--:--:--';
 
@@ -28,26 +30,172 @@ export function formatMessageTime(timeStr?: string): string {
   return trimmed;
 }
 
-export function translateFIAMessage(raw?: string): string {
+export const DRIVER_SURNAMES_BY_NUMBER: Record<number, string> = {
+  1: 'Verstappen',
+  2: 'Sargeant',
+  3: 'Ricciardo',
+  4: 'Norris',
+  5: 'Bortoleto',
+  6: 'Hadjar',
+  7: 'Doohan',
+  10: 'Gasly',
+  11: 'Pérez',
+  12: 'Antonelli',
+  14: 'Alonso',
+  16: 'Leclerc',
+  18: 'Stroll',
+  20: 'Magnussen',
+  21: 'De Vries',
+  22: 'Tsunoda',
+  23: 'Albon',
+  24: 'Zhou',
+  27: 'Hülkenberg',
+  30: 'Lawson',
+  31: 'Ocon',
+  40: 'Lawson',
+  43: 'Colapinto',
+  44: 'Hamilton',
+  55: 'Sainz',
+  63: 'Russell',
+  77: 'Bottas',
+  81: 'Piastri',
+  87: 'Bearman',
+};
+
+export const DRIVER_SURNAMES_BY_CODE: Record<string, string> = {
+  VER: 'Verstappen',
+  SAR: 'Sargeant',
+  RIC: 'Ricciardo',
+  NOR: 'Norris',
+  BOR: 'Bortoleto',
+  HAD: 'Hadjar',
+  DOO: 'Doohan',
+  GAS: 'Gasly',
+  PER: 'Pérez',
+  ANT: 'Antonelli',
+  ALO: 'Alonso',
+  LEC: 'Leclerc',
+  STR: 'Stroll',
+  MAG: 'Magnussen',
+  DEV: 'De Vries',
+  TSU: 'Tsunoda',
+  ALB: 'Albon',
+  ZHO: 'Zhou',
+  HUL: 'Hülkenberg',
+  LAW: 'Lawson',
+  OCO: 'Ocon',
+  COL: 'Colapinto',
+  HAM: 'Hamilton',
+  SAI: 'Sainz',
+  RUS: 'Russell',
+  BOT: 'Bottas',
+  PIA: 'Piastri',
+  BEA: 'Bearman',
+};
+
+export function extractSurname(fullName?: string): string {
+  if (!fullName) return '';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return parts[0] || '';
+  if (parts.length >= 3 && parts[parts.length - 2].toLowerCase() === 'de') {
+    return `${parts[parts.length - 2]} ${parts[parts.length - 1]}`;
+  }
+  return parts[parts.length - 1];
+}
+
+export function resolveDriverSurname(
+  carNum?: string | number | null,
+  code?: string | null,
+  drivers?: DriverLive[]
+): string {
+  const num = carNum !== undefined && carNum !== null && carNum !== '' ? Number(carNum) : null;
+  const cleanCode = code ? code.trim().toUpperCase() : null;
+
+  if (drivers && drivers.length > 0) {
+    if (num && !isNaN(num)) {
+      const match = drivers.find((d) => d.driverNumber === num);
+      if (match) {
+        return extractSurname(match.fullName) || match.code;
+      }
+    }
+    if (cleanCode) {
+      const match = drivers.find((d) => d.code.toUpperCase() === cleanCode);
+      if (match) {
+        return extractSurname(match.fullName) || match.code;
+      }
+    }
+  }
+
+  if (cleanCode && DRIVER_SURNAMES_BY_CODE[cleanCode]) {
+    return DRIVER_SURNAMES_BY_CODE[cleanCode];
+  }
+  if (num && DRIVER_SURNAMES_BY_NUMBER[num]) {
+    return DRIVER_SURNAMES_BY_NUMBER[num];
+  }
+
+  if (cleanCode) return cleanCode;
+  if (num && !isNaN(num)) return `Auto #${num}`;
+  return 'Auto';
+}
+
+function replaceCarsWithSurnames(rawCarList: string, drivers?: DriverLive[]): string {
+  let result = rawCarList;
+  result = result.replace(/(?:CAR\s*)?(\d+)\s*\(([A-Z]+)\)/gi, (_, num, code) => {
+    return resolveDriverSurname(num, code, drivers);
+  });
+  result = result.replace(/\b(?:CAR|CARS)\s+(\d+)\b/gi, (_, num) => {
+    return resolveDriverSurname(num, null, drivers);
+  });
+  result = result.replace(/\b(\d{1,2})\b/g, (match) => {
+    const num = Number(match);
+    if (DRIVER_SURNAMES_BY_NUMBER[num]) {
+      return resolveDriverSurname(num, null, drivers);
+    }
+    return match;
+  });
+  result = result.replace(/\bAND\b/gi, 'y');
+  return result.trim();
+}
+
+function translateInfraction(raw: string): string {
+  let text = raw.trim();
+  text = text.replace(/TRACK LIMITS/gi, 'límites de pista');
+  text = text.replace(/FALSE START/gi, 'largada en falso');
+  text = text.replace(/CAUSING A COLLISION/gi, 'provocar colisión');
+  text = text.replace(/LEAVING THE TRACK AND GAINING AN ADVANTAGE/gi, 'ganar ventaja fuera de pista');
+  text = text.replace(/SPEEDING IN THE PIT LANE/gi, 'exceso de velocidad en pit lane');
+  text = text.replace(/UNSAFE RELEASE/gi, 'salida peligrosa de boxes');
+  text = text.replace(/IMPEDING/gi, 'bloquear a otro piloto');
+  return text;
+}
+
+export function translateFIAMessage(raw?: string, drivers?: DriverLive[]): string {
   if (!raw) return '';
   let text = raw.trim();
 
-  // 1. Blue Flags (Banderas azules)
+  // 1. Blue Flags (Banderas azules) -> Usar Apellido del corredor
   text = text.replace(
-    /WAVED BLUE FLAG FOR CAR (\d+) \(([A-Z]+)\)(?: TIMED AT .*)?/i,
-    'Bandera azul para auto $1 ($2)'
+    /WAVED BLUE FLAG FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?(?: TIMED AT .*)?/gi,
+    (_, num, code) => `Bandera azul para ${resolveDriverSurname(num, code, drivers)}`
   );
   text = text.replace(
-    /WAVED BLUE FLAG FOR CAR (\d+)(?: TIMED AT .*)?/i,
-    'Bandera azul para auto $1'
+    /BLUE FLAG FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?/gi,
+    (_, num, code) => `Bandera azul para ${resolveDriverSurname(num, code, drivers)}`
   );
   text = text.replace(
-    /BLUE FLAG FOR CAR (\d+) \(([A-Z]+)\)/i,
-    'Bandera azul para auto $1 ($2)'
+    /Bandera azul para auto\s*(\d+)(?:\s*\(([A-Z]+)\))?/gi,
+    (_, num, code) => `Bandera azul para ${resolveDriverSurname(num, code, drivers)}`
   );
-  text = text.replace(/BLUE FLAG FOR CAR (\d+)/i, 'Bandera azul para auto $1');
 
-  // 2. Yellow / Double Yellow / Green Flags
+  // 2. Yellow / Double Yellow / Green / Red / Chequered Flags & Sessions
+  text = text.replace(/^SESSION FINISHED$/i, 'Sesión finalizada');
+  text = text.replace(/^SESSION RESUMED$/i, 'Sesión reanudada');
+  text = text.replace(/^SESSION SUSPENDED$/i, 'Sesión suspendida (Bandera roja)');
+  text = text.replace(/^SESSION WILL NOT BE RESUMED$/i, 'La sesión no será reanudada');
+  text = text.replace(/^CHEQUERED FLAG$/i, 'Bandera a cuadros (Fin de sesión)');
+  text = text.replace(/^GREEN FLAG$/i, 'Bandera verde (Pista habilitada)');
+  text = text.replace(/^TRACK CLEAR$/i, 'Pista libre / Bandera verde');
+  text = text.replace(/^RED FLAG$/i, 'Bandera roja (Sesión detenida)');
   text = text.replace(
     /DOUBLE YELLOW FLAG IN TRACK SECTOR (\d+)/i,
     'Doble bandera amarilla en Sector $1'
@@ -60,22 +208,23 @@ export function translateFIAMessage(raw?: string): string {
     /CLEAR IN TRACK SECTOR (\d+)/i,
     'Sector $1 despejado'
   );
-  text = text.replace(/^GREEN FLAG$/i, 'Bandera verde (Pista habilitada)');
-  text = text.replace(/^TRACK CLEAR$/i, 'Pista libre / Bandera verde');
-  text = text.replace(/^CHEQUERED FLAG$/i, 'Bandera a cuadros (Fin de sesión)');
-  text = text.replace(/^RED FLAG$/i, 'Bandera roja (Sesión detenida)');
 
   // 3. Safety Car & VSC
   text = text.replace(/^SAFETY CAR DEPLOYED$/i, 'Auto de Seguridad (Safety Car) en pista');
   text = text.replace(/^VIRTUAL SAFETY CAR DEPLOYED$/i, 'Auto de Seguridad Virtual (VSC) desplegado');
   text = text.replace(/^VIRTUAL SAFETY CAR ENDING$/i, 'Finalizando Auto de Seguridad Virtual (VSC)');
   text = text.replace(/^SAFETY CAR IN THIS LAP$/i, 'Safety Car entra a boxes en esta vuelta');
+  text = text.replace(/^SAFETY CAR PERIOD ENDING$/i, 'Auto de Seguridad se retira en esta vuelta');
+  text = text.replace(
+    /^LAPPED CARS MAY NOW OVERTAKE THE SAFETY CAR$/i,
+    'Autos rezagados pueden adelantar al Safety Car'
+  );
 
-  // 4. DRS
+  // 4. DRS & Pit Lane
+  text = text.replace(/^DRS ENABLED IN ALL DETECTION ZONES$/i, 'DRS habilitado en todas las zonas');
   text = text.replace(/^DRS ENABLED$/i, 'DRS habilitado');
   text = text.replace(/^DRS DISABLED$/i, 'DRS deshabilitado');
-
-  // 5. Pit Lane
+  text = text.replace(/^GREEN LIGHT - PIT EXIT OPEN$/i, 'Luz verde - Salida de boxes abierta');
   text = text.replace(/^PIT EXIT OPEN$/i, 'Salida de boxes abierta');
   text = text.replace(/^PIT EXIT CLOSED$/i, 'Salida de boxes cerrada');
   text = text.replace(/^PIT ENTRY OPEN$/i, 'Entrada a boxes abierta');
@@ -83,41 +232,98 @@ export function translateFIAMessage(raw?: string): string {
   text = text.replace(/^PIT LANE OPEN$/i, 'Pit lane abierto');
   text = text.replace(/^PIT LANE CLOSED$/i, 'Pit lane cerrado');
 
-  // 6. Investigations & Penalties
+  // 5. Investigations & Penalties -> Usar Apellidos
   text = text.replace(
-    /INCIDENT INVOLVING CARS? (.*) UNDER INVESTIGATION/i,
-    'Incidente de auto(s) $1 bajo investigación'
+    /(?:FIA STEWARDS:\s*)?CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*(\d+)\s*SECOND TIME PENALTY FOR (.*)/gi,
+    (_, num, code, sec, reason) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      return `Penalización de ${sec}s para ${driver} por ${translateInfraction(reason)}`;
+    }
   );
   text = text.replace(
-    /INCIDENT INVOLVING CARS? (.*) - (.*)/i,
-    'Incidente de auto(s) $1 - $2'
+    /(?:FIA STEWARDS:\s*)?(\d+)\s*SECOND TIME PENALTY FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?(?:\s*-\s*(.*))?/gi,
+    (_, sec, num, code, reason) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      const r = reason ? ` por ${translateInfraction(reason)}` : '';
+      return `Penalización de ${sec}s para ${driver}${r}`;
+    }
   );
   text = text.replace(
-    /NO FURTHER ACTION FOR CARS? (.*)/i,
-    'Sin sanción para auto(s) $1'
+    /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*DRIVE THROUGH PENALTY/gi,
+    (_, num, code) => `Penalización de Drive-Through para ${resolveDriverSurname(num, code, drivers)}`
   );
   text = text.replace(
-    /CAR (\d+) \(([A-Z]+)\) - (\d+) SECOND TIME PENALTY FOR (.*)/i,
-    'Auto $1 ($2) - Penalización de $3 seg por $4'
+    /(?:TURN\s*(\d+)\s*)?INCIDENT INVOLVING CARS?\s*(.*?)\s*UNDER INVESTIGATION/gi,
+    (_, turn, cars) => {
+      const translatedCars = replaceCarsWithSurnames(cars, drivers);
+      const t = turn ? ` en curva ${turn}` : '';
+      return `Incidente${t} de ${translatedCars} bajo investigación`;
+    }
   );
   text = text.replace(
-    /CAR (\d+) - (\d+) SECOND TIME PENALTY FOR (.*)/i,
-    'Auto $1 - Penalización de $2 seg por $3'
+    /(?:TURN\s*(\d+)\s*)?INCIDENT INVOLVING CARS?\s*(.*?)\s*-\s*NOTED/gi,
+    (_, turn, cars) => {
+      const translatedCars = replaceCarsWithSurnames(cars, drivers);
+      const t = turn ? ` en curva ${turn}` : '';
+      return `Incidente${t} de ${translatedCars} anotado`;
+    }
   );
   text = text.replace(
-    /CAR (\d+) \(([A-Z]+)\) - DRIVE THROUGH PENALTY/i,
-    'Auto $1 ($2) - Penalización de Drive-Through'
+    /INCIDENT INVOLVING CARS?\s*(.*?)\s*-\s*NO FURTHER INVESTIGATION/gi,
+    (_, cars) => `Sin investigación para ${replaceCarsWithSurnames(cars, drivers)}`
+  );
+  text = text.replace(
+    /NO FURTHER ACTION FOR CARS?\s*(.*)/gi,
+    (_, cars) => `Sin sanción para ${replaceCarsWithSurnames(cars, drivers)}`
   );
 
-  // 7. Common Infractions
-  text = text.replace(/\bAND\b/g, 'y');
-  text = text.replace(/TRACK LIMITS/gi, 'límites de pista');
-  text = text.replace(/FALSE START/gi, 'largada en falso');
-  text = text.replace(/CAUSING A COLLISION/gi, 'provocar colisión');
-  text = text.replace(/LEAVING THE TRACK AND GAINING AN ADVANTAGE/gi, 'ganar ventaja fuera de pista');
-  text = text.replace(/SPEEDING IN THE PIT LANE/gi, 'exceso de velocidad en pit lane');
-  text = text.replace(/UNSAFE RELEASE/gi, 'salida peligrosa de boxes');
-  text = text.replace(/IMPEDING/gi, 'bloquear el paso a otro piloto');
+  // 6. Driver Actions & Incidents on Track
+  text = text.replace(
+    /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+STOPPED IN PIT\s*-\s*RETIRED/gi,
+    (_, num, code) => `${resolveDriverSurname(num, code, drivers)} detenido en boxes - Abandono`
+  );
+  text = text.replace(
+    /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+STOPPED ON TRACK(?: IN SECTOR (\d+))?/gi,
+    (_, num, code, sector) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      return sector
+        ? `${driver} detenido en pista en Sector ${sector}`
+        : `${driver} detenido en pista`;
+    }
+  );
+  text = text.replace(
+    /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+TAKES LEAD OF THE RACE/gi,
+    (_, num, code) => `${resolveDriverSurname(num, code, drivers)} toma la punta de la carrera`
+  );
+  text = text.replace(
+    /CHEQUERED FLAG\s*-\s*CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+WINS (.*)/gi,
+    (_, num, code, race) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      return `Bandera a cuadros - ¡${driver} gana la carrera (${race.trim()})!`;
+    }
+  );
+  text = text.replace(
+    /BLACK AND WHITE FLAG FOR CAR (\d+)(?:\s*\(([A-Z]+)\))?(?:\s*-\s*(.*))?/gi,
+    (_, num, code, reason) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      const r = reason ? ` por ${translateInfraction(reason)}` : '';
+      return `Bandera de advertencia para ${driver}${r}`;
+    }
+  );
+  text = text.replace(
+    /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s+LAP TIME (.*?) DELETED\s*-\s*(.*)/gi,
+    (_, num, code, lapTime, reason) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      return `Vuelta eliminada (${lapTime}) para ${driver} por ${translateInfraction(reason)}`;
+    }
+  );
+  text = text.replace(
+    /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*(.*)/gi,
+    (_, num, code, rest) => {
+      const driver = resolveDriverSurname(num, code, drivers);
+      return `${driver} - ${translateInfraction(rest)}`;
+    }
+  );
 
   return text;
 }

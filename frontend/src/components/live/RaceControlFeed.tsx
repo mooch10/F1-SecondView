@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Radio } from 'lucide-react';
-import type { RaceControlMessage } from '../../types/f1';
+import type { DriverLive, RaceControlMessage } from '../../types/f1';
 import {
   formatMessageTime,
   getFlagBadgeConfig,
@@ -9,9 +9,10 @@ import {
 
 interface RaceControlFeedProps {
   messages: RaceControlMessage[];
+  drivers?: DriverLive[];
 }
 
-export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages }) => {
+export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, drivers }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   if (!messages || messages.length === 0) return null;
@@ -34,7 +35,7 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages }) =>
             Control de Carrera:
           </span>
           <span className="text-xs text-zinc-200 font-mono truncate">
-            {translateFIAMessage(latestMessage.text)}
+            {translateFIAMessage(latestMessage.text, drivers)}
           </span>
           {latestFlagBadge && (
             <span
@@ -69,7 +70,7 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages }) =>
                 </span>
                 <div className="flex-1 flex items-center justify-between gap-2">
                   <span className="font-mono text-zinc-300 text-xs leading-relaxed">
-                    {translateFIAMessage(m.text)}
+                    {translateFIAMessage(m.text, drivers)}
                   </span>
                   {flagBadge && (
                     <span
