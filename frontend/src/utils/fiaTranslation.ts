@@ -30,7 +30,7 @@ export function formatMessageTime(timeStr?: string): string {
   return trimmed;
 }
 
-export const DRIVER_SURNAMES_BY_NUMBER: Record<number, string> = {
+const DRIVER_SURNAMES_BY_NUMBER: Record<number, string> = {
   1: 'Verstappen',
   2: 'Sargeant',
   3: 'Ricciardo',
@@ -62,7 +62,7 @@ export const DRIVER_SURNAMES_BY_NUMBER: Record<number, string> = {
   87: 'Bearman',
 };
 
-export const DRIVER_SURNAMES_BY_CODE: Record<string, string> = {
+const DRIVER_SURNAMES_BY_CODE: Record<string, string> = {
   VER: 'Verstappen',
   SAR: 'Sargeant',
   RIC: 'Ricciardo',
@@ -93,7 +93,7 @@ export const DRIVER_SURNAMES_BY_CODE: Record<string, string> = {
   BEA: 'Bearman',
 };
 
-export function extractSurname(fullName?: string): string {
+function extractSurname(fullName?: string): string {
   if (!fullName) return '';
   const parts = fullName.trim().split(/\s+/);
   if (parts.length <= 1) return parts[0] || '';
@@ -103,7 +103,7 @@ export function extractSurname(fullName?: string): string {
   return parts[parts.length - 1];
 }
 
-export function resolveDriverSurname(
+function resolveDriverSurname(
   carNum?: string | number | null,
   code?: string | null,
   drivers?: DriverLive[]

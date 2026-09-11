@@ -17,7 +17,7 @@ import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
 import type { ActiveTab } from './types/f1';
 
-export function App() {
+function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('live');
   const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
