@@ -62,20 +62,31 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
     );
   }
 
+  const isDriverRetired = (d: DriverLive) =>
+    d.status === 'DNF' ||
+    d.status === 'DNS' ||
+    d.status === 'DSQ' ||
+    d.gap === 'RET' ||
+    d.interval === 'RET' ||
+    d.pos >= 90;
+
+  const activeDrivers = drivers.filter((d) => !isDriverRetired(d));
+  const retiredDrivers = drivers.filter((d) => isDriverRetired(d));
+
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
       {/* Table Header (Promiedos Style) */}
       <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
         <div className="col-span-1 text-center">POS</div>
         <div className="col-span-4 sm:col-span-3">PILOTO</div>
-        <div className="col-span-2 text-center">GOMA</div>
+        <div className="col-span-2 text-center">GOMA / PIT</div>
         <div className="col-span-3 text-right">GAP / INT</div>
         <div className="col-span-2 sm:col-span-3 text-right">VUELTA</div>
       </div>
 
-      {/* Driver Rows */}
+      {/* Active Driver Rows (P1..P19) */}
       <div className="divide-y divide-white/[0.04]">
-        {drivers.map((d) => {
+        {activeDrivers.map((d) => {
           const isExpanded = expandedDriver === d.driverNumber;
           const drsActive = isDrsDanger(d.interval, d.isDrsZone);
 
@@ -140,11 +151,27 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
                   </div>
                 </div>
 
-                {/* Tyre Compound Badge */}
-                <div className="col-span-2 flex items-center justify-center">
+                {/* Tyre Compound Badge + Pit Stops Count Badge (1P, 2P) */}
+                <div className="col-span-2 flex items-center justify-center gap-1.5">
                   {getTyreBadge(d.tyre) || (
                     <span className="text-[10px] text-zinc-600 font-mono">-</span>
                   )}
+                  <span
+                    className={`inline-flex items-center justify-center font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                      d.inPit
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse'
+                        : (d.pitStops ?? 0) > 0
+                          ? 'bg-[#1C2230] text-zinc-200 border-white/[0.12] shadow-xs'
+                          : 'bg-[#0B0E14] text-zinc-500 border-white/[0.05]'
+                    }`}
+                    title={
+                      d.inPit
+                        ? 'En calle de boxes'
+                        : `${d.pitStops ?? 0} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
+                    }
+                  >
+                    {d.inPit ? 'BOX' : `${d.pitStops ?? 0}P`}
+                  </span>
                 </div>
 
                 {/* Gap & Interval (DRS highlight) */}
@@ -210,11 +237,16 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
                         ({d.teamName})
                       </span>
                     </div>
-                    {d.status !== 'ACTIVE' && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                        {d.status}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] text-zinc-400">
+                        Paradas: <strong className="text-white">{d.pitStops ?? 0}</strong>
                       </span>
-                    )}
+                      {d.status !== 'ACTIVE' && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                          {d.status}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Sectors and Speed Trap Grid */}
@@ -261,6 +293,140 @@ export const TimingTable: React.FC<TimingTableProps> = ({ drivers }) => {
           );
         })}
       </div>
+
+      {/* Abandonos / DNF Segregated Section */}
+      {retiredDrivers.length > 0 && (
+        <div className="border-t-2 border-white/[0.1] bg-[#0E1118]">
+          {/* Section Header */}
+          <div className="flex items-center justify-between px-3 py-2 bg-[#171B26] border-b border-white/[0.08] select-none">
+            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-rose-400 uppercase">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+              <span>Abandonos / DNF</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 tracking-widest uppercase">
+              {retiredDrivers.length} {retiredDrivers.length === 1 ? 'PILOTO' : 'PILOTOS'}
+            </span>
+          </div>
+
+          {/* Retired Driver Rows */}
+          <div className="divide-y divide-white/[0.04]">
+            {retiredDrivers.map((d) => {
+              const isExpanded = expandedDriver === d.driverNumber;
+
+              return (
+                <div
+                  key={d.driverNumber}
+                  className="flex flex-col opacity-85 hover:opacity-100 transition-opacity"
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(d.driverNumber)}
+                    className={`w-full text-left grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors select-none ${
+                      isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    {/* DNF Badge in Position column */}
+                    <div className="col-span-1 flex items-center justify-center">
+                      <span className="font-mono text-[10px] font-black text-rose-400 bg-rose-500/15 px-1 py-0.5 rounded border border-rose-500/30">
+                        DNF
+                      </span>
+                    </div>
+
+                    {/* Team stripe + Code & Number */}
+                    <div className="col-span-4 sm:col-span-3 flex items-center gap-2 overflow-hidden">
+                      <span
+                        className="w-1 h-6 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: d.teamColor || '#71717A' }}
+                      />
+                      <div className="flex flex-col leading-tight truncate">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-sm font-bold text-zinc-300 tracking-tight">
+                            {d.code}
+                          </span>
+                          <span className="text-[10px] text-zinc-500 font-mono">
+                            #{d.driverNumber}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-400 truncate hidden sm:block">
+                          {d.fullName}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tyre Compound Badge + Pit */}
+                    <div className="col-span-2 flex items-center justify-center gap-1.5">
+                      {getTyreBadge(d.tyre) || (
+                        <span className="text-[10px] text-zinc-600 font-mono">-</span>
+                      )}
+                      <span className="inline-flex items-center justify-center font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border bg-[#0B0E14] text-zinc-500 border-white/[0.05]">
+                        {d.pitStops ?? 0}P
+                      </span>
+                    </div>
+
+                    {/* Retired Lap / Status */}
+                    <div className="col-span-2 text-right flex flex-col justify-center leading-tight">
+                      <span className="font-mono text-xs font-semibold text-zinc-300">
+                        {d.retiredLap ? `Vta ${d.retiredLap}` : 'RET'}
+                      </span>
+                      <span className="text-[9px] text-zinc-500 font-mono">
+                        RETIRO
+                      </span>
+                    </div>
+
+                    {/* Retirement Cause Badge */}
+                    <div className="col-span-3 text-right flex items-center justify-end gap-1.5">
+                      <span
+                        className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 truncate max-w-[130px] sm:max-w-[180px]"
+                        title={d.retirementReason || 'Abandono'}
+                      >
+                        {d.retirementReason || 'Abandono'}
+                      </span>
+                      <div className="text-zinc-500 hidden sm:block">
+                        {isExpanded ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Level 2: Expanded Details for Retired Driver */}
+                  {isExpanded && (
+                    <div className="bg-[#0B0E14] border-t border-b border-white/[0.06] px-4 py-3 text-xs">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: d.teamColor }}
+                          />
+                          <span className="font-bold text-white text-sm">
+                            {d.fullName}
+                          </span>
+                          <span className="text-zinc-400 text-xs">
+                            ({d.teamName})
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                          {d.retirementReason ? `DNF • ${d.retirementReason}` : 'DNF'}
+                        </span>
+                      </div>
+                      <div className="text-zinc-400 text-xs font-mono">
+                        Cese de telemetría registrado en la vuelta{' '}
+                        <strong className="text-white">{d.retiredLap || '--'}</strong>. Motivo:{' '}
+                        <span className="text-rose-300 font-semibold">
+                          {d.retirementReason || 'Abandono'}
+                        </span>
+                        .
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

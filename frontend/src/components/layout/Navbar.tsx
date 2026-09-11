@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Sun } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 
 interface NavbarProps {
@@ -9,6 +9,9 @@ interface NavbarProps {
   isLiveConnected: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  isWakeLocked?: boolean;
+  onToggleWakeLock?: () => void;
+  isWakeLockSupported?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -18,6 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   isLiveConnected,
   isDarkMode,
   onToggleTheme,
+  isWakeLocked = false,
+  onToggleWakeLock,
+  isWakeLockSupported = false,
 }) => {
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
@@ -40,7 +46,34 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Right Status Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Screen Wake Lock Indicator / Toggle */}
+            {isWakeLockSupported && onToggleWakeLock && (
+              <button
+                type="button"
+                onClick={onToggleWakeLock}
+                title={
+                  isWakeLocked
+                    ? 'Pantalla siempre activa (evita que el celular se apague)'
+                    : 'Activar pantalla encendida continua'
+                }
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono font-bold transition-all border select-none cursor-pointer ${
+                  isWakeLocked
+                    ? 'bg-[#FFD800]/15 text-[#FFD800] border-[#FFD800]/30 shadow-xs'
+                    : 'bg-[#131722] text-zinc-400 border-white/[0.08] hover:text-zinc-200'
+                }`}
+              >
+                <Sun
+                  className={`w-3 h-3 ${
+                    isWakeLocked ? 'text-[#FFD800] fill-[#FFD800]' : 'text-zinc-400'
+                  }`}
+                />
+                <span className="hidden xs:inline">
+                  {isWakeLocked ? 'PANTALLA ON' : 'PANTALLA AUTO'}
+                </span>
+              </button>
+            )}
+
             {/* Live Feed Status (Compact pro telemetry style) */}
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-400 tracking-tight select-none">
               <span

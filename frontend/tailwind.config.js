@@ -41,6 +41,9 @@ export default {
         chakra: ['"Chakra Petch"', 'sans-serif'],
         'mono-jetbrains': ['"JetBrains Mono"', 'monospace'],
       },
+      screens: {
+        xs: '480px',
+      },
     },
   },
   plugins: [],
