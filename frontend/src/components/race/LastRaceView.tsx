@@ -11,19 +11,24 @@ import {
 import { fetchLastRaceDetail } from '../../services/api';
 import type { JolpicaRaceDetail, JolpicaRaceResult } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useSeries } from '../../hooks/useSeries';
 
 export const LastRaceView: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { series, theme } = useSeries();
   const [raceDetail, setRaceDetail] = useState<JolpicaRaceDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
+  const [selectedSession, setSelectedSession] = useState<'feature' | 'sprint'>('feature');
 
   useEffect(() => {
-    fetchLastRaceDetail().then((data) => {
+    setLoading(true);
+    fetchLastRaceDetail(series).then((data) => {
       setRaceDetail(data);
+      setSelectedSession('feature');
       setLoading(false);
     });
-  }, []);
+  }, [series]);
 
   if (loading) {
     return (
@@ -43,9 +48,19 @@ export const LastRaceView: React.FC = () => {
     );
   }
 
-  const winner = raceDetail.results[0];
-  const podium = raceDetail.results.slice(0, 3);
-  const fastestLap = raceDetail.fastestLap;
+  const activeResults =
+    selectedSession === 'sprint' && raceDetail.sprintRace
+      ? raceDetail.sprintRace.results
+      : raceDetail.featureRace?.results || raceDetail.results;
+
+  const activeFastestLap =
+    selectedSession === 'sprint' && raceDetail.sprintRace
+      ? raceDetail.sprintRace.fastestLap
+      : raceDetail.featureRace?.fastestLap || raceDetail.fastestLap;
+
+  const winner = activeResults[0];
+  const podium = activeResults.slice(0, 3);
+  const hasSprint = Boolean(raceDetail.sprintRace);
 
   const toggleExpand = (driverNumber: number) => {
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
@@ -53,13 +68,55 @@ export const LastRaceView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Session Switcher if Sprint & Feature exist */}
+      {hasSprint && (
+        <div className="flex items-center gap-1 bg-[#131722] p-1 rounded-xl border border-white/[0.08] text-xs font-mono select-none">
+          <button
+            type="button"
+            onClick={() => setSelectedSession('feature')}
+            className={`flex-1 py-1.5 px-3 rounded-lg font-bold uppercase transition-all cursor-pointer text-center ${
+              selectedSession === 'feature'
+                ? 'text-white shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+            style={selectedSession === 'feature' ? { backgroundColor: theme.primary } : undefined}
+          >
+            {series === 'f1'
+              ? (lang === 'es' ? 'Carrera Principal' : 'Grand Prix')
+              : (lang === 'es' ? 'Carrera Principal (Feature)' : 'Feature Race')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedSession('sprint')}
+            className={`flex-1 py-1.5 px-3 rounded-lg font-bold uppercase transition-all cursor-pointer text-center ${
+              selectedSession === 'sprint'
+                ? 'text-white shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+            style={selectedSession === 'sprint' ? { backgroundColor: theme.primary } : undefined}
+          >
+            {lang === 'es' ? 'Carrera Sprint' : 'Sprint Race'}
+          </button>
+        </div>
+      )}
+
       {/* Grand Prix Showcase Hero Card */}
-      <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 relative shadow-sm">
+      <div
+        className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm"
+        style={{ borderTop: `3px solid ${theme.primary}` }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest">
-                {t.lastRace.round} {raceDetail.round} • {t.lastRace.lastGp}
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest border"
+                style={{
+                  backgroundColor: `${theme.primary}20`,
+                  color: theme.primary,
+                  borderColor: `${theme.primary}40`,
+                }}
+              >
+                {series.toUpperCase()} • {t.lastRace.round} {raceDetail.round} • {t.lastRace.lastGp}
               </span>
               <span className="text-[11px] text-zinc-400 font-mono">
                 {raceDetail.date}
@@ -69,7 +126,7 @@ export const LastRaceView: React.FC = () => {
               {raceDetail.raceName}
             </h2>
             <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-mono">
-              <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
+              <MapPin className="w-3.5 h-3.5" style={{ color: theme.primary }} />
               <span>{raceDetail.circuitName}</span>
             </div>
           </div>
@@ -147,7 +204,7 @@ export const LastRaceView: React.FC = () => {
         </div>
 
         {/* Fastest Lap Callout */}
-        {fastestLap && (
+        {activeFastestLap && (
           <div className="mt-2.5 bg-purple-950/20 border border-purple-500/30 rounded-lg px-3 py-1.5 flex items-center justify-between font-mono text-xs">
             <div className="flex items-center gap-2 text-purple-300">
               <Zap className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
@@ -155,15 +212,15 @@ export const LastRaceView: React.FC = () => {
                 {t.lastRace.fastestLapTitle}
               </span>
               <strong className="text-white font-sans">
-                {fastestLap.driverName} ({fastestLap.code})
+                {activeFastestLap.driverName} ({activeFastestLap.code})
               </strong>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-zinc-400 text-[10px] hidden sm:inline">
-                {t.lastRace.lap} {fastestLap.lap}
+                {t.lastRace.lap} {activeFastestLap.lap}
               </span>
               <span className="font-black text-purple-300 bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 rounded text-[11px]">
-                {fastestLap.time} 🟣
+                {activeFastestLap.time} 🟣
               </span>
             </div>
           </div>
@@ -184,11 +241,12 @@ export const LastRaceView: React.FC = () => {
 
         {/* Rows */}
         <div className="divide-y divide-white/[0.04]">
-          {raceDetail.results.map((d: JolpicaRaceResult, index: number) => {
+          {activeResults.map((d: JolpicaRaceResult, index: number) => {
             const isExpanded = expandedDriver === d.driverNumber;
-            const prevDriver = index > 0 ? raceDetail.results[index - 1] : null;
-            const showPointsCutoff = d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
-            const isPointsZone = d.pos <= 10;
+            const prevDriver = index > 0 ? activeResults[index - 1] : null;
+            const pointsCutoff = selectedSession === 'sprint' ? (series === 'f2' ? 8 : 10) : 10;
+            const showPointsCutoff = d.pos > pointsCutoff && (!prevDriver || prevDriver.pos <= pointsCutoff);
+            const isPointsZone = d.pos <= pointsCutoff;
 
             return (
               <div key={d.driverNumber} className="flex flex-col">

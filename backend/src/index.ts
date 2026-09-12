@@ -1,14 +1,16 @@
 import { createServer } from 'node:http';
 import { JolpicaClient } from './jolpica.js';
+import { JuniorSeriesClient } from './juniorSeries.js';
 import { buildLiveSnapshot } from './normalizer.js';
 import { OpenF1Client } from './openf1.js';
-import type { LiveSnapshot } from './types.js';
+import type { LiveSnapshot, SeriesCategory } from './types.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 const SESSION_KEY = process.env.SESSION_KEY ? Number(process.env.SESSION_KEY) : 9590; // Default: Monza 2024
 
 const openF1 = new OpenF1Client();
 const jolpica = new JolpicaClient();
+const juniorSeries = new JuniorSeriesClient();
 
 let cachedSnapshot: LiveSnapshot | null = null;
 let isUpdating = false;
@@ -86,6 +88,26 @@ setInterval(
   5 * 60 * 1000,
 );
 
+function resolveSeriesAndPath(url: URL): { series: SeriesCategory; cleanPath: string } {
+  let cleanPath = url.pathname;
+  let series: SeriesCategory = 'f1';
+
+  if (url.pathname.startsWith('/api/f2/') || url.pathname === '/api/f2') {
+    series = 'f2';
+    cleanPath = url.pathname.replace(/^\/api\/f2/, '/api');
+  } else if (url.pathname.startsWith('/api/f3/') || url.pathname === '/api/f3') {
+    series = 'f3';
+    cleanPath = url.pathname.replace(/^\/api\/f3/, '/api');
+  } else {
+    const q = url.searchParams.get('series')?.toLowerCase();
+    if (q === 'f2' || q === 'f3') {
+      series = q;
+    }
+  }
+
+  return { series, cleanPath };
+}
+
 const server = createServer(async (req, res) => {
   const clientIp =
     (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
@@ -118,9 +140,10 @@ const server = createServer(async (req, res) => {
 
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
+    const { series, cleanPath } = resolveSeriesAndPath(url);
 
-    // Endpoint 1: Live Timing (High-frequency, 1s Edge Cache)
-    if (url.pathname === '/api/live.json' || url.pathname === '/api/live') {
+    // Endpoint 1: Live Timing (High-frequency, 1s Edge Cache) - F1
+    if (cleanPath === '/api/live.json' || cleanPath === '/api/live') {
       if (!cachedSnapshot) {
         await updateSnapshot();
       }
@@ -133,8 +156,18 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    // Endpoint 2: Schedule & Race Calendar (Low-frequency, 1h Edge Cache)
-    if (url.pathname === '/api/schedule.json' || url.pathname === '/api/schedule') {
+    // Endpoint 2: Schedule & Race Calendar (Low-frequency, 1h Edge Cache) - Multi-series
+    if (cleanPath === '/api/schedule.json' || cleanPath === '/api/schedule') {
+      if (series === 'f2' || series === 'f3') {
+        const races = await juniorSeries.getSchedule(series);
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        });
+        res.end(JSON.stringify({ races, total: races.length, series }, null, 2));
+        return;
+      }
+
       const [races, lastRace] = await Promise.all([
         jolpica.getSchedule(),
         jolpica.getLastRacePodium(),
@@ -143,23 +176,45 @@ const server = createServer(async (req, res) => {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       });
-      res.end(JSON.stringify({ races, total: races.length, lastRace }, null, 2));
+      res.end(JSON.stringify({ races, total: races.length, lastRace, series: 'f1' }, null, 2));
       return;
     }
 
-    // Endpoint 3: World Championship Standings (Low-frequency, 1h Edge Cache)
-    if (url.pathname === '/api/standings.json' || url.pathname === '/api/standings') {
+    // Endpoint 3: World Championship Standings (Low-frequency, 1h Edge Cache) - Multi-series
+    if (cleanPath === '/api/standings.json' || cleanPath === '/api/standings') {
+      if (series === 'f2' || series === 'f3') {
+        const standings = await juniorSeries.getStandings(series);
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        });
+        res.end(JSON.stringify({ ...standings, series }, null, 2));
+        return;
+      }
+
       const standings = await jolpica.getStandings();
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       });
-      res.end(JSON.stringify(standings, null, 2));
+      res.end(JSON.stringify({ ...standings, series: 'f1' }, null, 2));
       return;
     }
 
-    // Endpoint 4: Qualifying Session Results (Low-frequency, 1h Edge Cache)
-    if (url.pathname === '/api/qualifying.json' || url.pathname === '/api/qualifying') {
+    // Endpoint 4: Driver Changes Alerts (F2 / F3)
+    if (cleanPath === '/api/driver-changes.json' || cleanPath === '/api/driver-changes') {
+      const targetSeries = series === 'f1' ? 'f2' : series;
+      const changes = juniorSeries.getDriverChanges(targetSeries);
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      });
+      res.end(JSON.stringify({ changes, series: targetSeries }, null, 2));
+      return;
+    }
+
+    // Endpoint 5: Qualifying Session Results (Low-frequency, 1h Edge Cache)
+    if (cleanPath === '/api/qualifying.json' || cleanPath === '/api/qualifying') {
       const qualifying = await jolpica.getQualifying();
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
@@ -169,12 +224,12 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    // Endpoint 5: Race Results (Last GP or by ?round=X) (Low-frequency, 1h Edge Cache)
+    // Endpoint 6: Race Results (Last GP or by ?round=X) (Low-frequency, 1h Edge Cache) - Multi-series
     if (
-      url.pathname === '/api/race-results.json' ||
-      url.pathname === '/api/race-results' ||
-      url.pathname === '/api/last-race.json' ||
-      url.pathname === '/api/last-race'
+      cleanPath === '/api/race-results.json' ||
+      cleanPath === '/api/race-results' ||
+      cleanPath === '/api/last-race.json' ||
+      cleanPath === '/api/last-race'
     ) {
       let roundParam = url.searchParams.get('round') || 'last';
       if (roundParam !== 'last') {
@@ -187,6 +242,16 @@ const server = createServer(async (req, res) => {
         roundParam = String(roundNum);
       }
 
+      if (series === 'f2' || series === 'f3') {
+        const raceDetail = await juniorSeries.getRaceResults(series, roundParam);
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        });
+        res.end(JSON.stringify(raceDetail || { error: 'No data available' }, null, 2));
+        return;
+      }
+
       const raceDetail = await jolpica.getRaceResults(roundParam);
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
@@ -197,18 +262,21 @@ const server = createServer(async (req, res) => {
     }
 
     // Root / Status Endpoint
-    if (url.pathname === '/' || url.pathname === '') {
+    if (cleanPath === '/' || cleanPath === '') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(
         JSON.stringify(
           {
-            name: 'Delta • F1 Telemetry API',
+            name: 'Delta • F1, F2 & F3 Telemetry API',
             status: 'online',
+            seriesSupported: ['f1', 'f2', 'f3'],
             endpoints: [
               '/health',
               '/api/live.json',
-              '/api/schedule.json',
-              '/api/standings.json',
+              '/api/schedule.json (supports ?series=f2|f3 or /api/f2/schedule.json)',
+              '/api/standings.json (supports ?series=f2|f3 or /api/f2/standings.json)',
+              '/api/race-results.json (supports ?series=f2|f3 or /api/f2/race-results.json)',
+              '/api/driver-changes.json (supports ?series=f2|f3)',
               '/api/qualifying.json',
               '/api/last-race.json',
             ],

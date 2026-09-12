@@ -1,26 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { Award, Trophy, Users } from 'lucide-react';
-import { fetchStandings } from '../../services/api';
-import type { StandingsData } from '../../types/f1';
+import { fetchDriverChanges, fetchStandings } from '../../services/api';
+import type { DriverChangeAlert, StandingsData } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useSeries } from '../../hooks/useSeries';
+import { DriverChangesAlert } from './DriverChangesAlert';
 
 export const StandingsView: React.FC = () => {
-  const { lang: _lang, t } = useLanguage();
+  const { t } = useLanguage();
+  const { series, theme } = useSeries();
   const [data, setData] = useState<StandingsData | null>(null);
+  const [driverChanges, setDriverChanges] = useState<DriverChangeAlert[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
 
   useEffect(() => {
-    fetchStandings().then((res) => {
-      setData(res);
+    setLoading(true);
+    Promise.all([
+      fetchStandings(series),
+      series !== 'f1' ? fetchDriverChanges(series) : Promise.resolve([]),
+    ]).then(([standingsRes, changesRes]) => {
+      setData(standingsRes);
+      setDriverChanges(changesRes);
       setLoading(false);
     });
-  }, []);
+  }, [series]);
 
   if (loading) {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-400 font-mono text-xs">
-        <Trophy className="w-6 h-6 text-zinc-400 mx-auto mb-2 animate-pulse" />
+        <Trophy
+          className="w-6 h-6 mx-auto mb-2 animate-pulse"
+          style={{ color: theme.primary }}
+        />
         <span>{t.standings.loading}</span>
       </div>
     );
@@ -43,9 +55,10 @@ export const StandingsView: React.FC = () => {
           onClick={() => setSubTab('drivers')}
           className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer ${
             subTab === 'drivers'
-              ? 'text-white border-[#E10600]'
+              ? 'text-white'
               : 'text-zinc-400 hover:text-white border-transparent'
           }`}
+          style={subTab === 'drivers' ? { borderColor: theme.primary } : undefined}
         >
           <Award className="w-3.5 h-3.5 text-[#FFD60A]" />
           <span>{t.standings.driversTab}</span>
@@ -56,14 +69,20 @@ export const StandingsView: React.FC = () => {
           onClick={() => setSubTab('constructors')}
           className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer ${
             subTab === 'constructors'
-              ? 'text-white border-[#E10600]'
+              ? 'text-white'
               : 'text-zinc-400 hover:text-white border-transparent'
           }`}
+          style={subTab === 'constructors' ? { borderColor: theme.primary } : undefined}
         >
           <Users className="w-3.5 h-3.5 text-[#27F4D2]" />
           <span>{t.standings.constructorsTab}</span>
         </button>
       </div>
+
+      {/* Driver Lineup Changes Notification for F2 / F3 */}
+      {driverChanges.length > 0 && (
+        <DriverChangesAlert changes={driverChanges} series={series} />
+      )}
 
       {/* DRIVERS TABLE */}
       {subTab === 'drivers' && (
@@ -79,7 +98,7 @@ export const StandingsView: React.FC = () => {
           <div className="divide-y divide-white/[0.08]">
             {data.drivers.map((d) => (
               <div
-                key={d.code}
+                key={`${d.code}-${d.pos}`}
                 className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.02] transition-colors"
               >
                 {/* Pos */}

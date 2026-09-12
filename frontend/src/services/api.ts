@@ -1,9 +1,11 @@
 import type {
+  DriverChangeAlert,
   JolpicaQualifyingSession,
   JolpicaRace,
   JolpicaRaceDetail,
   LiveSnapshot,
   ScheduleResponse,
+  SeriesCategory,
   StandingsData,
 } from '../types/f1';
 
@@ -26,9 +28,10 @@ export async function fetchLiveSnapshot(): Promise<LiveSnapshot | null> {
   }
 }
 
-export async function fetchSchedule(): Promise<JolpicaRace[]> {
+export async function fetchSchedule(series: SeriesCategory = 'f1'): Promise<JolpicaRace[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/schedule.json`, {
+    const query = series !== 'f1' ? `?series=${series}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/schedule.json${query}`, {
       headers: { Accept: 'application/json' },
     });
     if (!res.ok) {
@@ -37,14 +40,15 @@ export async function fetchSchedule(): Promise<JolpicaRace[]> {
     const data = (await res.json()) as ScheduleResponse;
     return data.races || [];
   } catch (err) {
-    console.warn('[API] Failed to fetch schedule:', err);
+    console.warn(`[API] Failed to fetch schedule for ${series}:`, err);
     return [];
   }
 }
 
-export async function fetchScheduleDetails(): Promise<ScheduleResponse | null> {
+export async function fetchScheduleDetails(series: SeriesCategory = 'f1'): Promise<ScheduleResponse | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/schedule.json`, {
+    const query = series !== 'f1' ? `?series=${series}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/schedule.json${query}`, {
       headers: { Accept: 'application/json' },
     });
     if (!res.ok) {
@@ -52,14 +56,15 @@ export async function fetchScheduleDetails(): Promise<ScheduleResponse | null> {
     }
     return (await res.json()) as ScheduleResponse;
   } catch (err) {
-    console.warn('[API] Failed to fetch schedule details:', err);
+    console.warn(`[API] Failed to fetch schedule details for ${series}:`, err);
     return null;
   }
 }
 
-export async function fetchStandings(): Promise<StandingsData | null> {
+export async function fetchStandings(series: SeriesCategory = 'f1'): Promise<StandingsData | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/standings.json`, {
+    const query = series !== 'f1' ? `?series=${series}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/standings.json${query}`, {
       headers: { Accept: 'application/json' },
     });
     if (!res.ok) {
@@ -67,7 +72,7 @@ export async function fetchStandings(): Promise<StandingsData | null> {
     }
     return (await res.json()) as StandingsData;
   } catch (err) {
-    console.warn('[API] Failed to fetch standings:', err);
+    console.warn(`[API] Failed to fetch standings for ${series}:`, err);
     return null;
   }
 }
@@ -87,9 +92,10 @@ export async function fetchQualifying(): Promise<JolpicaQualifyingSession | null
   }
 }
 
-export async function fetchLastRaceDetail(): Promise<JolpicaRaceDetail | null> {
+export async function fetchLastRaceDetail(series: SeriesCategory = 'f1'): Promise<JolpicaRaceDetail | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/last-race.json`, {
+    const query = series !== 'f1' ? `?series=${series}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/last-race.json${query}`, {
       headers: { Accept: 'application/json' },
     });
     if (!res.ok) {
@@ -97,14 +103,18 @@ export async function fetchLastRaceDetail(): Promise<JolpicaRaceDetail | null> {
     }
     return (await res.json()) as JolpicaRaceDetail;
   } catch (err) {
-    console.warn('[API] Failed to fetch last race details:', err);
+    console.warn(`[API] Failed to fetch last race details for ${series}:`, err);
     return null;
   }
 }
 
-export async function fetchRaceResultsByRound(round: number): Promise<JolpicaRaceDetail | null> {
+export async function fetchRaceResultsByRound(
+  round: number,
+  series: SeriesCategory = 'f1'
+): Promise<JolpicaRaceDetail | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/race-results.json?round=${round}`, {
+    const query = series !== 'f1' ? `&series=${series}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/race-results.json?round=${round}${query}`, {
       headers: { Accept: 'application/json' },
     });
     if (!res.ok) {
@@ -112,7 +122,24 @@ export async function fetchRaceResultsByRound(round: number): Promise<JolpicaRac
     }
     return (await res.json()) as JolpicaRaceDetail;
   } catch (err) {
-    console.warn(`[API] Failed to fetch race results for round ${round}:`, err);
+    console.warn(`[API] Failed to fetch race results for round ${round} in ${series}:`, err);
     return null;
+  }
+}
+
+export async function fetchDriverChanges(series: SeriesCategory = 'f2'): Promise<DriverChangeAlert[]> {
+  try {
+    const target = series === 'f1' ? 'f2' : series;
+    const res = await fetch(`${API_BASE_URL}/api/driver-changes.json?series=${target}`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return data.changes || [];
+  } catch (err) {
+    console.warn(`[API] Failed to fetch driver changes for ${series}:`, err);
+    return [];
   }
 }

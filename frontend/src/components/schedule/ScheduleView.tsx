@@ -12,9 +12,11 @@ import {
 import { fetchRaceResultsByRound, fetchSchedule } from '../../services/api';
 import type { JolpicaRace, JolpicaRaceDetail } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useSeries } from '../../hooks/useSeries';
 
 export const ScheduleView: React.FC = () => {
   const { lang, t } = useLanguage();
+  const { series } = useSeries();
   const [races, setRaces] = useState<JolpicaRace[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedRound, setExpandedRound] = useState<number | null>(null);
@@ -31,7 +33,11 @@ export const ScheduleView: React.FC = () => {
   const [now] = useState<number>(() => Date.now());
 
   useEffect(() => {
-    fetchSchedule().then((data) => {
+    setLoading(true);
+    setRaces([]);
+    setExpandedRound(null);
+    setRoundResults({});
+    fetchSchedule(series).then((data) => {
       setRaces(data);
       setLoading(false);
       const next = data.find((r) => r.isNext);
@@ -39,7 +45,8 @@ export const ScheduleView: React.FC = () => {
         setExpandedRound(next.round);
       }
     });
-  }, []);
+  }, [series]);
+
 
   const nextRace = races.find((r) => r.isNext);
 
@@ -87,7 +94,7 @@ export const ScheduleView: React.FC = () => {
       if (!roundResults[round]) {
         setLoadingResultRound(round);
         try {
-          const detail = await fetchRaceResultsByRound(round);
+          const detail = await fetchRaceResultsByRound(round, series);
           if (detail) {
             setRoundResults((prev) => ({ ...prev, [round]: detail }));
           }

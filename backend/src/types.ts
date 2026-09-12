@@ -4,7 +4,9 @@ export type DriverStatus = 'ACTIVE' | 'PIT' | 'DNF' | 'DNS' | 'DSQ';
 
 export type FlagStatus = 'GREEN' | 'YELLOW' | 'VSC' | 'SC' | 'RED' | 'CHEQUERED';
 
-export type SessionState = 'SCHEDULED' | 'IN_PROGRESS' | 'FINISHED' | 'SUSPENDED';
+import type { JolpicaRaceResult } from './jolpica.js';
+
+export type SessionState = 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED' | 'SUSPENDED';
 
 export type SessionType = 'Race' | 'Qualifying' | 'Practice';
 
@@ -140,4 +142,52 @@ export interface LastRacePodium {
     teamColor: string;
     timeOrStatus: string;
   }>;
+}
+
+export type SeriesCategory = 'f1' | 'f2' | 'f3';
+
+export interface DriverChangeAlert {
+  id: string;
+  series: 'f2' | 'f3';
+  team: string;
+  teamColor: string;
+  carNumber: number;
+  originalDriver: string;
+  newDriver: string;
+  effectiveRound: number;
+  roundName: string;
+  reason?: string;
+}
+
+export interface JuniorSessionResult {
+  sessionType: 'Sprint' | 'Feature';
+  date?: string;
+  fastestLap?: {
+    code: string;
+    driverName: string;
+    teamName: string;
+    time: string;
+    lap: number;
+  };
+  results: JolpicaRaceResult[];
+}
+
+export interface JuniorRaceDetail {
+  round: number | string;
+  season: string;
+  raceName: string;
+  circuitName: string;
+  country?: string;
+  date: string;
+  series: 'f2' | 'f3';
+  results: JolpicaRaceResult[];
+  fastestLap?: {
+    code: string;
+    driverName: string;
+    teamName: string;
+    time: string;
+    lap: number;
+  };
+  sprintRace?: JuniorSessionResult | null;
+  featureRace?: JuniorSessionResult | null;
 }

@@ -258,7 +258,60 @@ export interface JolpicaRaceDetail {
     lap: number;
   };
   results: JolpicaRaceResult[];
+  series?: SeriesCategory;
+  country?: string;
+  sprintRace?: JuniorSessionResult | null;
+  featureRace?: JuniorSessionResult | null;
 }
 
 export type ActiveTab = 'live' | 'last-race' | 'qualy' | 'schedule' | 'standings' | 'hero';
+
+export type SeriesCategory = 'f1' | 'f2' | 'f3';
+
+export interface DriverChangeAlert {
+  id: string;
+  series: 'f2' | 'f3';
+  team: string;
+  teamColor: string;
+  carNumber: number;
+  originalDriver: string;
+  newDriver: string;
+  effectiveRound: number;
+  roundName: string;
+  reason?: string;
+}
+
+export interface JuniorSessionResult {
+  sessionType: 'Sprint' | 'Feature';
+  date?: string;
+  fastestLap?: {
+    code: string;
+    driverName: string;
+    teamName: string;
+    time: string;
+    lap: number;
+  };
+  results: JolpicaRaceResult[];
+}
+
+export interface JuniorRaceDetail {
+  round: number | string;
+  season: string;
+  raceName: string;
+  circuitName: string;
+  country?: string;
+  date: string;
+  series: 'f2' | 'f3';
+  results: JolpicaRaceResult[];
+  fastestLap?: {
+    code: string;
+    driverName: string;
+    teamName: string;
+    time: string;
+    lap: number;
+  };
+  sprintRace?: JuniorSessionResult | null;
+  featureRace?: JuniorSessionResult | null;
+}
+
 
