@@ -245,23 +245,23 @@ export const ScheduleView: React.FC = () => {
                     r.isNext ? 'bg-[#E10600]/[0.04]' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <span className="font-mono text-xs font-bold text-zinc-400 w-7 text-center tabular-nums shrink-0">
                       R{String(r.round).padStart(2, '0')}
                     </span>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
-                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0">
+                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate min-w-0 shrink">
                           {r.raceName}
                         </span>
                         {r.isNext && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30 shrink-0">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30 shrink-0 whitespace-nowrap">
                             {t.schedule.nextBadge}
                           </span>
                         )}
                         {isPast && (
-                          <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.2 rounded shrink-0">
-                            <CheckCircle2 className="w-3 h-3" /> {t.schedule.resultsAvailable}
+                          <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
+                            <CheckCircle2 className="w-3 h-3 shrink-0" /> {t.schedule.resultsAvailable}
                           </span>
                         )}
                       </div>

@@ -127,11 +127,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       ) : (
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center">{t.live.table.pos}</div>
-          <div className="col-span-4 sm:col-span-3">{t.live.table.driver}</div>
+          <div className="col-span-3 sm:col-span-3">{t.live.table.driver}</div>
           <div className="col-span-2 sm:col-span-2 text-center">{t.live.table.tyre}</div>
-          <div className="col-span-1 sm:col-span-1 text-center">{t.live.table.pit}</div>
-          <div className="col-span-2 sm:col-span-3 text-right">GAP / INT</div>
-          <div className="col-span-2 sm:col-span-2 text-right">{t.live.table.lastLap}</div>
+          <div className="hidden sm:block sm:col-span-1 text-center">{t.live.table.pit}</div>
+          <div className="col-span-3 sm:col-span-3 text-right pr-2">GAP / INT</div>
+          <div className="col-span-3 sm:col-span-2 text-right">{t.live.table.lastLap}</div>
         </div>
       )}
 
@@ -176,11 +176,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   isPointsZone ? 'border-l-2 border-emerald-500/60' : 'border-l-2 border-transparent'
                 }`}
               >
-                {/* Pos & Movement (Posición fija e inmutable; badge flotante sin desplazamiento) */}
+                {/* Pos & Movement (Columna limpia sin solapamiento con la barra de equipo) */}
                 <div className="col-span-1 flex items-center justify-center">
-                  <div className="relative flex items-center justify-center w-5">
+                  <div className="flex flex-col items-center justify-center leading-none select-none">
                     <span
-                      className={`font-mono text-sm font-black font-tabular text-center ${
+                      className={`font-mono text-xs sm:text-sm font-black font-tabular text-center leading-none ${
                         d.pos === 1
                           ? 'text-[#FFD60A]'
                           : d.pos <= 3
@@ -194,16 +194,16 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </span>
                     {!isQualy && d.posChange > 0 && (
                       <span
-                        className="absolute left-full ml-0.5 top-1/2 -translate-y-1/2 text-[9px] text-emerald-400 font-bold font-mono leading-none whitespace-nowrap select-none"
-                        title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos}` : `Started P${d.gridPosition ?? d.pos}`}
+                        className="text-[8px] sm:text-[9px] text-emerald-400 font-bold font-mono leading-none mt-1 select-none tabular-nums"
+                        title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos} (+${d.posChange})` : `Started P${d.gridPosition ?? d.pos} (+${d.posChange})`}
                       >
                         ▲{d.posChange}
                       </span>
                     )}
                     {!isQualy && d.posChange < 0 && (
                       <span
-                        className="absolute left-full ml-0.5 top-1/2 -translate-y-1/2 text-[9px] text-rose-400 font-bold font-mono leading-none whitespace-nowrap select-none"
-                        title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos}` : `Started P${d.gridPosition ?? d.pos}`}
+                        className="text-[8px] sm:text-[9px] text-rose-400 font-bold font-mono leading-none mt-1 select-none tabular-nums"
+                        title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos} (-${Math.abs(d.posChange)})` : `Started P${d.gridPosition ?? d.pos} (-${Math.abs(d.posChange)})`}
                       >
                         ▼{Math.abs(d.posChange)}
                       </span>
@@ -212,11 +212,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 </div>
 
                 {/* Team stripe + Code & Number */}
-                <div
-                  className={`${
-                    isQualy ? 'col-span-3 sm:col-span-3' : 'col-span-4 sm:col-span-3'
-                  } flex items-center gap-1.5 sm:gap-2 overflow-hidden`}
-                >
+                <div className="col-span-3 sm:col-span-3 flex items-center gap-1.5 sm:gap-2 overflow-hidden">
                   <span
                     className="w-1 h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
@@ -350,15 +346,37 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </>
                 ) : (
                   <>
-                    {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado */}
-                    <div className="col-span-2 sm:col-span-2 flex items-center justify-center">
+                    {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado (+ pit badge en mobile) */}
+                    <div className="col-span-2 sm:col-span-2 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
                       {getTyreBadge(d.tyre) || (
                         <span className="text-[10px] text-zinc-600 font-mono">-</span>
                       )}
+                      {/* En mobile, badge compacto de pit integrado */}
+                      <div className="sm:hidden">
+                        {d.inPit ? (
+                          <span
+                            className="px-1 py-0.2 rounded text-[8px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse"
+                            title={lang === 'es' ? 'En calle de boxes' : 'In pit lane'}
+                          >
+                            {lang === 'es' ? 'BOX' : 'PIT'}
+                          </span>
+                        ) : (d.pitStops ?? 0) > 0 ? (
+                          <span
+                            className="font-mono text-[8px] font-bold text-zinc-400 bg-[#1C2230] px-1 py-0.2 rounded border border-white/[0.08]"
+                            title={
+                              lang === 'es'
+                                ? `${d.pitStops} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
+                                : `${d.pitStops} pit ${d.pitStops === 1 ? 'stop' : 'stops'}`
+                            }
+                          >
+                            {d.pitStops}P
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
 
-                    {/* Race PIT Stop Counter */}
-                    <div className="col-span-1 sm:col-span-1 flex items-center justify-center">
+                    {/* Race PIT Stop Counter (Desktop dedicado) */}
+                    <div className="hidden sm:flex sm:col-span-1 items-center justify-center">
                       {d.inPit ? (
                         <span
                           className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse"
@@ -384,8 +402,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       )}
                     </div>
 
-                    {/* Race Gap & Interval (DRS highlight) */}
-                    <div className="col-span-2 sm:col-span-3 text-right flex flex-col justify-center leading-tight">
+                    {/* Race Gap & Interval (DRS highlight) - 3 columnas con espacio suficiente */}
+                    <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1.5 sm:pr-2">
                       <span className="font-mono text-xs font-semibold text-zinc-200 font-tabular truncate">
                         {d.gap}
                       </span>
@@ -403,8 +421,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       )}
                     </div>
 
-                    {/* Race Last Lap & Fastest Lap Badge */}
-                    <div className="col-span-2 sm:col-span-2 text-right flex items-center justify-end gap-1.5">
+                    {/* Race Last Lap & Fastest Lap Badge - 3 columnas en mobile con separación clara */}
+                    <div className="col-span-3 sm:col-span-2 text-right flex items-center justify-end gap-1 sm:gap-1.5 pl-1">
                       <div className="flex flex-col leading-tight">
                         <span
                           className={`font-mono text-xs font-tabular ${

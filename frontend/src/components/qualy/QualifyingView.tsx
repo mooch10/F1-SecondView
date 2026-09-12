@@ -1022,7 +1022,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>
-              {lang === 'es' ? 'TELEMETRÍA EN VIVO (OpenF1)' : 'LIVE TELEMETRY (OpenF1)'}
+              {lang === 'es' ? 'TELEMETRÍA EN VIVO' : 'LIVE TELEMETRY'}
             </span>
           </button>
 
