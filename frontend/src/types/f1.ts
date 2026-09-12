@@ -33,6 +33,7 @@ export interface DriverLive {
   gap: string;
   interval: string;
   isDrsZone: boolean;
+  isOvertakeZone?: boolean;
   lastLapTime: string;
   bestLapTime?: string;
   bestLapDuration?: number | null;

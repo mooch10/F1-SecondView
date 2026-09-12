@@ -9,7 +9,7 @@ Plataforma mobile-first de telemetría y cronometraje en tiempo real para Fórmu
 - **Mapa de Circuito Interactivo 2D**:
   - Trazado vectorial dinámico con orientación geográfica real.
   - Motor de circulación continua de monoplazas a 60 FPS.
-  - Zonas DRS iluminadas, sectores S1/S2/S3 y línea de meta.
+  - Zonas de Overtake iluminadas, sectores S1/S2/S3 y línea de meta.
   - Sistema anti-solapamiento y carrusel de pilotos con ficha HUD táctil.
 - **Calificación Oficial F1**:
   - Clasificación reglamentaria: Top 10 con tiempos de Q3, P11-P15 con Q2, P16-P20 con Q1.
@@ -17,7 +17,7 @@ Plataforma mobile-first de telemetría y cronometraje en tiempo real para Fórmu
   - Tiempos de sector (S1, S2, S3) y barra de mini-sectores (récord de sesión, mejor personal, sin mejora).
 - **Carrera en Tiempo Real**:
   - Clasificación en vivo con compuesto de neumáticos, vueltas de goma y paradas en boxes.
-  - Indicadores de zona DRS activa, penalizaciones FIA oficiales (+5s, +10s) y puntos del campeonato mundial (+25 PTS).
+  - Indicadores de Modo Overtake activo (< 1.0s), penalizaciones FIA oficiales (+5s, +10s) y puntos del campeonato mundial (+25 PTS).
 - **Mobile-First & PWA**:
   - Optimizado para pantallas táctiles móviles.
   - Wake Lock API para mantener la pantalla encendida durante las carreras.

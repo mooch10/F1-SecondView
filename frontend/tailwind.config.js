@@ -15,6 +15,7 @@ export default {
           border: 'rgba(255, 255, 255, 0.08)',
           red: '#E10600',
           yellow: '#FFD60A',
+          overtake: '#27F4D2',
           drs: '#27F4D2',
           purple: '#BD00FF',
         },

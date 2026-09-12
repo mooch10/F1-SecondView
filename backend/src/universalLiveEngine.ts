@@ -334,6 +334,7 @@ export function generateUniversalLiveSnapshot(
       gap,
       interval,
       isDrsZone: !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      isOvertakeZone: !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
       lastLapTime: effectiveBestStr,
       bestLapTime: effectiveBestStr,
       bestLapDuration: effectiveBestDur,

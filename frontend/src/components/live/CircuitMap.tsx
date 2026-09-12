@@ -176,15 +176,15 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       center: p0,
     };
 
-    // Landmarks: S1 Split Point, S2 Split Point, DRS straightaways
+    // Landmarks: S1 Split Point, S2 Split Point, Overtake straightaways
     const s1SplitPt = pts[s1EndIdx];
     const s2SplitPt = pts[s2EndIdx];
 
-    // DRS Zone 1 (Start/Finish straight) & DRS Zone 2 (back straight)
-    const drs1Start = getPointAtProgress(0.93);
-    const drs1End = getPointAtProgress(0.06);
-    const drs2Start = getPointAtProgress(0.44);
-    const drs2End = getPointAtProgress(0.55);
+    // Overtake Zone 1 (Start/Finish straight) & Overtake Zone 2 (back straight)
+    const ot1Start = getPointAtProgress(0.93);
+    const ot1End = getPointAtProgress(0.06);
+    const ot2Start = getPointAtProgress(0.44);
+    const ot2End = getPointAtProgress(0.55);
 
     return {
       canvasW,
@@ -198,9 +198,9 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       startFinish,
       s1SplitPt,
       s2SplitPt,
-      drsZones: [
-        { start: drs1Start, end: drs1End, label: 'DRS 1' },
-        { start: drs2Start, end: drs2End, label: 'DRS 2' },
+      overtakeZones: [
+        { start: ot1Start, end: ot1End, label: 'OVERTAKE 1' },
+        { start: ot2Start, end: ot2End, label: 'OVERTAKE 2' },
       ],
     };
   }, [circuitTrack]);

@@ -284,10 +284,10 @@ export function translateFIAMessage(raw?: string, drivers?: DriverLive[], lang: 
     'Autos rezagados pueden adelantar al Safety Car'
   );
 
-  // 4. DRS & Pit Lane
-  text = text.replace(/^DRS ENABLED IN ALL DETECTION ZONES$/i, 'DRS habilitado en todas las zonas');
-  text = text.replace(/^DRS ENABLED$/i, 'DRS habilitado');
-  text = text.replace(/^DRS DISABLED$/i, 'DRS deshabilitado');
+  // 4. Overtake Mode & Pit Lane
+  text = text.replace(/^(?:DRS|OVERTAKE) ENABLED IN ALL DETECTION ZONES$/i, 'Modo Overtake habilitado en todas las zonas');
+  text = text.replace(/^(?:DRS|OVERTAKE) ENABLED$/i, 'Modo Overtake habilitado');
+  text = text.replace(/^(?:DRS|OVERTAKE) DISABLED$/i, 'Modo Overtake deshabilitado');
   text = text.replace(/^GREEN LIGHT - PIT EXIT OPEN$/i, 'Luz verde - Salida de boxes abierta');
   text = text.replace(/^PIT EXIT OPEN$/i, 'Salida de boxes abierta');
   text = text.replace(/^PIT EXIT CLOSED$/i, 'Salida de boxes cerrada');

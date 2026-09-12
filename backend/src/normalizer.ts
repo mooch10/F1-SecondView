@@ -457,6 +457,7 @@ export function buildLiveSnapshot(
       intervalNum !== null &&
       intervalNum > 0 &&
       intervalNum <= 1.0;
+    const isOvertakeZone = isDrsZone;
 
     // Tyre calculations
     let tyreInfo = null;
@@ -562,6 +563,7 @@ export function buildLiveSnapshot(
       gap,
       interval: intervalStr,
       isDrsZone,
+      isOvertakeZone,
       lastLapTime: isDnf ? 'OUT' : formatLapTime(latestLap?.lap_duration),
       bestLapTime,
       bestLapDuration,

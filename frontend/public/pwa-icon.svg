@@ -27,7 +27,7 @@
     <path d="M68 0 H130 C185 0 215 45 215 115 C215 185 185 230 130 230 H68 Z M98 38 V192 H125 C160 192 178 165 178 115 C178 65 160 38 125 38 Z" />
   </g>
 
-  <!-- DRS Pulse Dot -->
+  <!-- Overtake Pulse Dot -->
   <circle cx="410" cy="120" r="16" fill="#27F4D2" />
   <circle cx="410" cy="120" r="28" stroke="#27F4D2" stroke-width="4" fill="none" opacity="0.4" />
 </svg>

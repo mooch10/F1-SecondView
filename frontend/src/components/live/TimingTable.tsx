@@ -158,7 +158,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   const isCloseInterval = (interval: string) => {
     if (!interval || interval === 'LEADER' || interval.includes('LAP') || interval === 'RET') return false;
     const num = parseFloat(interval.replace('+', '').replace('s', ''));
-    return !isNaN(num) && num > 0 && num < 1.0;
+    return !isNaN(num) && num > 0 && num <= 1.0;
   };
 
   if (!drivers || drivers.length === 0) {
@@ -303,9 +303,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 {pinnedDriver.gap}
               </span>
               {pinnedDriver.interval && pinnedDriver.interval !== 'LEADER' && (
-                <span className="font-mono text-[10px] text-zinc-400 truncate">
-                  INT {pinnedDriver.interval}
-                </span>
+                <div className="flex items-center justify-end gap-1">
+                  {!isQualy && (pinnedDriver.isOvertakeZone || pinnedDriver.isDrsZone || isCloseInterval(pinnedDriver.interval)) && (
+                    <span
+                      className="px-1 py-0.2 rounded text-[7px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse"
+                      title={lang === 'es' ? 'Modo Overtake habilitado (< 1.0s)' : 'Overtake Mode active (< 1.0s)'}
+                    >
+                      OVERTAKE
+                    </span>
+                  )}
+                  <span className="font-mono text-[10px] text-zinc-400 truncate">
+                    INT {pinnedDriver.interval}
+                  </span>
+                </div>
               )}
             </div>
 
@@ -349,7 +359,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       <div className="divide-y divide-white/[0.04]">
         {activeDrivers.map((d, index) => {
           const isExpanded = expandedDriver === d.driverNumber;
-          const closeInterval = !isQualy && isCloseInterval(d.interval);
+          const closeInterval = !isQualy && (d.isOvertakeZone || d.isDrsZone || isCloseInterval(d.interval));
           const isPinned = pinnedDriverNumber === d.driverNumber;
           const prevDriver = index > 0 ? activeDrivers[index - 1] : null;
           const isPointsZone = isRace && d.pos <= 10;
@@ -390,7 +400,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 }}
                 className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none cursor-pointer ${
                   isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
-                } ${closeInterval ? 'bg-amber-950/10' : ''} ${
+                } ${closeInterval ? 'bg-emerald-950/15' : ''} ${
                   isPinned
                     ? 'border-l-2 border-amber-400 bg-amber-500/[0.04]'
                     : isPointsZone
@@ -651,15 +661,25 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         {d.gap}
                       </span>
                       {d.interval && d.interval !== 'LEADER' && (
-                        <span
-                          className={`font-mono text-[10px] font-tabular flex items-center justify-end ${
-                            closeInterval
-                              ? 'text-amber-400 font-extrabold'
-                              : 'text-zinc-500'
-                          }`}
-                        >
-                          {d.interval}
-                        </span>
+                        <div className="flex items-center justify-end gap-1 sm:gap-1.5">
+                          {closeInterval && (
+                            <span
+                              className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
+                              title={lang === 'es' ? 'Modo Overtake habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode active (< 1.0s behind car ahead)'}
+                            >
+                              OVERTAKE
+                            </span>
+                          )}
+                          <span
+                            className={`font-mono text-[10px] font-tabular ${
+                              closeInterval
+                                ? 'text-emerald-400 font-extrabold'
+                                : 'text-zinc-500'
+                            }`}
+                          >
+                            {d.interval}
+                          </span>
+                        </div>
                       )}
                     </div>
 
@@ -734,6 +754,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40">
                           {lang === 'es' ? 'PENALIZACIÓN' : 'PENALTY'}: +{d.penaltySeconds}s
+                        </span>
+                      )}
+                      {closeInterval && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          {lang === 'es' ? 'OVERTAKE HABILITADO (< 1.0s)' : 'OVERTAKE AVAILABLE (< 1.0s)'}
                         </span>
                       )}
                       <span className="font-mono text-[10px] text-zinc-400">

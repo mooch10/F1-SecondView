@@ -309,7 +309,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             </div>
           </div>
 
-          {/* Gap / Interval Banner (NO DRS Mention) */}
+          {/* Gap / Interval Banner */}
           <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
             <div className="text-[10px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
               {t.live.h2h.gapBetween}
@@ -326,7 +326,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
               )}
             </div>
 
-            {/* Close Battle Alert (< 1.0s) - Pure track battle, no DRS tag */}
+            {/* Close Battle Alert (< 1.0s) - Overtake Mode */}
             {isCloseBattle && (
               <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
