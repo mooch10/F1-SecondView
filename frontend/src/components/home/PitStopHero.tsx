@@ -90,7 +90,7 @@ export const PitStopHero: React.FC<PitStopHeroProps> = ({ onEnterDelta }) => {
   const shakeY = phase === 'burnout' ? (Math.random() - 0.5) * 5 : 0;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-white/[0.08] bg-[#06070A] select-none min-h-[580px] sm:min-h-[620px] flex flex-col items-center justify-between p-4 sm:p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 w-full h-[100dvh] overflow-hidden bg-[#06070A] select-none flex flex-col items-center justify-between p-4 sm:p-6">
       {/* GARAGE OVERHEAD & DEPTH BACKGROUND */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Overhead Garage Pit Lane Roof Lights */}
@@ -133,15 +133,20 @@ export const PitStopHero: React.FC<PitStopHeroProps> = ({ onEnterDelta }) => {
       </div>
 
       {/* TOP HEADER: Brand */}
-      <div className="relative z-20 w-full flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md bg-[#E10600] flex items-center justify-center font-black text-white text-[10px] italic shadow-sm">
+      <div className="relative z-20 w-full max-w-4xl flex items-center justify-between text-xs font-mono">
+        <button
+          type="button"
+          onClick={onEnterDelta}
+          className="flex items-center gap-2 cursor-pointer group focus:outline-none"
+          title="Ingresar a DELTA"
+        >
+          <div className="w-6 h-6 rounded-lg bg-[#E10600] group-hover:bg-[#ff1a14] flex items-center justify-center font-black text-white text-xs italic shadow-sm transition-transform active:scale-95">
             D
           </div>
-          <span className="font-bold uppercase tracking-widest text-zinc-300">
+          <span className="font-bold uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors">
             DELTA PIT GARAGE
           </span>
-        </div>
+        </button>
       </div>
 
       {/* OVERHEAD PIT STOP GANTRY / LOLLIPOP */}
@@ -395,14 +400,8 @@ export const PitStopHero: React.FC<PitStopHeroProps> = ({ onEnterDelta }) => {
         )}
       </div>
 
-      {/* BOTTOM FOOTER STATUS */}
-      <div className="relative z-20 w-full flex items-center justify-between text-[10px] font-mono text-zinc-500 border-t border-white/[0.06] pt-2">
-        <span className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E10600]" />
-          <span>DELTA 2026 LIVERY</span>
-        </span>
-        <span className="text-zinc-400 font-bold">PIT WALL</span>
-      </div>
+      {/* Subtle bottom spacer for balanced vertical centering */}
+      <div className="relative z-20 w-full h-4 pointer-events-none" />
     </div>
   );
 };
