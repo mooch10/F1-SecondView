@@ -34,14 +34,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2.5 group cursor-pointer text-left focus:outline-none"
             title="Inicio / Pit Stop DELTA"
           >
-            <div className="w-6 h-6 rounded-xs bg-[#E10600] group-hover:bg-[#ff1a14] flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-transform active:scale-95">
+            <div className="w-6 h-6 rounded-lg bg-[#E10600] group-hover:bg-[#ff1a14] flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-transform active:scale-95">
               D
             </div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold tracking-tight text-zinc-100 group-hover:text-white text-base uppercase italic font-sans transition-colors">
                 DELTA
               </span>
-              <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-xs bg-[#131722] text-zinc-400 group-hover:text-zinc-200 uppercase border border-white/[0.08] hidden min-[380px]:inline-block transition-colors">
+              <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 group-hover:text-zinc-200 uppercase border border-white/[0.08] hidden min-[380px]:inline-block transition-colors">
                 F1 TELEMETRY
               </span>
             </div>

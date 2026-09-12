@@ -132,24 +132,16 @@ export const PitStopHero: React.FC<PitStopHeroProps> = ({ onEnterDelta }) => {
         )}
       </div>
 
-      {/* TOP HEADER: Escape & Brand */}
+      {/* TOP HEADER: Brand */}
       <div className="relative z-20 w-full flex items-center justify-between text-xs font-mono">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-xs bg-[#E10600] flex items-center justify-center font-black text-white text-[10px] italic shadow-sm">
+          <div className="w-5 h-5 rounded-md bg-[#E10600] flex items-center justify-center font-black text-white text-[10px] italic shadow-sm">
             D
           </div>
           <span className="font-bold uppercase tracking-widest text-zinc-300">
             DELTA PIT GARAGE
           </span>
         </div>
-
-        <button
-          type="button"
-          onClick={onEnterDelta}
-          className="px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer text-[11px] font-bold tracking-wider uppercase"
-        >
-          <span>SALTAR AL TIMING →</span>
-        </button>
       </div>
 
       {/* OVERHEAD PIT STOP GANTRY / LOLLIPOP */}
@@ -318,7 +310,7 @@ export const PitStopHero: React.FC<PitStopHeroProps> = ({ onEnterDelta }) => {
             <path d="M 174 98 L 186 98 L 183 160 L 177 160 Z" fill="url(#racingRed)" />
 
             {/* [D] DELTA Logo Crest on Nose Cone */}
-            <rect x="172" y="120" width="16" height="16" rx="3" fill="#E10600" stroke="#FF4D47" strokeWidth="1" />
+            <rect x="172" y="120" width="16" height="16" rx="4.5" fill="#E10600" stroke="#FF4D47" strokeWidth="1" />
             <text x="180" y="132" textAnchor="middle" fill="#FFFFFF" fontSize="11" fontWeight="900" fontStyle="italic" fontFamily="sans-serif">
               D
             </text>
@@ -367,11 +359,6 @@ export const PitStopHero: React.FC<PitStopHeroProps> = ({ onEnterDelta }) => {
         {phase === 'reveal' && (
           <div className="absolute inset-0 flex items-center justify-center z-30 p-2 animate-in fade-in zoom-in-95 duration-500">
             <div className="w-full max-w-sm bg-[#0C0E15]/90 backdrop-blur-xl border border-white/15 rounded-2xl p-5 sm:p-6 text-center space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E10600]/15 border border-[#E10600]/40 text-[10px] font-mono font-bold text-[#E10600] uppercase tracking-widest">
-                <span>⚡ PIT STOP OFICIAL • 2.04s</span>
-              </div>
-
               {/* Punchy Headline */}
               <div className="space-y-1">
                 <h2 className="text-2xl sm:text-3xl font-black italic uppercase tracking-tight text-white font-sans">
