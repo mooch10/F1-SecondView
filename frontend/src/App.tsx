@@ -12,6 +12,7 @@ import { QualifyingView } from './components/qualy/QualifyingView';
 import { LastRaceView } from './components/race/LastRaceView';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { StandingsView } from './components/standings/StandingsView';
+import { PitStopHero } from './components/home/PitStopHero';
 import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
 import { useTheme } from './hooks/useTheme';
@@ -179,6 +180,10 @@ function App() {
               </div>
             )}
           </>
+        )}
+
+        {activeTab === 'hero' && (
+          <PitStopHero onEnterDelta={() => setActiveTab('live')} />
         )}
 
         {activeTab === 'last-race' && <LastRaceView />}

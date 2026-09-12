@@ -260,5 +260,5 @@ export interface JolpicaRaceDetail {
   results: JolpicaRaceResult[];
 }
 
-export type ActiveTab = 'live' | 'last-race' | 'qualy' | 'schedule' | 'standings';
+export type ActiveTab = 'live' | 'last-race' | 'qualy' | 'schedule' | 'standings' | 'hero';
 
