@@ -12,6 +12,7 @@ import { QualifyingView } from './components/qualy/QualifyingView';
 import { LastRaceView } from './components/race/LastRaceView';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { StandingsView } from './components/standings/StandingsView';
+import { HeroView } from './components/hero/HeroView';
 import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
 import { useTheme } from './hooks/useTheme';
@@ -19,6 +20,7 @@ import { useWakeLock } from './hooks/useWakeLock';
 import type { ActiveTab } from './types/f1';
 
 function App() {
+  const [showHero, setShowHero] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('live');
   const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
@@ -57,15 +59,19 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-zinc-100 flex flex-col font-chakra antialiased">
+      {/* Hero Welcome Screen with Franco Colapinto */}
+      {showHero && <HeroView onEnter={() => setShowHero(false)} />}
+
       {/* Top Navigation Bar */}
       <Navbar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            isLiveActive={isLiveSessionActive}
-            isLiveConnected={isLiveConnected}
-            isDarkMode={isDarkMode}
-            onToggleTheme={toggleTheme}
-          />
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isLiveActive={isLiveSessionActive}
+        isLiveConnected={isLiveConnected}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleTheme}
+        onReturnToHero={() => setShowHero(true)}
+      />
 
           {/* Main Content Area */}
           <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-3 flex flex-col gap-3 pb-16">

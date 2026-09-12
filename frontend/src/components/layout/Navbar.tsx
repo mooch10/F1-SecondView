@@ -11,6 +11,7 @@ interface NavbarProps {
   isLiveConnected: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  onReturnToHero?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -20,6 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isLiveConnected,
   isDarkMode,
   onToggleTheme,
+  onReturnToHero,
 }) => {
   const { lang, toggleLang, t } = useLanguage();
   const { series, setSeries, theme } = useSeries();
@@ -33,9 +35,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               type="button"
-              onClick={() => setActiveTab('live')}
+              onClick={() => (onReturnToHero ? onReturnToHero() : setActiveTab('live'))}
               className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
-              title="Inicio DELTA"
+              title="Portada / Inicio DELTA"
             >
               <div
                 className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-all active:scale-95 shrink-0"
