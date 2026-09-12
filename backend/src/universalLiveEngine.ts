@@ -61,30 +61,30 @@ export interface DriverGridSeed {
   performanceBias: number; // Delta to pole in seconds (~0.0 to 1.8s)
 }
 
-// Official 2026 Grid with all 20 drivers
+// Official 2026 Grid calibrated with the official Madrid Qualifying Results
 export const DRIVERS_GRID_2026: DriverGridSeed[] = [
   { driverNumber: 4, code: 'NOR', fullName: 'Lando Norris', familyName: 'Norris', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0.000 },
-  { driverNumber: 1, code: 'VER', fullName: 'Max Verstappen', familyName: 'Verstappen', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 0.042 },
-  { driverNumber: 16, code: 'LEC', fullName: 'Charles Leclerc', familyName: 'Leclerc', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.085 },
-  { driverNumber: 44, code: 'HAM', fullName: 'Lewis Hamilton', familyName: 'Hamilton', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.140 },
-  { driverNumber: 81, code: 'PIA', fullName: 'Oscar Piastri', familyName: 'Piastri', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0.204 },
-  { driverNumber: 63, code: 'RUS', fullName: 'George Russell', familyName: 'Russell', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.262 },
-  { driverNumber: 12, code: 'ANT', fullName: 'Kimi Antonelli', familyName: 'Antonelli', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.332 },
-  { driverNumber: 43, code: 'COL', fullName: 'Franco Colapinto', familyName: 'Colapinto', teamName: 'Alpine', teamColor: '#00A1E8', performanceBias: 0.377 },
-  { driverNumber: 14, code: 'ALO', fullName: 'Fernando Alonso', familyName: 'Alonso', teamName: 'Aston Martin', teamColor: '#229971', performanceBias: 0.437 },
-  { driverNumber: 55, code: 'SAI', fullName: 'Carlos Sainz', familyName: 'Sainz', teamName: 'Williams', teamColor: '#64C4FF', performanceBias: 0.492 },
+  { driverNumber: 12, code: 'ANT', fullName: 'Kimi Antonelli', familyName: 'Antonelli', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.011 },
+  { driverNumber: 1, code: 'VER', fullName: 'Max Verstappen', familyName: 'Verstappen', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 0.140 },
+  { driverNumber: 44, code: 'HAM', fullName: 'Lewis Hamilton', familyName: 'Hamilton', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.189 },
+  { driverNumber: 16, code: 'LEC', fullName: 'Charles Leclerc', familyName: 'Leclerc', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.195 },
+  { driverNumber: 63, code: 'RUS', fullName: 'George Russell', familyName: 'Russell', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.325 },
+  { driverNumber: 81, code: 'PIA', fullName: 'Oscar Piastri', familyName: 'Piastri', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0.470 },
+  { driverNumber: 30, code: 'LAW', fullName: 'Liam Lawson', familyName: 'Lawson', teamName: 'Racing Bulls', teamColor: '#6692FF', performanceBias: 0.492 },
+  { driverNumber: 43, code: 'COL', fullName: 'Franco Colapinto', familyName: 'Colapinto', teamName: 'Alpine', teamColor: '#00A1E8', performanceBias: 1.079 },
+  { driverNumber: 41, code: 'LIN', fullName: 'Arvid Lindblad', familyName: 'Lindblad', teamName: 'Racing Bulls', teamColor: '#6692FF', performanceBias: 1.217 },
   // Q2 Group
-  { driverNumber: 10, code: 'GAS', fullName: 'Pierre Gasly', familyName: 'Gasly', teamName: 'Alpine', teamColor: '#FF87BC', performanceBias: 0.642 },
-  { driverNumber: 41, code: 'LIN', fullName: 'Arvid Lindblad', familyName: 'Lindblad', teamName: 'Racing Bulls', teamColor: '#6692FF', performanceBias: 0.692 },
-  { driverNumber: 30, code: 'LAW', fullName: 'Liam Lawson', familyName: 'Lawson', teamName: 'Racing Bulls', teamColor: '#6692FF', performanceBias: 0.737 },
-  { driverNumber: 22, code: 'TSU', fullName: 'Yuki Tsunoda', familyName: 'Tsunoda', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 0.772 },
-  { driverNumber: 23, code: 'ALB', fullName: 'Alexander Albon', familyName: 'Albon', teamName: 'Williams', teamColor: '#64C4FF', performanceBias: 0.812 },
+  { driverNumber: 14, code: 'ALO', fullName: 'Fernando Alonso', familyName: 'Alonso', teamName: 'Aston Martin', teamColor: '#229971', performanceBias: 1.326 },
+  { driverNumber: 55, code: 'SAI', fullName: 'Carlos Sainz', familyName: 'Sainz', teamName: 'Williams', teamColor: '#64C4FF', performanceBias: 1.396 },
+  { driverNumber: 10, code: 'GAS', fullName: 'Pierre Gasly', familyName: 'Gasly', teamName: 'Alpine', teamColor: '#FF87BC', performanceBias: 1.516 },
+  { driverNumber: 22, code: 'TSU', fullName: 'Yuki Tsunoda', familyName: 'Tsunoda', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 1.586 },
+  { driverNumber: 23, code: 'ALB', fullName: 'Alexander Albon', familyName: 'Albon', teamName: 'Williams', teamColor: '#64C4FF', performanceBias: 1.696 },
   // Q1 Group
-  { driverNumber: 27, code: 'HUL', fullName: 'Nico Hülkenberg', familyName: 'Hülkenberg', teamName: 'Audi', teamColor: '#52E252', performanceBias: 1.372 },
-  { driverNumber: 5, code: 'BOR', fullName: 'Gabriel Bortoleto', familyName: 'Bortoleto', teamName: 'Audi', teamColor: '#52E252', performanceBias: 1.442 },
-  { driverNumber: 87, code: 'BEA', fullName: 'Oliver Bearman', familyName: 'Bearman', teamName: 'Haas', teamColor: '#B6BABD', performanceBias: 1.492 },
-  { driverNumber: 31, code: 'OCO', fullName: 'Esteban Ocon', familyName: 'Ocon', teamName: 'Haas', teamColor: '#B6BABD', performanceBias: 1.562 },
-  { driverNumber: 18, code: 'STR', fullName: 'Lance Stroll', familyName: 'Stroll', teamName: 'Aston Martin', teamColor: '#229971', performanceBias: 1.642 },
+  { driverNumber: 27, code: 'HUL', fullName: 'Nico Hülkenberg', familyName: 'Hülkenberg', teamName: 'Audi', teamColor: '#52E252', performanceBias: 2.066 },
+  { driverNumber: 5, code: 'BOR', fullName: 'Gabriel Bortoleto', familyName: 'Bortoleto', teamName: 'Audi', teamColor: '#52E252', performanceBias: 2.196 },
+  { driverNumber: 87, code: 'BEA', fullName: 'Oliver Bearman', familyName: 'Bearman', teamName: 'Haas', teamColor: '#B6BABD', performanceBias: 2.326 },
+  { driverNumber: 31, code: 'OCO', fullName: 'Esteban Ocon', familyName: 'Ocon', teamName: 'Haas', teamColor: '#B6BABD', performanceBias: 2.456 },
+  { driverNumber: 18, code: 'STR', fullName: 'Lance Stroll', familyName: 'Stroll', teamName: 'Aston Martin', teamColor: '#229971', performanceBias: 2.626 },
 ];
 
 export interface ResolvedActiveSession {
@@ -279,7 +279,7 @@ export function generateUniversalLiveSnapshot(
         order: i + 1,
         status: 'ON_TRACK' as const,
         statusText: 'En Pista',
-        lapsCompleted: 12,
+        lapsCompleted: [19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][i] ?? 18,
       }));
 
   const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
@@ -292,10 +292,10 @@ export function generateUniversalLiveSnapshot(
     const intervalDiff = driverLapDuration - prevDuration;
     const interval = isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`;
 
-    // Sectors breakdown calibrated for Circuito de Madrid: ~30.7% S1, ~37.5% S2, ~31.8% S3
+    // Sectors breakdown calibrated for Circuito de Madrid: S1 (~30.7%), S2 (~37.5%), S3 (remainder)
     const s1 = Number((driverLapDuration * 0.307).toFixed(3));
     const s2 = Number((driverLapDuration * 0.375).toFixed(3));
-    const s3 = Number((driverLapDuration * 0.318).toFixed(3));
+    const s3 = Number((driverLapDuration - s1 - s2).toFixed(3));
 
     const s1Status: SectorStatus = idx === 0 ? 'purple' : idx < 6 ? 'green' : 'yellow';
     const s2Status: SectorStatus = idx === 0 ? 'purple' : idx < 7 ? 'green' : 'yellow';

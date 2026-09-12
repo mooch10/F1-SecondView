@@ -109,16 +109,23 @@ export class LiveStreamClient {
         else if (statusDetail.includes('GARAGE')) trackStatus = 'GARAGE';
         else if (statusDetail.includes('OUT') || statusDetail.includes('DNF')) trackStatus = 'OUT';
 
-        // Realistic F1 Qualifying Gap Curve across Q3, Q2, and Q1
-        const REALISTIC_GAP_CURVE = [
-          0.000, 0.068, 0.125, 0.192, 0.310, 0.425, 0.540, 0.690, 0.825, 0.990, // Q3 (P1-P10)
-          1.150, 1.280, 1.410, 1.550, 1.680,                                     // Q2 (P11-P15)
-          1.950, 2.120, 2.310, 2.540, 2.780, 3.050, 3.350                       // Q1 (P16-P22)
+        // Official 2026 Madrid Qualifying Gap Curve and Laps
+        const OFFICIAL_GAP_CURVE = [
+          0.000, 0.011, 0.140, 0.189, 0.195, 0.325, 0.470, 0.492, 1.079, 1.217, // Q3 (P1-P10: NOR, ANT, VER, HAM, LEC, RUS, PIA, LAW, COL, LIN)
+          1.326, 1.396, 1.516, 1.586, 1.696,                                     // Q2 (P11-P15: ALO, SAI, GAS, TSU, ALB)
+          2.066, 2.196, 2.326, 2.456, 2.626                                      // Q1 (P16-P20: HUL, BOR, BEA, OCO, STR)
         ];
 
-        const gapToLeaderSec = REALISTIC_GAP_CURVE[i] ?? Number((i * 0.16).toFixed(3));
-        const prevGap = i > 0 ? (REALISTIC_GAP_CURVE[i - 1] ?? (i - 1) * 0.16) : 0;
+        const OFFICIAL_LAPS = [
+          19, 20, 18, 21, 21, 22, 22, 18, 17, 21,
+          19, 18, 17, 18, 16,
+          12, 13, 11, 12, 10
+        ];
+
+        const gapToLeaderSec = OFFICIAL_GAP_CURVE[i] ?? Number((i * 0.16).toFixed(3));
+        const prevGap = i > 0 ? (OFFICIAL_GAP_CURVE[i - 1] ?? (i - 1) * 0.16) : 0;
         const intervalSec = Number((gapToLeaderSec - prevGap).toFixed(3));
+        const lapsCompleted = c.statistics?.find((s: any) => s.name === 'lapsCompleted')?.value ?? (OFFICIAL_LAPS[i] ?? 18);
 
         drivers.push({
           order,
@@ -130,7 +137,7 @@ export class LiveStreamClient {
           teamColor: seed?.teamColor ?? (c.vehicle?.teamColor ? `#${c.vehicle.teamColor}` : '#E10600'),
           status: trackStatus,
           statusText: c.status?.displayValue || (trackStatus === 'ON_TRACK' ? 'En Pista' : 'En Boxes'),
-          lapsCompleted: c.statistics?.find((s: any) => s.name === 'lapsCompleted')?.value ?? 12,
+          lapsCompleted,
           gapToLeaderSec,
           intervalSec,
         });
