@@ -1,0 +1,579 @@
+import React, { useState } from 'react';
+import {
+  X,
+  ArrowLeftRight,
+  Gauge,
+  ChevronDown,
+} from 'lucide-react';
+import type { DriverLive, TyreCompound } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
+import { SectorPill } from '../qualy/SectorPill';
+
+interface HeadToHeadModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  drivers: DriverLive[];
+  driverAId: number | null;
+  driverBId: number | null;
+  onSelectDriverA: (id: number) => void;
+  onSelectDriverB: (id: number) => void;
+}
+
+export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
+  isOpen,
+  onClose,
+  drivers,
+  driverAId,
+  driverBId,
+  onSelectDriverA,
+  onSelectDriverB,
+}) => {
+  const { lang, t } = useLanguage();
+  const [selectingTarget, setSelectingTarget] = useState<'A' | 'B' | null>(null);
+
+  if (!isOpen) return null;
+
+  const driverA = drivers.find((d) => d.driverNumber === driverAId) || drivers[0] || null;
+  const driverB =
+    drivers.find((d) => d.driverNumber === driverBId) ||
+    drivers.find((d) => d.driverNumber !== driverA?.driverNumber) ||
+    drivers[1] ||
+    null;
+
+  const handleSwap = () => {
+    if (driverA && driverB) {
+      const prevA = driverA.driverNumber;
+      const prevB = driverB.driverNumber;
+      onSelectDriverA(prevB);
+      onSelectDriverB(prevA);
+    }
+  };
+
+  const parseLapSeconds = (timeStr?: string): number | null => {
+    if (!timeStr || timeStr === '--:--.---' || timeStr.includes('PIT')) return null;
+    const parts = timeStr.split(':');
+    if (parts.length === 2) {
+      const mins = parseFloat(parts[0]);
+      const secs = parseFloat(parts[1]);
+      if (!isNaN(mins) && !isNaN(secs)) {
+        return mins * 60 + secs;
+      }
+    } else {
+      const secs = parseFloat(timeStr);
+      if (!isNaN(secs)) return secs;
+    }
+    return null;
+  };
+
+  const getTyreBadge = (tyre: { compound: TyreCompound; laps: number } | null) => {
+    if (!tyre) return <span className="text-zinc-500 font-mono text-xs">---</span>;
+    const compound = tyre.compound.toUpperCase();
+    let letter = 'H';
+    let ringClass = 'border-white text-white bg-white/10';
+
+    if (compound.includes('SOFT')) {
+      letter = 'S';
+      ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
+    } else if (compound.includes('MEDIUM')) {
+      letter = 'M';
+      ringClass = 'border-[#FFD60A] text-[#FFD60A] bg-[#FFD60A]/10';
+    } else if (compound.includes('HARD')) {
+      letter = 'H';
+      ringClass = 'border-white text-white bg-white/10';
+    } else if (compound.includes('INTER')) {
+      letter = 'I';
+      ringClass = 'border-[#34C759] text-[#34C759] bg-[#34C759]/10';
+    } else if (compound.includes('WET')) {
+      letter = 'W';
+      ringClass = 'border-[#007AFF] text-[#007AFF] bg-[#007AFF]/10';
+    }
+
+    return (
+      <div className="inline-flex items-center gap-1.5 select-none">
+        <span
+          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center font-mono font-black text-[11px] leading-none shrink-0 ${ringClass}`}
+        >
+          {letter}
+        </span>
+        <span className="font-mono text-xs font-bold text-zinc-300 tabular-nums">
+          {tyre.laps}{lang === 'es' ? 'v' : 'l'}
+        </span>
+      </div>
+    );
+  };
+
+  // Gap computation
+  const isAdjacent = Math.abs((driverA?.pos ?? 0) - (driverB?.pos ?? 0)) === 1;
+  const parseGapSeconds = (gapStr?: string): number | null => {
+    if (!gapStr || gapStr === 'LEADER' || gapStr.includes('LAP') || gapStr === 'RET') return null;
+    const num = parseFloat(gapStr.replace('+', '').replace('s', ''));
+    return isNaN(num) ? null : num;
+  };
+
+  const gapA = parseGapSeconds(driverA?.gap);
+  const gapB = parseGapSeconds(driverB?.gap);
+  let directGap: string | null = null;
+  let isCloseBattle = false;
+
+  if (driverA && driverB) {
+    if (driverA.pos === driverB.pos) {
+      directGap = '0.000s';
+    } else if (gapA !== null && gapB !== null) {
+      const diff = Math.abs(gapA - gapB);
+      directGap = `${diff.toFixed(3)}s`;
+      isCloseBattle = diff < 1.0;
+    } else if (isAdjacent) {
+      const lowerDriver = driverA.pos > driverB.pos ? driverA : driverB;
+      const intervalSec = parseGapSeconds(lowerDriver.interval);
+      if (intervalSec !== null) {
+        directGap = `${intervalSec.toFixed(3)}s`;
+        isCloseBattle = intervalSec < 1.0;
+      }
+    }
+  }
+
+  // Lap time comparison
+  const secLapA = parseLapSeconds(driverA?.lastLapTime);
+  const secLapB = parseLapSeconds(driverB?.lastLapTime);
+  let lapDelta: string | null = null;
+  let fasterLastLap: 'A' | 'B' | null = null;
+
+  if (secLapA !== null && secLapB !== null) {
+    const diff = Math.abs(secLapA - secLapB);
+    lapDelta = `${diff.toFixed(3)}s`;
+    fasterLastLap = secLapA < secLapB ? 'A' : secLapB < secLapA ? 'B' : null;
+  }
+
+  // Tyre age comparison
+  const lapsA = driverA?.tyre?.laps ?? 0;
+  const lapsB = driverB?.tyre?.laps ?? 0;
+  const tyreDiff = Math.abs(lapsA - lapsB);
+  const fresherTyreDriver = lapsA < lapsB ? 'A' : lapsB < lapsA ? 'B' : null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
+      <div
+        className="w-full sm:max-w-lg bg-[#131722] border border-white/[0.12] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-zinc-100"
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08] bg-[#171C28] shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚔️</span>
+            <div>
+              <h2 className="text-xs font-mono font-black uppercase tracking-wider text-white">
+                {t.live.h2h.title}
+              </h2>
+              <p className="text-[10px] text-zinc-400 font-mono">
+                {t.live.h2h.subtitle}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            aria-label={t.live.h2h.close}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Driver Picker Overlay if active */}
+        {selectingTarget && (
+          <div className="p-3 bg-[#0E1118] border-b border-white/10 shrink-0 max-h-56 overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-mono font-bold text-amber-400 uppercase">
+                {t.live.h2h.selectDriver} {selectingTarget}:
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectingTarget(null)}
+                className="text-[10px] text-zinc-400 hover:text-white font-mono uppercase cursor-pointer"
+              >
+                ✕ Cancelar
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {drivers.map((d) => (
+                <button
+                  key={d.driverNumber}
+                  type="button"
+                  onClick={() => {
+                    if (selectingTarget === 'A') {
+                      onSelectDriverA(d.driverNumber);
+                    } else {
+                      onSelectDriverB(d.driverNumber);
+                    }
+                    setSelectingTarget(null);
+                  }}
+                  className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-colors cursor-pointer text-xs font-mono ${
+                    (selectingTarget === 'A' ? driverA?.driverNumber : driverB?.driverNumber) ===
+                    d.driverNumber
+                      ? 'bg-white/10 border-white/30 text-white'
+                      : 'bg-white/[0.02] border-white/[0.06] text-zinc-300 hover:bg-white/[0.06]'
+                  }`}
+                >
+                  <span
+                    className="w-1.5 h-4 rounded-full shrink-0"
+                    style={{ backgroundColor: d.teamColor || '#888' }}
+                  />
+                  <span className="font-black text-white">{d.pos ? `P${d.pos}` : ''}</span>
+                  <span className="font-bold truncate">{d.code}</span>
+                  <span className="text-[10px] text-zinc-500 ml-auto">#{d.driverNumber}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area (Scrollable) */}
+        <div className="p-4 space-y-3.5 overflow-y-auto">
+          {/* Driver Selector Row with Swap */}
+          <div className="grid grid-cols-11 gap-1.5 items-center">
+            {/* Driver A Card */}
+            <div
+              onClick={() => setSelectingTarget('A')}
+              className="col-span-5 bg-[#171C28] hover:bg-[#1C2232] border border-white/[0.08] hover:border-white/20 rounded-xl p-2.5 cursor-pointer transition-colors relative flex flex-col justify-between min-h-[76px]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
+                  PILOTO A <ChevronDown className="w-2.5 h-2.5 text-zinc-500" />
+                </span>
+                <span className="font-mono text-xs font-black text-amber-300">
+                  {driverA ? `P${driverA.pos}` : '-'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <span
+                  className="w-1 h-7 rounded-full shrink-0"
+                  style={{ backgroundColor: driverA?.teamColor || '#E10600' }}
+                />
+                <div className="truncate">
+                  <div className="font-mono text-sm font-black text-white tracking-tight flex items-center gap-1">
+                    <span>{driverA?.code || '---'}</span>
+                    <span className="text-[10px] text-zinc-400 font-normal">
+                      #{driverA?.driverNumber}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-zinc-400 truncate">
+                    {driverA?.fullName || '---'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Swap Button */}
+            <div className="col-span-1 flex justify-center">
+              <button
+                type="button"
+                onClick={handleSwap}
+                title={t.live.h2h.swapDrivers}
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-colors cursor-pointer shrink-0"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Driver B Card */}
+            <div
+              onClick={() => setSelectingTarget('B')}
+              className="col-span-5 bg-[#171C28] hover:bg-[#1C2232] border border-white/[0.08] hover:border-white/20 rounded-xl p-2.5 cursor-pointer transition-colors relative flex flex-col justify-between min-h-[76px]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
+                  PILOTO B <ChevronDown className="w-2.5 h-2.5 text-zinc-500" />
+                </span>
+                <span className="font-mono text-xs font-black text-amber-300">
+                  {driverB ? `P${driverB.pos}` : '-'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <span
+                  className="w-1 h-7 rounded-full shrink-0"
+                  style={{ backgroundColor: driverB?.teamColor || '#3671C6' }}
+                />
+                <div className="truncate">
+                  <div className="font-mono text-sm font-black text-white tracking-tight flex items-center gap-1">
+                    <span>{driverB?.code || '---'}</span>
+                    <span className="text-[10px] text-zinc-400 font-normal">
+                      #{driverB?.driverNumber}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-zinc-400 truncate">
+                    {driverB?.fullName || '---'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Gap / Interval Banner (NO DRS Mention) */}
+          <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
+            <div className="text-[10px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
+              {t.live.h2h.gapBetween}
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-1 font-mono">
+              <span className="text-xl sm:text-2xl font-black text-white font-tabular">
+                {directGap || '---'}
+              </span>
+              {driverA && driverB && driverA.pos !== driverB.pos && (
+                <span className="text-xs font-bold text-zinc-400">
+                  ({driverA.pos < driverB.pos ? driverA.code : driverB.code}{' '}
+                  {t.live.h2h.ahead})
+                </span>
+              )}
+            </div>
+
+            {/* Close Battle Alert (< 1.0s) - Pure track battle, no DRS tag */}
+            {isCloseBattle && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>⚡ {t.live.h2h.closeBattle}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Tyre Strategy Comparison */}
+          <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3">
+            <div className="text-[10px] font-mono uppercase font-bold text-zinc-400 tracking-wider mb-2">
+              {t.live.h2h.tyresTitle}
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-center items-center">
+              <div className="bg-[#131722] border border-white/[0.04] rounded-lg p-2 flex flex-col items-center">
+                <span className="text-[10px] font-mono text-zinc-400 mb-1">
+                  {driverA?.code || 'A'}
+                </span>
+                {getTyreBadge(driverA?.tyre ?? null)}
+              </div>
+              <div className="bg-[#131722] border border-white/[0.04] rounded-lg p-2 flex flex-col items-center">
+                <span className="text-[10px] font-mono text-zinc-400 mb-1">
+                  {driverB?.code || 'B'}
+                </span>
+                {getTyreBadge(driverB?.tyre ?? null)}
+              </div>
+            </div>
+
+            {/* Tyre Delta Explanation */}
+            {driverA?.tyre && driverB?.tyre && (
+              <div className="mt-2 text-center text-[10px] font-mono text-zinc-300 bg-white/[0.02] border border-white/[0.04] rounded-lg py-1 px-2">
+                {tyreDiff > 0 && fresherTyreDriver ? (
+                  <span>
+                    <strong className="text-emerald-400">
+                      {fresherTyreDriver === 'A' ? driverA.code : driverB.code}
+                    </strong>{' '}
+                    {lang === 'es' ? 'tiene neumáticos' : 'has tyres'}{' '}
+                    <strong className="text-white">{tyreDiff}</strong>{' '}
+                    {lang === 'es'
+                      ? tyreDiff === 1
+                        ? 'vuelta más nuevos'
+                        : 'vueltas más nuevos'
+                      : tyreDiff === 1
+                      ? 'lap fresher'
+                      : 'laps fresher'}
+                  </span>
+                ) : (
+                  <span>{t.live.h2h.sameTyreAge}</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Lap Times Comparison */}
+          <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3">
+            <div className="text-[10px] font-mono uppercase font-bold text-zinc-400 tracking-wider mb-2">
+              {t.live.h2h.lastLap} & {t.live.h2h.bestLap}
+            </div>
+            <div className="space-y-2">
+              {/* Last Lap Row */}
+              <div className="grid grid-cols-2 gap-2 font-mono text-xs text-center">
+                <div
+                  className={`p-2 rounded-lg border ${
+                    fasterLastLap === 'A'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                      : 'bg-[#131722] border-white/[0.04] text-zinc-300'
+                  }`}
+                >
+                  <div className="text-[9px] text-zinc-500 uppercase">{t.live.h2h.lastLap}</div>
+                  <div className="font-bold text-sm font-tabular mt-0.5">
+                    {driverA?.lastLapTime || '--:--.---'}
+                  </div>
+                  {fasterLastLap === 'A' && lapDelta && (
+                    <div className="text-[9px] text-emerald-400 font-bold mt-0.5">
+                      -{lapDelta} {t.live.h2h.fasterLap}
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={`p-2 rounded-lg border ${
+                    fasterLastLap === 'B'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                      : 'bg-[#131722] border-white/[0.04] text-zinc-300'
+                  }`}
+                >
+                  <div className="text-[9px] text-zinc-500 uppercase">{t.live.h2h.lastLap}</div>
+                  <div className="font-bold text-sm font-tabular mt-0.5">
+                    {driverB?.lastLapTime || '--:--.---'}
+                  </div>
+                  {fasterLastLap === 'B' && lapDelta && (
+                    <div className="text-[9px] text-emerald-400 font-bold mt-0.5">
+                      -{lapDelta} {t.live.h2h.fasterLap}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Best Lap Row */}
+              <div className="grid grid-cols-2 gap-2 font-mono text-xs text-center">
+                <div className="bg-[#131722] border border-white/[0.04] rounded-lg p-2">
+                  <div className="text-[9px] text-zinc-500 uppercase">{t.live.h2h.bestLap}</div>
+                  <div className="font-bold text-xs text-zinc-200 font-tabular mt-0.5">
+                    {driverA?.bestLapTime || '--:--.---'}
+                  </div>
+                </div>
+
+                <div className="bg-[#131722] border border-white/[0.04] rounded-lg p-2">
+                  <div className="text-[9px] text-zinc-500 uppercase">{t.live.h2h.bestLap}</div>
+                  <div className="font-bold text-xs text-zinc-200 font-tabular mt-0.5">
+                    {driverB?.bestLapTime || '--:--.---'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sectors Comparison */}
+          {(driverA?.sectors || driverB?.sectors) && (
+            <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3">
+              <div className="text-[10px] font-mono uppercase font-bold text-zinc-400 tracking-wider mb-2">
+                {t.live.h2h.sectorsTitle}
+              </div>
+              <div className="space-y-1.5">
+                {/* Sector 1 */}
+                <div className="grid grid-cols-7 gap-1 items-center font-mono text-xs text-center">
+                  <div className="col-span-3">
+                    <SectorPill
+                      sectorNumber={1}
+                      time={driverA?.sectors?.s1}
+                      status={driverA?.sectors?.s1Status}
+                      compact
+                    />
+                  </div>
+                  <div className="col-span-1 text-[10px] font-bold text-zinc-400">S1</div>
+                  <div className="col-span-3">
+                    <SectorPill
+                      sectorNumber={1}
+                      time={driverB?.sectors?.s1}
+                      status={driverB?.sectors?.s1Status}
+                      compact
+                    />
+                  </div>
+                </div>
+
+                {/* Sector 2 */}
+                <div className="grid grid-cols-7 gap-1 items-center font-mono text-xs text-center">
+                  <div className="col-span-3">
+                    <SectorPill
+                      sectorNumber={2}
+                      time={driverA?.sectors?.s2}
+                      status={driverA?.sectors?.s2Status}
+                      compact
+                    />
+                  </div>
+                  <div className="col-span-1 text-[10px] font-bold text-zinc-400">S2</div>
+                  <div className="col-span-3">
+                    <SectorPill
+                      sectorNumber={2}
+                      time={driverB?.sectors?.s2}
+                      status={driverB?.sectors?.s2Status}
+                      compact
+                    />
+                  </div>
+                </div>
+
+                {/* Sector 3 */}
+                <div className="grid grid-cols-7 gap-1 items-center font-mono text-xs text-center">
+                  <div className="col-span-3">
+                    <SectorPill
+                      sectorNumber={3}
+                      time={driverA?.sectors?.s3}
+                      status={driverA?.sectors?.s3Status}
+                      compact
+                    />
+                  </div>
+                  <div className="col-span-1 text-[10px] font-bold text-zinc-400">S3</div>
+                  <div className="col-span-3">
+                    <SectorPill
+                      sectorNumber={3}
+                      time={driverB?.sectors?.s3}
+                      status={driverB?.sectors?.s3Status}
+                      compact
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Speed Trap & Pit Stops */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Speed Trap */}
+            <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
+              <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-center gap-1">
+                <Gauge className="w-3 h-3 text-[#27F4D2]" /> Speed Trap
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-xs">
+                <div>
+                  <span className="text-[10px] text-zinc-500">{driverA?.code}</span>
+                  <div className="font-bold text-zinc-200">
+                    {driverA?.speedTrap ? `${driverA.speedTrap} km/h` : '---'}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-500">{driverB?.code}</span>
+                  <div className="font-bold text-zinc-200">
+                    {driverB?.speedTrap ? `${driverB.speedTrap} km/h` : '---'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pit Stops */}
+            <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
+              <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+                {t.live.h2h.pitStops}
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-xs">
+                <div>
+                  <span className="text-[10px] text-zinc-500">{driverA?.code}</span>
+                  <div className="font-bold text-zinc-200">
+                    {driverA?.pitStops ?? 0} {driverA?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-500">{driverB?.code}</span>
+                  <div className="font-bold text-zinc-200">
+                    {driverB?.pitStops ?? 0} {driverB?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="p-3 border-t border-white/[0.08] bg-[#171C28] shrink-0 text-center">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-bold transition-colors cursor-pointer border border-white/10"
+          >
+            {t.live.h2h.close}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

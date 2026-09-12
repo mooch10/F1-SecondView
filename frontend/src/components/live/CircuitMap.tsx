@@ -329,11 +329,11 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
         {/* Top Action Buttons */}
         <div className="flex items-center gap-1.5 ml-auto">
-          {/* Sectors / DRS Overlay Toggle */}
+          {/* Sectors Overlay Toggle */}
           <button
             type="button"
             onClick={() => setShowSectors((prev) => !prev)}
-            title={lang === 'es' ? 'Mostrar Sectores y DRS' : 'Show Sectors and DRS'}
+            title={lang === 'es' ? 'Mostrar Sectores (S1/S2/S3)' : 'Show Sectors (S1/S2/S3)'}
             className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 cursor-pointer transition-colors ${
               showSectors
                 ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
@@ -553,49 +553,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
                   />
                 )}
 
-                {/* Layer 5: DRS Activation Zones (Neon Green Highlight) */}
-                {showSectors && (
-                  <g>
-                    {trackGeometry.drsZones.map((drs, idx) => (
-                      <g key={`drs-${idx}`}>
-                        <line
-                          x1={drs.start.x}
-                          y1={drs.start.y}
-                          x2={drs.end.x}
-                          y2={drs.end.y}
-                          stroke="#10B981"
-                          strokeWidth="5"
-                          strokeLinecap="round"
-                          opacity="0.9"
-                          filter="url(#spotlightGlow)"
-                        />
-                        {/* DRS Marker Badge */}
-                        <g transform={`translate(${((drs.start.x + drs.end.x) / 2).toFixed(1)}, ${((drs.start.y + drs.end.y) / 2).toFixed(1)})`}>
-                          <rect
-                            x="-15"
-                            y="-7"
-                            width="30"
-                            height="14"
-                            rx="3"
-                            fill="#0B0E14"
-                            stroke="#10B981"
-                            strokeWidth="1.2"
-                          />
-                          <text
-                            textAnchor="middle"
-                            dy="3.5"
-                            fill="#10B981"
-                            fontSize="8"
-                            fontWeight="900"
-                            fontFamily="monospace"
-                          >
-                            DRS
-                          </text>
-                        </g>
-                      </g>
-                    ))}
-                  </g>
-                )}
+
 
                 {/* Layer 6: Sector Dividing Badges (I1 & I2) */}
                 {showSectors && (

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Gauge, Zap } from 'lucide-react';
+import { ChevronDown, ChevronUp, Gauge, Star, X } from 'lucide-react';
 import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { MiniSectorsBar } from '../qualy/MiniSectorsBar';
 import { SectorPill } from '../qualy/SectorPill';
+import { HeadToHeadModal } from './HeadToHeadModal';
 
 interface TimingTableProps {
   drivers: DriverLive[];
@@ -29,6 +30,60 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 }) => {
   const { lang, t } = useLanguage();
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
+
+  // 📌 Driver Pinning (⭐ TU PILOTO)
+  const [pinnedDriverNumber, setPinnedDriverNumber] = useState<number | null>(() => {
+    try {
+      const saved = localStorage.getItem('f1_pinned_driver');
+      return saved ? parseInt(saved, 10) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // ⚔️ 1 vs 1 Head-to-Head Modal state
+  const [isH2HOpen, setIsH2HOpen] = useState(false);
+  const [h2hDriverA, setH2hDriverA] = useState<number | null>(null);
+  const [h2hDriverB, setH2hDriverB] = useState<number | null>(null);
+
+  const togglePin = (driverNumber: number) => {
+    setPinnedDriverNumber((prev) => {
+      const next = prev === driverNumber ? null : driverNumber;
+      try {
+        if (next === null) {
+          localStorage.removeItem('f1_pinned_driver');
+        } else {
+          localStorage.setItem('f1_pinned_driver', String(next));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
+
+  const openH2HWithDriver = (driverNumber: number) => {
+    setH2hDriverA(driverNumber);
+    const current = drivers.find((d) => d.driverNumber === driverNumber);
+    if (current) {
+      const targetPos = current.pos > 1 ? current.pos - 1 : 2;
+      const opponent = drivers.find((d) => d.pos === targetPos && d.driverNumber !== driverNumber);
+      setH2hDriverB(opponent?.driverNumber ?? (drivers.find((d) => d.driverNumber !== driverNumber)?.driverNumber ?? null));
+    } else {
+      setH2hDriverB(drivers.find((d) => d.driverNumber !== driverNumber)?.driverNumber ?? null);
+    }
+    setIsH2HOpen(true);
+  };
+
+  const openGeneralH2H = () => {
+    if (pinnedDriverNumber && drivers.some((d) => d.driverNumber === pinnedDriverNumber)) {
+      openH2HWithDriver(pinnedDriverNumber);
+    } else {
+      setH2hDriverA(drivers[0]?.driverNumber ?? null);
+      setH2hDriverB(drivers[1]?.driverNumber ?? null);
+      setIsH2HOpen(true);
+    }
+  };
 
   const isQualy = sessionType === 'Qualifying';
   const isRace = sessionType !== 'Qualifying' && sessionType !== 'Practice';
@@ -83,9 +138,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     );
   };
 
-  const isDrsDanger = (interval: string, isDrsZone: boolean) => {
-    if (isDrsZone) return true;
-    if (!interval || interval === 'LEADER' || interval.includes('LAP')) return false;
+  const isCloseInterval = (interval: string) => {
+    if (!interval || interval === 'LEADER' || interval.includes('LAP') || interval === 'RET') return false;
     const num = parseFloat(interval.replace('+', '').replace('s', ''));
     return !isNaN(num) && num > 0 && num < 1.0;
   };
@@ -110,9 +164,144 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
   const activeDrivers = drivers.filter((d) => !isDriverRetired(d));
   const retiredDrivers = drivers.filter((d) => isDriverRetired(d));
+  const pinnedDriver = drivers.find((d) => d.driverNumber === pinnedDriverNumber) || null;
 
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
+      {/* Top Utility / Action Bar */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[#171C28] border-b border-white/[0.08] text-xs font-mono select-none">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+            {isQualy ? t.live.qualyProgress : t.live.liveTimes}
+          </span>
+          {pinnedDriver && (
+            <span className="hidden sm:inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20 font-bold">
+              <span>⭐</span> {pinnedDriver.code}
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={openGeneralH2H}
+          className="px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-white/10"
+          title={t.live.h2h.title}
+        >
+          <span>{t.live.h2hBtn}</span>
+        </button>
+      </div>
+
+      {/* ⭐ TU PILOTO Sticky Highlight Card */}
+      {pinnedDriver && (
+        <div className="bg-[#151A25] border-b-2 border-amber-500/40 px-3 py-2.5 relative select-none">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center gap-1 tracking-wider uppercase shadow-xs">
+                {t.live.yourDriver}
+              </span>
+              <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">
+                {pinnedDriver.teamName}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => openH2HWithDriver(pinnedDriver.driverNumber)}
+                className="px-2 py-0.5 rounded-md bg-white/[0.08] hover:bg-white/[0.14] text-white font-mono text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-white/10"
+                title={t.live.h2h.title}
+              >
+                <span>⚔️</span>
+                <span>1 vs 1</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => togglePin(pinnedDriver.driverNumber)}
+                className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                title={t.live.unpinDriver}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Pinned Driver Data Row */}
+          <div className="grid grid-cols-12 gap-1 items-center">
+            {/* Position */}
+            <div className="col-span-1 flex flex-col items-center justify-center leading-none">
+              <span className="font-mono text-xs sm:text-sm font-black text-amber-300">
+                P{pinnedDriver.pos}
+              </span>
+              {!isQualy && pinnedDriver.posChange > 0 && (
+                <span className="text-[8px] sm:text-[9px] text-emerald-400 font-bold font-mono mt-0.5">
+                  ▲{pinnedDriver.posChange}
+                </span>
+              )}
+              {!isQualy && pinnedDriver.posChange < 0 && (
+                <span className="text-[8px] sm:text-[9px] text-rose-400 font-bold font-mono mt-0.5">
+                  ▼{Math.abs(pinnedDriver.posChange)}
+                </span>
+              )}
+            </div>
+
+            {/* Code, Number & Name */}
+            <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5 overflow-hidden">
+              <span
+                className="w-1.5 h-6 sm:h-7 rounded-full shrink-0"
+                style={{ backgroundColor: pinnedDriver.teamColor || '#E10600' }}
+              />
+              <div className="flex flex-col leading-tight truncate">
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-sm font-black text-white">
+                    {pinnedDriver.code}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    #{pinnedDriver.driverNumber}
+                  </span>
+                </div>
+                <span className="text-[10px] text-zinc-400 truncate">
+                  {pinnedDriver.fullName}
+                </span>
+              </div>
+            </div>
+
+            {/* Tyres */}
+            <div className="col-span-2 sm:col-span-2 text-center flex justify-center">
+              {getTyreBadge(pinnedDriver.tyre)}
+            </div>
+
+            {/* Pit Stop (Hidden on narrow mobile) */}
+            <div className="hidden sm:block sm:col-span-1 text-center font-mono text-xs text-zinc-400">
+              <span className="font-bold text-white">{pinnedDriver.pitStops ?? 0}</span>
+            </div>
+
+            {/* Interval & Gap */}
+            <div className="col-span-2 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1">
+              <span className="font-mono text-xs font-bold text-zinc-200 truncate">
+                {pinnedDriver.gap}
+              </span>
+              {pinnedDriver.interval && pinnedDriver.interval !== 'LEADER' && (
+                <span className="font-mono text-[10px] text-zinc-400 truncate">
+                  INT {pinnedDriver.interval}
+                </span>
+              )}
+            </div>
+
+            {/* Last Lap Time */}
+            <div className="col-span-3 sm:col-span-2 text-right flex flex-col justify-center leading-tight">
+              <span className="font-mono text-xs font-bold text-zinc-300">
+                {pinnedDriver.lastLapTime || '--:--.---'}
+              </span>
+              {pinnedDriver.isFastestLap && (
+                <span className="text-[8px] sm:text-[9px] font-bold text-purple-400 uppercase">
+                  {t.live.table.fastestLap}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Table Header (Polymorphic: Qualy vs Race) */}
       {isQualy ? (
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
@@ -139,7 +328,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       <div className="divide-y divide-white/[0.04]">
         {activeDrivers.map((d, index) => {
           const isExpanded = expandedDriver === d.driverNumber;
-          const drsActive = !isQualy && isDrsDanger(d.interval, d.isDrsZone);
+          const closeInterval = !isQualy && isCloseInterval(d.interval);
+          const isPinned = pinnedDriverNumber === d.driverNumber;
           const prevDriver = index > 0 ? activeDrivers[index - 1] : null;
           const isPointsZone = isRace && d.pos <= 10;
           const basePoints = isRace ? F1_POINTS[d.pos] || 0 : 0;
@@ -172,8 +362,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 onClick={() => toggleExpand(d.driverNumber)}
                 className={`w-full text-left grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors select-none ${
                   isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
-                } ${drsActive ? 'bg-emerald-950/10' : ''} ${
-                  isPointsZone ? 'border-l-2 border-emerald-500/60' : 'border-l-2 border-transparent'
+                } ${closeInterval ? 'bg-amber-950/10' : ''} ${
+                  isPinned
+                    ? 'border-l-2 border-amber-400 bg-amber-500/[0.04]'
+                    : isPointsZone
+                    ? 'border-l-2 border-emerald-500/60'
+                    : 'border-l-2 border-transparent'
                 }`}
               >
                 {/* Pos & Movement (Columna limpia sin solapamiento con la barra de equipo) */}
@@ -211,12 +405,37 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </div>
                 </div>
 
-                {/* Team stripe + Code & Number */}
-                <div className="col-span-3 sm:col-span-3 flex items-center gap-1.5 sm:gap-2 overflow-hidden">
+                {/* Team stripe + Star Pin + Code & Number */}
+                <div className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden">
                   <span
                     className="w-1 h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
                   />
+                  {/* Star Pin Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePin(d.driverNumber);
+                    }}
+                    className={`p-0.5 rounded transition-colors cursor-pointer shrink-0 ${
+                      isPinned
+                        ? 'text-amber-400'
+                        : 'text-zinc-600 hover:text-amber-400/80'
+                    }`}
+                    title={
+                      isPinned
+                        ? t.live.unpinDriver
+                        : `${t.live.pinDriver} (${d.code})`
+                    }
+                  >
+                    <Star
+                      className={`w-3.5 h-3.5 ${
+                        isPinned ? 'fill-amber-400 text-amber-400' : ''
+                      }`}
+                    />
+                  </button>
+
                   <div className="flex flex-col leading-tight truncate">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-mono text-sm font-bold text-white tracking-tight">
@@ -240,7 +459,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                                 : `Points zone: +${basePoints} pts (P${d.pos}) + 1 pt (Fastest Lap) = +${totalPoints} pts`
                               : lang === 'es'
                               ? `Zona de puntos: +${basePoints} pts para el Campeonato Mundial`
-                              : `Points zone: +${basePoints} pts for World Championship`
+                                : `Points zone: +${basePoints} pts for World Championship`
                           }
                         >
                           +{totalPoints} PTS
@@ -264,19 +483,6 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {d.inPit && (
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
                           PIT
-                        </span>
-                      )}
-                      {/* DRS Activated Pill Badge in Race */}
-                      {drsActive && (
-                        <span
-                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 animate-pulse tracking-widest shrink-0 shadow-xs"
-                          title={
-                            lang === 'es'
-                              ? 'Zona DRS activa (< 1.0s del auto de adelante)'
-                              : 'Active DRS zone (< 1.0s from car ahead)'
-                          }
-                        >
-                          DRS
                         </span>
                       )}
                     </div>
@@ -402,20 +608,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       )}
                     </div>
 
-                    {/* Race Gap & Interval (DRS highlight) - 3 columnas con espacio suficiente */}
+                    {/* Race Gap & Interval - 3 columnas con espacio suficiente */}
                     <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1.5 sm:pr-2">
                       <span className="font-mono text-xs font-semibold text-zinc-200 font-tabular truncate">
                         {d.gap}
                       </span>
                       {d.interval && d.interval !== 'LEADER' && (
                         <span
-                          className={`font-mono text-[10px] font-tabular flex items-center justify-end gap-0.5 ${
-                            drsActive
-                              ? 'text-[#27F4D2] font-extrabold animate-pulse'
+                          className={`font-mono text-[10px] font-tabular flex items-center justify-end ${
+                            closeInterval
+                              ? 'text-amber-400 font-extrabold'
                               : 'text-zinc-500'
                           }`}
                         >
-                          {drsActive && <Zap className="w-2.5 h-2.5 fill-[#27F4D2]" />}
                           {d.interval}
                         </span>
                       )}
@@ -503,6 +708,45 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                       )}
                     </div>
+                  </div>
+
+                  {/* Driver Quick Actions: ⭐ Tu Piloto & ⚔️ 1 vs 1 */}
+                  <div className="flex items-center gap-2 mb-2.5 pb-2.5 border-b border-white/[0.06] flex-wrap">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePin(d.driverNumber);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg border text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                        pinnedDriverNumber === d.driverNumber
+                          ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
+                          : 'bg-white/[0.04] text-zinc-300 border-white/10 hover:bg-white/[0.08]'
+                      }`}
+                    >
+                      <Star
+                        className={`w-3 h-3 ${
+                          pinnedDriverNumber === d.driverNumber ? 'fill-amber-400 text-amber-400' : ''
+                        }`}
+                      />
+                      <span>
+                        {pinnedDriverNumber === d.driverNumber
+                          ? t.live.unpinDriver
+                          : t.live.pinDriver}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openH2HWithDriver(d.driverNumber);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-zinc-300 hover:text-white border border-white/10 hover:bg-white/[0.08] text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span>⚔️</span>
+                      <span>{t.live.h2hBtn}</span>
+                    </button>
                   </div>
 
                   {/* Detailed Mini-Sectors Bar */}
@@ -713,6 +957,17 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           </div>
         </div>
       )}
+
+      {/* ⚔️ Head-to-Head 1 vs 1 Modal */}
+      <HeadToHeadModal
+        isOpen={isH2HOpen}
+        onClose={() => setIsH2HOpen(false)}
+        drivers={drivers}
+        driverAId={h2hDriverA}
+        driverBId={h2hDriverB}
+        onSelectDriverA={setH2hDriverA}
+        onSelectDriverB={setH2hDriverB}
+      />
     </div>
   );
 };
