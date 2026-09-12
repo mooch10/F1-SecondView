@@ -20,7 +20,7 @@ export const translations = {
       telemetryTab: 'TELEMETRÍA EN VIVO',
       betweenRacesTab: 'ENTRE CARRERAS',
       loadingTelemetry: 'SINTONIZANDO TELEMETRÍA EN VIVO...',
-      standbyBadge: 'SESIÓN EN ESPERA (STANDBY)',
+      standbyBadge: 'SESIÓN EN ESPERA',
       standbyTitle: 'Sin Actividad en Pista en Este Momento',
       standbyDesc:
         'La telemetría y el cronometraje vuelta a vuelta se conectan automáticamente en tiempo real durante las sesiones oficiales de Gran Premio (Prácticas, Clasificación y Carrera).',
@@ -252,7 +252,7 @@ export const translations = {
       telemetryTab: 'LIVE TELEMETRY',
       betweenRacesTab: 'BETWEEN RACES',
       loadingTelemetry: 'TUNING LIVE TELEMETRY...',
-      standbyBadge: 'STANDBY SESSION',
+      standbyBadge: 'SESSION ON STANDBY',
       standbyTitle: 'No On-Track Activity Right Now',
       standbyDesc:
         'Live telemetry and lap-by-lap timing connect automatically in real time during official Grand Prix sessions (Practice, Qualifying, and Race).',

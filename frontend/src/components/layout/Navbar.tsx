@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-all active:scale-95 shrink-0"
                 style={{ backgroundColor: theme.primary }}
               >
-                {theme.shortName.charAt(0)}
+                D
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold tracking-tight text-zinc-100 group-hover:text-white text-base uppercase italic font-sans transition-colors">
@@ -143,24 +143,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               style={activeTab === 'live' ? { borderColor: theme.primary } : undefined}
             >
               <span>{t.nav.live}</span>
-              <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-white/[0.06] text-zinc-400">
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isLiveActive && isLiveConnected
-                      ? 'bg-[#39B54A] animate-pulse'
-                      : isLiveConnected
-                      ? 'bg-zinc-500'
-                      : 'bg-[#E10600]'
-                  }`}
-                />
-                <span className="hidden min-[360px]:inline">
-                  {isLiveActive && isLiveConnected
-                    ? 'LIVE'
-                    : isLiveConnected
-                    ? t.nav.standby
-                    : t.nav.offline}
+              {isLiveActive && isLiveConnected && (
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#39B54A] animate-pulse" />
+                  <span>LIVE</span>
                 </span>
-              </span>
+              )}
             </button>
           )}
 

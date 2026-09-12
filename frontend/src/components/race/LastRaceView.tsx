@@ -309,11 +309,6 @@ export const LastRaceView: React.FC = () => {
                         <span className="text-[10px] text-zinc-500 font-mono">
                           #{d.driverNumber}
                         </span>
-                        {d.isWinner && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight">
-                            {t.lastRace.victory}
-                          </span>
-                        )}
                         {d.isFastestLap && (
                           <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight">
                             {t.live.table.fastestLap}

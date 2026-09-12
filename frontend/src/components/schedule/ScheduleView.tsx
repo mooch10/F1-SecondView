@@ -179,7 +179,7 @@ export const ScheduleView: React.FC = () => {
               {series.toUpperCase()} • {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
             <span className="text-[11px] text-zinc-400 font-mono">
-              {t.schedule.localTime} ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+              {t.schedule.localTime} (Argentina)
             </span>
           </div>
 

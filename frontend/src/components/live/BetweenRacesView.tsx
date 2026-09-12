@@ -141,7 +141,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
               {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
             <span className="text-[10px] text-zinc-400 font-mono">
-              {t.betweenRaces.localTime} ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+              {t.betweenRaces.localTime} (Argentina)
             </span>
           </div>
 
