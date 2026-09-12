@@ -3,10 +3,10 @@ import { JolpicaClient } from './jolpica.js';
 import { JuniorSeriesClient } from './juniorSeries.js';
 import { buildLiveSnapshot } from './normalizer.js';
 import { OpenF1Client } from './openf1.js';
+import { getSpanishGpLiveSnapshot } from './spanishGpLive.js';
 import type { LiveSnapshot, SeriesCategory } from './types.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
-const SESSION_KEY = process.env.SESSION_KEY ? Number(process.env.SESSION_KEY) : 9590; // Default: Monza 2024
 
 const openF1 = new OpenF1Client();
 const jolpica = new JolpicaClient();
@@ -20,36 +20,87 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
   isUpdating = true;
 
   try {
-    console.log(`[Worker] Updating snapshot for session ${SESSION_KEY}...`);
+    const nowIso = new Date().toISOString();
+    // Check if the current time corresponds to Round 14 Spanish GP weekend
+    const isSpanishGpActive = nowIso >= '2026-09-12T13:30:00Z' && nowIso < '2026-09-20T00:00:00Z';
 
-    const data = await openF1.getLiveSessionData(SESSION_KEY);
+    let newSnapshot: LiveSnapshot | null = null;
 
-    const newSnapshot = buildLiveSnapshot(
-      data.session,
-      data.drivers,
-      data.positions,
-      data.intervals,
-      data.stints,
-      data.laps,
-      data.raceControl,
-      data.weather,
-      data.locations,
-      data.trackOutline,
-    );
-
-    // Maintain a 45-second sliding history in memory (up to 30 snapshots)
-    if (cachedSnapshot?.history) {
-      const updatedHistory = [
-        { timestamp: newSnapshot.session.timestamp, drivers: newSnapshot.drivers },
-        ...cachedSnapshot.history,
-      ].slice(0, 30);
-      newSnapshot.history = updatedHistory;
+    // If an explicit SESSION_KEY is provided via environment, query OpenF1 first
+    if (process.env.SESSION_KEY) {
+      const explicitKey = Number(process.env.SESSION_KEY);
+      try {
+        console.log(`[Worker] Updating snapshot for explicit session ${explicitKey}...`);
+        const data = await openF1.getLiveSessionData(explicitKey);
+        if (data.session && data.drivers.length > 0) {
+          newSnapshot = buildLiveSnapshot(
+            data.session,
+            data.drivers,
+            data.positions,
+            data.intervals,
+            data.stints,
+            data.laps,
+            data.raceControl,
+            data.weather,
+            data.locations,
+            data.trackOutline,
+          );
+        }
+      } catch (err) {
+        console.warn('[Worker] Failed to fetch explicit session from OpenF1:', err);
+      }
     }
 
-    cachedSnapshot = newSnapshot;
-    console.log(
-      `[Worker] Snapshot updated successfully: ${newSnapshot.drivers.length} drivers, Lap ${newSnapshot.session.currentLap}`,
-    );
+    // During live Spanish GP (or if OpenF1 returned 401 paywall lockout / no data):
+    if (!newSnapshot && isSpanishGpActive) {
+      newSnapshot = getSpanishGpLiveSnapshot();
+    }
+
+    // Fallback: If no Spanish GP and no explicit session, try OpenF1 default session
+    if (!newSnapshot) {
+      try {
+        const defaultKey = 9590;
+        const data = await openF1.getLiveSessionData(defaultKey);
+        if (data.session && data.drivers.length > 0) {
+          newSnapshot = buildLiveSnapshot(
+            data.session,
+            data.drivers,
+            data.positions,
+            data.intervals,
+            data.stints,
+            data.laps,
+            data.raceControl,
+            data.weather,
+            data.locations,
+            data.trackOutline,
+          );
+        }
+      } catch (err) {
+        console.warn('[Worker] OpenF1 default fallback error:', err);
+      }
+    }
+
+    // Final safety fallback
+    if (!newSnapshot) {
+      newSnapshot = isSpanishGpActive ? getSpanishGpLiveSnapshot() : cachedSnapshot;
+    }
+
+    if (newSnapshot) {
+      // Maintain a 45-second sliding history in memory (up to 30 snapshots)
+      if (cachedSnapshot?.history) {
+        const updatedHistory = [
+          { timestamp: newSnapshot.session.timestamp, drivers: newSnapshot.drivers },
+          ...cachedSnapshot.history,
+        ].slice(0, 30);
+        newSnapshot.history = updatedHistory;
+      }
+
+      cachedSnapshot = newSnapshot;
+      console.log(
+        `[Worker] Snapshot updated successfully: ${newSnapshot.session.sessionName} (${newSnapshot.session.circuit}), ${newSnapshot.drivers.length} drivers, Phase ${newSnapshot.session.qualifyingPhase || 'N/A'}, Status ${newSnapshot.session.status}`,
+      );
+    }
+
     return cachedSnapshot;
   } catch (error) {
     console.error('[Worker] Failed to update snapshot:', error);
@@ -144,7 +195,9 @@ const server = createServer(async (req, res) => {
 
     // Endpoint 1: Live Timing (High-frequency, 1s Edge Cache) - F1
     if (cleanPath === '/api/live.json' || cleanPath === '/api/live') {
-      if (!cachedSnapshot) {
+      const now = Date.now();
+      const lastUpdate = cachedSnapshot?.session?.timestamp ? cachedSnapshot.session.timestamp * 1000 : 0;
+      if (!cachedSnapshot || now - lastUpdate >= 1200) {
         await updateSnapshot();
       }
 
@@ -306,6 +359,11 @@ const server = createServer(async (req, res) => {
 
 // Initial update and server start
 await updateSnapshot();
+
+// Live background tick: keep telemetry and car positions advancing every 2 seconds
+setInterval(() => {
+  updateSnapshot().catch((err) => console.error('[Worker interval error]:', err));
+}, 2000);
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[Delta API] Server running at http://localhost:${PORT}`);

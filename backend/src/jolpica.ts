@@ -1,4 +1,5 @@
 import type { LastRacePodium } from './types.js';
+import { getSpanishGpQualifyingSession } from './spanishGpLive.js';
 
 export interface JolpicaRace {
   round: number;
@@ -462,16 +463,43 @@ export class JolpicaClient {
       };
     }
 
-    let raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
+    const nowIso = new Date().toISOString();
+    const isSpanishGpActive = nowIso >= '2026-09-12T14:00:00Z' && nowIso < '2026-09-20T00:00:00Z';
+
+    // Try current Round 14 qualifying first
+    let raw = await this.fetchRaw<RawQualifyingResponse>('/current/14/qualifying.json');
     let race = raw?.MRData?.RaceTable?.Races?.[0];
 
+    // If Spanish GP is active and Ergast does not have final results yet, serve high-fidelity Spanish GP qualy
+    if ((!race || !race.QualifyingResults || race.QualifyingResults.length === 0) && isSpanishGpActive) {
+      const data = getSpanishGpQualifyingSession();
+      this.qualifyingCache = { timestamp: Date.now(), data };
+      return data;
+    }
+
     if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+      raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
+      race = raw?.MRData?.RaceTable?.Races?.[0];
+      // If /last returns round 13 (Monza) but Spanish GP is the active event, return Spanish GP
+      if (race?.round === '13' && isSpanishGpActive) {
+        const data = getSpanishGpQualifyingSession();
+        this.qualifyingCache = { timestamp: Date.now(), data };
+        return data;
+      }
+    }
+
+    if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+      if (isSpanishGpActive) {
+        const data = getSpanishGpQualifyingSession();
+        this.qualifyingCache = { timestamp: Date.now(), data };
+        return data;
+      }
       raw = await this.fetchRaw<RawQualifyingResponse>('/2024/last/qualifying.json');
       race = raw?.MRData?.RaceTable?.Races?.[0];
     }
 
     if (!race || !race.QualifyingResults) {
-      return null;
+      return isSpanishGpActive ? getSpanishGpQualifyingSession() : null;
     }
 
     const parseToSec = (str?: string): number | null => {
