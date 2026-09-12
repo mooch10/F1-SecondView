@@ -629,7 +629,7 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     code: 'ANT',
     firstName: 'Andrea Kimi',
     lastName: 'Antonelli',
-    fullName: 'Kimi Antonelli',
+    fullName: 'Andrea Kimi Antonelli',
     nationality: 'Italia',
     countryCode: 'IT',
     flag: '🇮🇹',
@@ -638,16 +638,16 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     team: 'Mercedes-AMG Petronas',
     teamColor: '#27F4D2',
     headshotUrl:
-      'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KIMANT01_Kimi_Antonelli/kimant01.png.transform/1col/image.png',
+      'https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/mercedes/andant01/2026mercedesandant01right.webp',
     biography:
-      'La gran promesa italiana y joya de la academia Mercedes. Con solo 18 años, el protegido de Toto Wolff fue elegido para suceder a Lewis Hamilton en las flechas plateadas.',
+      'La gran promesa italiana y joya de la academia Mercedes. Con solo 18 años, el protegido de Toto Wolff fue elegido para suceder a Lewis Hamilton en las flechas plateadas tras una brillante trayectoria.',
     careerStats: {
       grandsPrix: 0,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'Debut 2025',
-      highestGrid: 'Debut 2025',
+      highestFinish: 'Debut 2025/2026',
+      highestGrid: 'Debut 2025/2026',
     },
   },
   7: {
@@ -728,53 +728,102 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
       highestGrid: 'Debut 2025',
     },
   },
+  41: {
+    number: 41,
+    code: 'LIN',
+    firstName: 'Arvid',
+    lastName: 'Lindblad',
+    fullName: 'Arvid Lindblad',
+    nationality: 'Reino Unido',
+    countryCode: 'GB',
+    flag: '🇬🇧',
+    birthDate: '2007-08-08',
+    birthPlace: 'Londres, Reino Unido',
+    team: 'Racing Bulls',
+    teamColor: '#6692FF',
+    headshotUrl:
+      'https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/racingbulls/arvlin01/2026racingbullsarvlin01right.webp',
+    biography:
+      'Joven maravilla británico-sueco formado en el Red Bull Junior Team. Con apenas 18 años ascendió directamente a la Fórmula 1 como piloto titular de Racing Bulls en 2026 tras deslumbrar en las categorías formativas con múltiples victorias épicas en F3 y F2.',
+    careerStats: {
+      grandsPrix: 0,
+      podiums: 0,
+      victories: 0,
+      worldChampionships: 0,
+      highestFinish: 'Debut 2026',
+      highestGrid: 'Debut 2026',
+    },
+  },
 };
 
 /**
  * Normalizes an input (driver number, surname, acronym or full name)
- * to find the corresponding F1DriverProfile.
+ * to find the corresponding F1DriverProfile with strict priority:
+ * 1. Exact 3-letter driver code (VER, NOR, ANT, LIN, etc.)
+ * 2. Exact full name or last name
+ * 3. Driver number match
+ * 4. Safe substring match (length >= 4 only)
  */
 export function getF1DriverProfile(
   identifier: number | string | undefined | null,
 ): F1DriverProfile | undefined {
-  if (!identifier && identifier !== 0) return undefined;
+  if (identifier === undefined || identifier === null || identifier === '') {
+    return undefined;
+  }
 
-  // If number
+  const allDrivers = Object.values(F1_DRIVERS_DATA);
+
+  // 1. Direct number passed as number type
   if (typeof identifier === 'number') {
-    return F1_DRIVERS_DATA[identifier];
+    if (F1_DRIVERS_DATA[identifier]) return F1_DRIVERS_DATA[identifier];
+    const byNum = allDrivers.find((d) => d.number === identifier);
+    if (byNum) return byNum;
   }
 
-  const str = String(identifier).trim();
-  const num = parseInt(str, 10);
-  if (!Number.isNaN(num) && F1_DRIVERS_DATA[num]) {
-    return F1_DRIVERS_DATA[num];
-  }
+  const rawStr = String(identifier).trim();
+  if (!rawStr) return undefined;
 
-  const normalized = str
+  const normalized = rawStr
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-  return Object.values(F1_DRIVERS_DATA).find((d) => {
-    const codeMatch = d.code.toLowerCase() === normalized;
-    const lastMatch = d.lastName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .includes(normalized);
-    const fullMatch = d.fullName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .includes(normalized);
-    const normInFull = normalized.includes(
-      d.lastName
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, ''),
-    );
-    return codeMatch || lastMatch || fullMatch || normInFull;
+  // 2. Exact 3-letter code match (VER, NOR, ANT, LIN, COL, etc.)
+  // Crucial: 3-letter codes in F1 are 100% unique. Never substring match them!
+  if (normalized.length === 3) {
+    const byCode = allDrivers.find((d) => d.code.toLowerCase() === normalized);
+    if (byCode) return byCode;
+  }
+
+  // 3. Exact full name or last name match
+  const exactName = allDrivers.find((d) => {
+    const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const dFirstLast = `${d.firstName} ${d.lastName}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return dLast === normalized || dFull === normalized || dFirstLast === normalized;
   });
+  if (exactName) return exactName;
+
+  // 4. Numeric string match (e.g. "43", "12", "41")
+  const parsedNum = parseInt(rawStr, 10);
+  if (!Number.isNaN(parsedNum) && String(parsedNum) === rawStr) {
+    if (F1_DRIVERS_DATA[parsedNum]) return F1_DRIVERS_DATA[parsedNum];
+    const byNum = allDrivers.find((d) => d.number === parsedNum);
+    if (byNum) return byNum;
+  }
+
+  // 5. Smart Substring / Name Match (Only for strings of length >= 4)
+  // Prevents short strings (like "ant") from erroneously matching inside "sargeant"
+  if (normalized.length >= 4) {
+    const matchContained = allDrivers.find((d) => {
+      const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return dFull.includes(normalized) || normalized.includes(dLast);
+    });
+    if (matchContained) return matchContained;
+  }
+
+  return undefined;
 }
 
 /**

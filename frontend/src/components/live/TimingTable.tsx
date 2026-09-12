@@ -39,9 +39,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
   const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
     const profile =
-      getF1DriverProfile(driverNumber) ||
-      getF1DriverProfile(code) ||
-      getF1DriverProfile(fullName);
+      (code ? getF1DriverProfile(code) : undefined) ||
+      (fullName ? getF1DriverProfile(fullName) : undefined) ||
+      (driverNumber !== undefined ? getF1DriverProfile(driverNumber) : undefined);
     if (profile) {
       setSelectedProfile(profile);
       setIsProfileOpen(true);

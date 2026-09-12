@@ -153,27 +153,32 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
 
           {/* Personal Info Grid */}
           <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-            <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 flex items-start gap-2.5">
+            <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-2.5 sm:p-3 flex items-start gap-2.5">
               <MapPin className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="text-[10px] uppercase text-zinc-500 font-bold block">
                   Lugar de Nacimiento
                 </span>
-                <span className="text-zinc-200 truncate block font-medium mt-0.5">
+                <span className="text-zinc-200 block font-medium mt-0.5 text-xs line-clamp-2 leading-tight">
                   {profile.birthPlace}
                 </span>
               </div>
             </div>
 
-            <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 flex items-start gap-2.5">
+            <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-2.5 sm:p-3 flex items-start gap-2.5">
               <Calendar className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="text-[10px] uppercase text-zinc-500 font-bold block">
                   Fecha de Nacimiento
                 </span>
-                <span className="text-zinc-200 truncate block font-medium mt-0.5">
-                  {profile.birthDate} ({age} años)
-                </span>
+                <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                  <span className="text-zinc-200 font-medium text-xs">
+                    {profile.birthDate}
+                  </span>
+                  <span className="text-[11px] font-bold text-amber-400 whitespace-nowrap">
+                    ({age} años)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
