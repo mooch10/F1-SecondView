@@ -16,13 +16,14 @@ import { useSeries } from '../../hooks/useSeries';
 
 export const ScheduleView: React.FC = () => {
   const { lang, t } = useLanguage();
-  const { series } = useSeries();
+  const { series, theme } = useSeries();
   const [races, setRaces] = useState<JolpicaRace[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedRound, setExpandedRound] = useState<number | null>(null);
   const [roundResults, setRoundResults] = useState<Record<number, JolpicaRaceDetail>>({});
   const [loadingResultRound, setLoadingResultRound] = useState<number | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<Record<number, 'results' | 'schedule'>>({});
+  const [subSessionTab, setSubSessionTab] = useState<Record<number, 'feature' | 'sprint'>>({});
   const [showFullGridRound, setShowFullGridRound] = useState<Record<number, boolean>>({});
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -111,22 +112,24 @@ export const ScheduleView: React.FC = () => {
     if (!dateStr) return t.betweenRaces.toConfirm;
     try {
       const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return t.betweenRaces.toConfirm;
+      if (isNaN(d.getTime())) return dateStr.split('T')[0] || t.betweenRaces.toConfirm;
       return d.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
         weekday: 'short',
         day: '2-digit',
         month: 'short',
       });
     } catch {
-      return t.betweenRaces.toConfirm;
+      return dateStr.split('T')[0] || t.betweenRaces.toConfirm;
     }
   };
 
   const formatLocalTime = (dateStr: string): string | null => {
-    if (!dateStr) return null;
+    if (!dateStr || !dateStr.includes('T')) return null;
+    if (dateStr.includes('T00:00:00')) return null;
     try {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return null;
+      if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0) return null;
       return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch {
       return null;
@@ -160,10 +163,20 @@ export const ScheduleView: React.FC = () => {
     <div className="flex flex-col gap-3">
       {/* Next GP Hero Countdown Card */}
       {nextRace && (
-        <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 relative shadow-sm">
+        <div
+          className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm"
+          style={{ borderTop: `3px solid ${theme.primary}` }}
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit">
-              {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border"
+              style={{
+                backgroundColor: `${theme.primary}20`,
+                color: theme.primary,
+                borderColor: `${theme.primary}40`,
+              }}
+            >
+              {series.toUpperCase()} • {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
             <span className="text-[11px] text-zinc-400 font-mono">
               {t.schedule.localTime} ({Intl.DateTimeFormat().resolvedOptions().timeZone})
@@ -174,7 +187,7 @@ export const ScheduleView: React.FC = () => {
             {nextRace.raceName}
           </h2>
           <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1 font-mono">
-            <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
+            <MapPin className="w-3.5 h-3.5" style={{ color: theme.primary }} />
             <span>{nextRace.circuitName.toUpperCase()}</span>
             <span>•</span>
             <span>
@@ -210,7 +223,10 @@ export const ScheduleView: React.FC = () => {
                 </span>
               </div>
               <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-bold text-[#E10600] font-mono tabular-nums">
+                <span
+                  className="text-lg sm:text-2xl font-bold font-mono tabular-nums"
+                  style={{ color: theme.primary }}
+                >
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
                 <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
@@ -226,7 +242,7 @@ export const ScheduleView: React.FC = () => {
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-2.5 bg-[#131722] border-b border-white/[0.08] flex items-center justify-between text-xs font-mono font-bold text-zinc-400">
           <div className="flex items-center gap-2 tracking-wider">
-            <Calendar className="w-3.5 h-3.5 text-[#E10600]" />
+            <Calendar className="w-3.5 h-3.5" style={{ color: theme.primary }} />
             <span>{t.schedule.seasonCalendar}</span>
           </div>
           <span className="text-[10px] text-zinc-400 font-mono tracking-widest">
@@ -248,9 +264,8 @@ export const ScheduleView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => toggleRound(r.round, isPast)}
-                  className={`w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors select-none ${
-                    r.isNext ? 'bg-[#E10600]/[0.04]' : ''
-                  }`}
+                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors select-none"
+                  style={r.isNext ? { backgroundColor: `${theme.primary}12` } : undefined}
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <span className="font-mono text-xs font-bold text-zinc-400 w-7 text-center tabular-nums shrink-0">
@@ -262,7 +277,14 @@ export const ScheduleView: React.FC = () => {
                           {r.raceName}
                         </span>
                         {r.isNext && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/30 shrink-0 whitespace-nowrap">
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border shrink-0 whitespace-nowrap"
+                            style={{
+                              backgroundColor: `${theme.primary}25`,
+                              color: theme.primary,
+                              borderColor: `${theme.primary}45`,
+                            }}
+                          >
                             {t.schedule.nextBadge}
                           </span>
                         )}
@@ -303,9 +325,10 @@ export const ScheduleView: React.FC = () => {
                           }
                           className={`px-3 py-1 rounded-md font-bold uppercase text-[11px] transition-colors cursor-pointer flex items-center gap-1.5 ${
                             currentTab === 'results'
-                              ? 'bg-[#E10600] text-white shadow-xs'
+                              ? 'text-white shadow-xs'
                               : 'text-zinc-400 hover:text-white bg-white/[0.04]'
                           }`}
+                          style={currentTab === 'results' ? { backgroundColor: theme.primary } : undefined}
                         >
                           <Trophy className="w-3 h-3" />
                           <span>{t.schedule.raceBreakdownTab}</span>
@@ -335,132 +358,195 @@ export const ScheduleView: React.FC = () => {
                             <span className="animate-pulse">{t.schedule.loadingBreakdown}</span>
                           </div>
                         ) : detail && detail.results && detail.results.length > 0 ? (
-                          <div className="flex flex-col gap-2.5">
-                            {/* Winner & Fastest Lap Quick Banner */}
-                            <div className="bg-[#131722] border border-white/[0.08] rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-xs">
-                              <div className="flex items-center gap-2">
-                                <span className="w-5 h-5 rounded-md bg-[#FFD60A] text-black font-black flex items-center justify-center text-xs">
-                                  1
-                                </span>
-                                <span className="text-zinc-400">{t.schedule.winner}</span>
-                                <strong className="text-white">
-                                  {detail.winner.fullName} ({detail.winner.code})
-                                </strong>
-                                <span className="text-[11px] text-zinc-400">
-                                  • {detail.winner.teamName}
-                                </span>
-                              </div>
-                              {detail.fastestLap && (
-                                <div className="flex items-center gap-1.5 text-purple-300 text-[11px]">
-                                  <Zap className="w-3 h-3 text-purple-400" />
-                                  <span>{t.schedule.fastestLap}</span>
-                                  <strong className="text-white">
-                                    {detail.fastestLap.code} ({detail.fastestLap.time})
-                                  </strong>
-                                </div>
-                              )}
-                            </div>
+                          (() => {
+                            const hasSprint = Boolean(detail.sprintRace);
+                            const selectedSubSession = subSessionTab[r.round] || 'feature';
+                            const activeResults =
+                              selectedSubSession === 'sprint' && detail.sprintRace
+                                ? detail.sprintRace.results
+                                : detail.results;
 
-                            {/* Classification Mini Table */}
-                            <div className="bg-[#131722] border border-white/[0.08] rounded-lg overflow-hidden shadow-xs">
-                              <div className="grid grid-cols-12 gap-1 px-3 py-1.5 bg-[#1C2230] border-b border-white/[0.06] text-[9px] font-mono font-bold uppercase text-zinc-400 select-none">
-                                <div className="col-span-1 text-center">{t.live.table.pos}</div>
-                                <div className="col-span-5 sm:col-span-5">{t.live.table.driver}</div>
-                                <div className="hidden sm:block sm:col-span-2 text-center">{lang === 'es' ? 'LARGADA' : 'START'}</div>
-                                <div className="col-span-3 sm:col-span-2 text-right sm:text-center">{lang === 'es' ? 'TIEMPO' : 'TIME'}</div>
-                                <div className="col-span-3 sm:col-span-2 text-right">PTS</div>
-                              </div>
-
-                              <div className="divide-y divide-white/[0.04]">
-                                {(showFull ? detail.results : detail.results.slice(0, 10)).map(
-                                  (d) => (
-                                    <div
-                                      key={d.driverNumber}
-                                      className="grid grid-cols-12 gap-1 px-3 py-1.5 items-center font-mono text-xs text-zinc-300"
-                                    >
-                                      <div
-                                        className={`col-span-1 text-center font-black ${
-                                          d.pos === 1
-                                            ? 'text-[#FFD60A]'
-                                            : d.pos <= 3
-                                            ? 'text-white'
-                                            : d.pos <= 10
-                                            ? 'text-emerald-400'
-                                            : 'text-zinc-500'
-                                        }`}
-                                      >
-                                        {d.pos}
-                                      </div>
-                                      <div className="col-span-5 sm:col-span-5 flex items-center gap-1.5 truncate">
-                                        <span
-                                          className="w-1 h-4 rounded-full shrink-0"
-                                          style={{ backgroundColor: d.teamColor || '#71717A' }}
-                                        />
-                                        <span className="font-bold text-white">{d.code}</span>
-                                        <span className="text-[10px] text-zinc-400 truncate hidden sm:inline">
-                                          {d.fullName}
-                                        </span>
-                                      </div>
-                                      <div className="hidden sm:block sm:col-span-2 text-center text-[10px] text-zinc-400">
-                                        P{d.grid}{' '}
-                                        {d.posChange > 0 ? (
-                                          <span className="text-emerald-400 text-[9px]">
-                                            ▲+{d.posChange}
-                                          </span>
-                                        ) : d.posChange < 0 ? (
-                                          <span className="text-rose-400 text-[9px]">
-                                            ▼{d.posChange}
-                                          </span>
-                                        ) : (
-                                          '='
-                                        )}
-                                      </div>
-                                      <div className="col-span-3 sm:col-span-2 text-right sm:text-center text-[11px] truncate">
-                                        <span
-                                          className={
-                                            d.pos === 1
-                                              ? 'text-[#FFD60A] font-bold'
-                                              : d.status.toLowerCase().includes('ret')
-                                              ? 'text-rose-400 text-[10px]'
-                                              : 'text-zinc-300'
-                                          }
-                                        >
-                                          {d.timeOrStatus}
-                                        </span>
-                                      </div>
-                                      <div className="col-span-3 sm:col-span-2 text-right font-bold text-[11px]">
-                                        {d.points > 0 ? (
-                                          <span className="text-emerald-400">+{d.points}</span>
-                                        ) : (
-                                          <span className="text-zinc-600">0</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-
-                              {/* Toggle to see full grid P11-P20 */}
-                              {detail.results.length > 10 && (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setShowFullGridRound((prev) => ({
-                                      ...prev,
-                                      [r.round]: !showFull,
-                                    }))
+                            const activeWinner =
+                              selectedSubSession === 'sprint' && detail.sprintRace && detail.sprintRace.results?.[0]
+                                ? {
+                                    code: detail.sprintRace.results[0].code,
+                                    fullName: detail.sprintRace.results[0].fullName,
+                                    teamName: detail.sprintRace.results[0].teamName,
+                                    time: detail.sprintRace.results[0].timeOrStatus,
                                   }
-                                  className="w-full py-2 bg-white/[0.02] hover:bg-white/[0.05] border-t border-white/[0.06] text-center font-mono text-[10px] font-bold text-zinc-400 hover:text-white uppercase transition-colors cursor-pointer"
-                                >
-                                  {showFull
-                                    ? t.schedule.viewTop10
-                                    : lang === 'es'
-                                    ? `▼ Ver parrilla completa (P11 - P${detail.results.length})`
-                                    : `▼ View full grid (P11 - P${detail.results.length})`}
-                                </button>
-                              )}
-                            </div>
-                          </div>
+                                : detail.winner || (detail.results?.[0] ? {
+                                    code: detail.results[0].code,
+                                    fullName: detail.results[0].fullName,
+                                    teamName: detail.results[0].teamName,
+                                    time: detail.results[0].timeOrStatus,
+                                  } : null);
+
+                            const activeFastestLap =
+                              selectedSubSession === 'sprint' && detail.sprintRace
+                                ? detail.sprintRace.fastestLap
+                                : detail.fastestLap;
+
+                            return (
+                              <div className="flex flex-col gap-2.5">
+                                {/* Sprint / Feature selector for F2/F3 */}
+                                {hasSprint && (
+                                  <div className="flex items-center gap-1 bg-[#131722] p-0.5 rounded-lg border border-white/[0.08] text-[10px] font-mono select-none w-fit">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSubSessionTab((prev) => ({ ...prev, [r.round]: 'feature' }))}
+                                      className={`px-2.5 py-1 rounded font-bold uppercase transition-colors cursor-pointer ${
+                                        selectedSubSession === 'feature'
+                                          ? 'text-white shadow-xs'
+                                          : 'text-zinc-400 hover:text-zinc-200'
+                                      }`}
+                                      style={selectedSubSession === 'feature' ? { backgroundColor: theme.primary } : undefined}
+                                    >
+                                      Feature Race
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSubSessionTab((prev) => ({ ...prev, [r.round]: 'sprint' }))}
+                                      className={`px-2.5 py-1 rounded font-bold uppercase transition-colors cursor-pointer ${
+                                        selectedSubSession === 'sprint'
+                                          ? 'text-white shadow-xs'
+                                          : 'text-zinc-400 hover:text-zinc-200'
+                                      }`}
+                                      style={selectedSubSession === 'sprint' ? { backgroundColor: theme.primary } : undefined}
+                                    >
+                                      Sprint Race
+                                    </button>
+                                  </div>
+                                )}
+
+                                {/* Winner & Fastest Lap Quick Banner */}
+                                {activeWinner && (
+                                  <div className="bg-[#131722] border border-white/[0.08] rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-xs">
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-5 h-5 rounded-md bg-[#FFD60A] text-black font-black flex items-center justify-center text-xs shrink-0">
+                                        1
+                                      </span>
+                                      <span className="text-zinc-400">{t.schedule.winner}</span>
+                                      <strong className="text-white">
+                                        {activeWinner.fullName} ({activeWinner.code})
+                                      </strong>
+                                      <span className="text-[11px] text-zinc-400 hidden sm:inline">
+                                        • {activeWinner.teamName}
+                                      </span>
+                                    </div>
+                                    {activeFastestLap && (
+                                      <div className="flex items-center gap-1.5 text-purple-300 text-[11px]">
+                                        <Zap className="w-3 h-3 text-purple-400" />
+                                        <span>{t.schedule.fastestLap}</span>
+                                        <strong className="text-white">
+                                          {activeFastestLap.code} ({activeFastestLap.time})
+                                        </strong>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Classification Mini Table */}
+                                <div className="bg-[#131722] border border-white/[0.08] rounded-lg overflow-hidden shadow-xs">
+                                  <div className="grid grid-cols-12 gap-1 px-3 py-1.5 bg-[#1C2230] border-b border-white/[0.06] text-[9px] font-mono font-bold uppercase text-zinc-400 select-none">
+                                    <div className="col-span-1 text-center">{t.live.table.pos}</div>
+                                    <div className="col-span-5 sm:col-span-5">{t.live.table.driver}</div>
+                                    <div className="hidden sm:block sm:col-span-2 text-center">{lang === 'es' ? 'LARGADA' : 'START'}</div>
+                                    <div className="col-span-3 sm:col-span-2 text-right sm:text-center">{lang === 'es' ? 'TIEMPO' : 'TIME'}</div>
+                                    <div className="col-span-3 sm:col-span-2 text-right">PTS</div>
+                                  </div>
+
+                                  <div className="divide-y divide-white/[0.04]">
+                                    {(showFull ? activeResults : activeResults.slice(0, 10)).map(
+                                      (d) => (
+                                        <div
+                                          key={d.driverNumber}
+                                          className="grid grid-cols-12 gap-1 px-3 py-1.5 items-center font-mono text-xs text-zinc-300"
+                                        >
+                                          <div
+                                            className={`col-span-1 text-center font-black ${
+                                              d.pos === 1
+                                                ? 'text-[#FFD60A]'
+                                                : d.pos <= 3
+                                                ? 'text-white'
+                                                : d.pos <= 10
+                                                ? 'text-emerald-400'
+                                                : 'text-zinc-500'
+                                            }`}
+                                          >
+                                            {d.pos}
+                                          </div>
+                                          <div className="col-span-5 sm:col-span-5 flex items-center gap-1.5 truncate">
+                                            <span
+                                              className="w-1 h-4 rounded-full shrink-0"
+                                              style={{ backgroundColor: d.teamColor || '#71717A' }}
+                                            />
+                                            <span className="font-bold text-white">{d.code}</span>
+                                            <span className="text-[10px] text-zinc-400 truncate hidden sm:inline">
+                                              {d.fullName}
+                                            </span>
+                                          </div>
+                                          <div className="hidden sm:block sm:col-span-2 text-center text-[10px] text-zinc-400">
+                                            P{d.grid}{' '}
+                                            {d.posChange > 0 ? (
+                                              <span className="text-emerald-400 text-[9px]">
+                                                ▲+{d.posChange}
+                                              </span>
+                                            ) : d.posChange < 0 ? (
+                                              <span className="text-rose-400 text-[9px]">
+                                                ▼{d.posChange}
+                                              </span>
+                                            ) : (
+                                              '='
+                                            )}
+                                          </div>
+                                          <div className="col-span-3 sm:col-span-2 text-right sm:text-center text-[11px] truncate">
+                                            <span
+                                              className={
+                                                d.pos === 1
+                                                  ? 'text-[#FFD60A] font-bold'
+                                                  : d.status?.toLowerCase().includes('ret')
+                                                  ? 'text-rose-400 text-[10px]'
+                                                  : 'text-zinc-300'
+                                              }
+                                            >
+                                              {d.timeOrStatus}
+                                            </span>
+                                          </div>
+                                          <div className="col-span-3 sm:col-span-2 text-right font-bold text-[11px]">
+                                            {d.points > 0 ? (
+                                              <span className="text-emerald-400">+{d.points}</span>
+                                            ) : (
+                                              <span className="text-zinc-600">0</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+
+                                  {/* Toggle to see full grid P11-P20 */}
+                                  {activeResults.length > 10 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setShowFullGridRound((prev) => ({
+                                          ...prev,
+                                          [r.round]: !showFull,
+                                        }))
+                                      }
+                                      className="w-full py-2 bg-white/[0.02] hover:bg-white/[0.05] border-t border-white/[0.06] text-center font-mono text-[10px] font-bold text-zinc-400 hover:text-white uppercase transition-colors cursor-pointer"
+                                    >
+                                      {showFull
+                                        ? t.schedule.viewTop10
+                                        : lang === 'es'
+                                        ? `▼ Ver parrilla completa (P11 - P${activeResults.length})`
+                                        : `▼ View full grid (P11 - P${activeResults.length})`}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()
                         ) : (
                           <div className="p-4 text-center text-zinc-500 font-mono text-xs">
                             <span>{t.schedule.noBreakdownData}</span>
@@ -473,17 +559,22 @@ export const ScheduleView: React.FC = () => {
                     {(!isPast || currentTab === 'schedule') && (
                       <div>
                         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-[#E10600]" /> {t.schedule.sessionScheduleTitle}
+                          <Clock className="w-3 h-3" style={{ color: theme.primary }} /> {t.schedule.sessionScheduleTitle}
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                           {r.sessions?.map((s, idx) => (
                             <div
                               key={idx}
                               className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
-                                s.name === 'Carrera'
-                                  ? 'bg-[#1C2230] border-l-2 border-l-[#E10600] border-t border-b border-r border-white/[0.08] text-white font-bold'
+                                s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')
+                                  ? 'bg-[#1C2230] border-t border-b border-r border-white/[0.08] text-white font-bold'
                                   : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
                               }`}
+                              style={
+                                s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')
+                                  ? { borderLeft: `3px solid ${theme.primary}` }
+                                  : undefined
+                              }
                             >
                               <span className="font-semibold uppercase">{translateSessionName(s.name)}</span>
                               <div className="flex items-center gap-2 tabular-nums">

@@ -303,6 +303,12 @@ export interface JuniorRaceDetail {
   date: string;
   series: 'f2' | 'f3';
   results: JolpicaRaceResult[];
+  winner?: {
+    code: string;
+    fullName: string;
+    teamName: string;
+    time: string;
+  };
   fastestLap?: {
     code: string;
     driverName: string;

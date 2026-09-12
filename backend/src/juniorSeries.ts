@@ -45,7 +45,7 @@ function getTeamColor(teamName: string, series: 'f2' | 'f3'): string {
       return color;
     }
   }
-  return series === 'f2' ? '#009CDE' : '#B8002E';
+  return series === 'f2' ? '#009CDE' : '#E35205';
 }
 
 const KNOWN_F2_DRIVER_CHANGES: DriverChangeAlert[] = [
@@ -1204,6 +1204,14 @@ export class JuniorSeriesClient {
       date: raceEvent.raceDateTime,
       series,
       results: mappedFeatureResults,
+      winner: mappedFeatureResults[0]
+        ? {
+            code: mappedFeatureResults[0].code,
+            fullName: mappedFeatureResults[0].fullName,
+            teamName: mappedFeatureResults[0].teamName,
+            time: mappedFeatureResults[0].timeOrStatus,
+          }
+        : undefined,
       fastestLap: featureSession.fastestLap,
       sprintRace: sprintSession,
       featureRace: featureSession,

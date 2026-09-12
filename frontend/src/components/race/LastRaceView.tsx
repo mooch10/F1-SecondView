@@ -66,6 +66,21 @@ export const LastRaceView: React.FC = () => {
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
   };
 
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr.split('T')[0];
+      return d.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr.split('T')[0];
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       {/* Session Switcher if Sprint & Feature exist */}
@@ -119,7 +134,7 @@ export const LastRaceView: React.FC = () => {
                 {series.toUpperCase()} • {t.lastRace.round} {raceDetail.round} • {t.lastRace.lastGp}
               </span>
               <span className="text-[11px] text-zinc-400 font-mono">
-                {raceDetail.date}
+                {formatDisplayDate(raceDetail.date)}
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
