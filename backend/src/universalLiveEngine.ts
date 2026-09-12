@@ -10,6 +10,8 @@ import type {
   TrackWeather,
 } from './types.js';
 import type { JolpicaQualifyingResult, JolpicaQualifyingSession, JolpicaRace } from './jolpica.js';
+import type { LiveStreamSession } from './liveStreamClient.js';
+import { OFFICIAL_2026_CIRCUITS, CIRCUIT_ALIASES } from './circuits/catalog.js';
 
 export interface CircuitData {
   totalLaps: number;
@@ -18,134 +20,34 @@ export interface CircuitData {
   bounds: { minX: number; maxX: number; minY: number; maxY: number };
 }
 
-// Default generic circuit geometry if a circuit doesn't have custom coordinates
-function generateGenericOutline(corners = 16): [number, number][] {
-  const points: [number, number][] = [];
-  const radiusX = 520;
-  const radiusY = 360;
-  for (let i = 0; i < corners; i++) {
-    const angle = (i / corners) * Math.PI * 2;
-    // Add realistic undulating variation
-    const rVar = 1 + 0.22 * Math.sin(angle * 3) - 0.15 * Math.cos(angle * 5);
-    const x = Math.round(Math.cos(angle) * radiusX * rVar);
-    const y = Math.round(Math.sin(angle) * radiusY * rVar);
-    points.push([x, y]);
-  }
-  return points;
-}
-
-// Circuit catalog covering all 24 Grand Prix circuits of the FIA World Championship
+// Complete official catalog covering all 24 Grand Prix circuits of the 2026 FIA World Championship
 export const CIRCUITS_CATALOG: Record<string, CircuitData> = {
-  // Spain / Madring (IFEMA Madrid)
-  madring: {
-    totalLaps: 66,
-    benchmarkLapSec: 76.248,
-    bounds: { minX: -650, maxX: 650, minY: -450, maxY: 450 },
-    outline: [
-      [-450, -400], [-350, -400], [-250, -400], [-150, -400], [-50, -400], [50, -400], [150, -400], [250, -400], [350, -400],
-      [430, -380], [500, -330], [560, -250], [590, -160], [600, -70],
-      [580, 20], [550, 110], [500, 190], [430, 260],
-      [380, 290], [350, 320], [330, 370], [310, 420],
-      [270, 440], [220, 450], [170, 430], [130, 390],
-      [90, 340], [50, 290], [0, 250], [-60, 220], [-120, 200], [-180, 190],
-      [-250, 190], [-330, 200], [-410, 230], [-480, 280], [-540, 340], [-590, 390],
-      [-630, 370], [-650, 310], [-640, 240], [-610, 170],
-      [-570, 110], [-520, 60], [-460, 20], [-400, -20], [-350, -60],
-      [-320, -110], [-310, -170], [-330, -230], [-380, -280], [-440, -310],
-      [-500, -320], [-560, -340], [-580, -370], [-550, -395], [-500, -400],
-    ],
-  },
-  // Azerbaijan / Baku City Circuit
-  baku: {
-    totalLaps: 51,
-    benchmarkLapSec: 101.25,
-    bounds: { minX: -600, maxX: 600, minY: -380, maxY: 380 },
-    outline: generateGenericOutline(20),
-  },
-  // Singapore / Marina Bay
-  singapore: {
-    totalLaps: 62,
-    benchmarkLapSec: 89.82,
-    bounds: { minX: -550, maxX: 550, minY: -420, maxY: 420 },
-    outline: generateGenericOutline(22),
-  },
-  // USA / Circuit of the Americas (Austin)
-  austin: {
-    totalLaps: 56,
-    benchmarkLapSec: 92.51,
-    bounds: { minX: -620, maxX: 620, minY: -400, maxY: 400 },
-    outline: generateGenericOutline(20),
-  },
-  // Mexico / Hermanos Rodríguez
-  mexico: {
-    totalLaps: 71,
-    benchmarkLapSec: 77.45,
-    bounds: { minX: -580, maxX: 580, minY: -380, maxY: 380 },
-    outline: generateGenericOutline(18),
-  },
-  // Brazil / Interlagos
-  interlagos: {
-    totalLaps: 71,
-    benchmarkLapSec: 69.85,
-    bounds: { minX: -500, maxX: 500, minY: -400, maxY: 400 },
-    outline: generateGenericOutline(18),
-  },
-  // Las Vegas Strip Circuit
-  vegas: {
-    totalLaps: 50,
-    benchmarkLapSec: 92.4,
-    bounds: { minX: -600, maxX: 600, minY: -350, maxY: 350 },
-    outline: generateGenericOutline(17),
-  },
-  // Qatar / Lusail
-  losail: {
-    totalLaps: 57,
-    benchmarkLapSec: 83.2,
-    bounds: { minX: -560, maxX: 560, minY: -420, maxY: 420 },
-    outline: generateGenericOutline(19),
-  },
-  // Abu Dhabi / Yas Marina
-  yas_marina: {
-    totalLaps: 58,
-    benchmarkLapSec: 83.45,
-    bounds: { minX: -580, maxX: 580, minY: -400, maxY: 400 },
-    outline: generateGenericOutline(19),
-  },
-  // Italy / Monza
-  monza: {
-    totalLaps: 53,
-    benchmarkLapSec: 79.35,
-    bounds: { minX: -620, maxX: 620, minY: -380, maxY: 380 },
-    outline: generateGenericOutline(16),
-  },
-  // Default fallback for any newly added track
-  default: {
-    totalLaps: 56,
-    benchmarkLapSec: 80.0,
-    bounds: { minX: -600, maxX: 600, minY: -400, maxY: 400 },
-    outline: generateGenericOutline(18),
-  },
+  ...OFFICIAL_2026_CIRCUITS,
 };
 
-// Aliases mapping for circuit search
-CIRCUITS_CATALOG.marina_bay = CIRCUITS_CATALOG.singapore;
-CIRCUITS_CATALOG.madrid = CIRCUITS_CATALOG.madring;
-CIRCUITS_CATALOG.catalunya = CIRCUITS_CATALOG.madring;
-CIRCUITS_CATALOG.barcelona = CIRCUITS_CATALOG.madring;
-CIRCUITS_CATALOG.cota = CIRCUITS_CATALOG.austin;
-CIRCUITS_CATALOG.americas = CIRCUITS_CATALOG.austin;
-CIRCUITS_CATALOG.azerbaijan = CIRCUITS_CATALOG.baku;
-CIRCUITS_CATALOG.qatar = CIRCUITS_CATALOG.losail;
-CIRCUITS_CATALOG.abu_dhabi = CIRCUITS_CATALOG.yas_marina;
+// Apply circuit aliases (e.g. melbourne -> albert_park, montmelo -> catalunya, etc.)
+for (const [alias, targetKey] of Object.entries(CIRCUIT_ALIASES)) {
+  if (CIRCUITS_CATALOG[targetKey]) {
+    CIRCUITS_CATALOG[alias] = CIRCUITS_CATALOG[targetKey];
+  }
+}
 
 export function getCircuitData(circuitName = '', location = '', country = ''): CircuitData {
   const term = `${circuitName} ${location} ${country}`.toLowerCase().replace(/[\s-]+/g, '_');
+  
   for (const [key, data] of Object.entries(CIRCUITS_CATALOG)) {
     if (key === 'default') continue;
     if (term.includes(key)) {
       return data;
     }
   }
+
+  for (const [alias, targetKey] of Object.entries(CIRCUIT_ALIASES)) {
+    if (term.includes(alias) && CIRCUITS_CATALOG[targetKey]) {
+      return CIRCUITS_CATALOG[targetKey];
+    }
+  }
+
   return CIRCUITS_CATALOG.default;
 }
 
@@ -349,6 +251,7 @@ function generateMiniSegments(status: SectorStatus): MiniSectorStatus[] {
 export function generateUniversalLiveSnapshot(
   activeSession: ResolvedActiveSession,
   now = new Date(),
+  liveSession?: LiveStreamSession | null,
 ): LiveSnapshot {
   const race = activeSession.race;
   const circuit = getCircuitData(race.circuitName, race.locality, race.country);
@@ -357,20 +260,42 @@ export function generateUniversalLiveSnapshot(
 
   const isQualy = activeSession.sessionType === 'Qualifying';
 
-  const drivers: DriverLive[] = DRIVERS_GRID_2026.map((d, idx) => {
+  const sourceDrivers = (liveSession && liveSession.drivers.length > 0)
+    ? liveSession.drivers.map((ld) => ({
+        driverNumber: ld.driverNumber,
+        code: ld.code,
+        fullName: ld.fullName,
+        familyName: ld.familyName,
+        teamName: ld.teamName,
+        teamColor: ld.teamColor,
+        performanceBias: ld.gapToLeaderSec,
+        order: ld.order,
+        status: ld.status,
+        statusText: ld.statusText,
+        lapsCompleted: ld.lapsCompleted,
+      }))
+    : DRIVERS_GRID_2026.map((d, i) => ({
+        ...d,
+        order: i + 1,
+        status: 'ON_TRACK' as const,
+        statusText: 'En Pista',
+        lapsCompleted: 12,
+      }));
+
+  const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
     const driverLapDuration = benchmarkLap + d.performanceBias;
     const diffSec = d.performanceBias;
     const gap = isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${diffSec.toFixed(3)}`;
 
-    const prevDuration = idx > 0 ? benchmarkLap + DRIVERS_GRID_2026[idx - 1].performanceBias : benchmarkLap;
+    const prevDuration = idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
     const intervalDiff = driverLapDuration - prevDuration;
     const interval = isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`;
 
-    // Sectors breakdown: ~32% S1, ~35% S2, ~33% S3
-    const s1 = Number((driverLapDuration * 0.316).toFixed(3));
-    const s2 = Number((driverLapDuration * 0.345).toFixed(3));
-    const s3 = Number((driverLapDuration * 0.339).toFixed(3));
+    // Sectors breakdown calibrated for Circuito de Madrid: ~30.7% S1, ~37.5% S2, ~31.8% S3
+    const s1 = Number((driverLapDuration * 0.307).toFixed(3));
+    const s2 = Number((driverLapDuration * 0.375).toFixed(3));
+    const s3 = Number((driverLapDuration * 0.318).toFixed(3));
 
     const s1Status: SectorStatus = idx === 0 ? 'purple' : idx < 6 ? 'green' : 'yellow';
     const s2Status: SectorStatus = idx === 0 ? 'purple' : idx < 7 ? 'green' : 'yellow';
@@ -389,14 +314,17 @@ export function generateUniversalLiveSnapshot(
           : null
       : null;
 
-    const q1Dur = driverLapDuration + 0.65;
-    const q2Dur = idx < 15 ? driverLapDuration + 0.22 : null;
+    const q1Dur = driverLapDuration + (idx < 10 ? 0.75 : idx < 15 ? 0.45 : 0.25);
+    const q2Dur = idx < 15 ? driverLapDuration + (idx < 10 ? 0.28 : 0.12) : null;
     const q3Dur = idx < 10 ? driverLapDuration : null;
 
+    const effectiveBestDur = idx < 10 ? q3Dur! : idx < 15 ? q2Dur! : q1Dur;
+    const effectiveBestStr = formatLapSeconds(effectiveBestDur);
+
     return {
-      pos: idx + 1,
+      pos: d.order,
       posChange: 0,
-      gridPosition: idx + 1,
+      gridPosition: d.order,
       driverNumber: d.driverNumber,
       code: d.code,
       fullName: d.fullName,
@@ -405,9 +333,9 @@ export function generateUniversalLiveSnapshot(
       gap,
       interval,
       isDrsZone: false,
-      lastLapTime: formatLapSeconds(driverLapDuration),
-      bestLapTime: formatLapSeconds(driverLapDuration),
-      bestLapDuration: driverLapDuration,
+      lastLapTime: effectiveBestStr,
+      bestLapTime: effectiveBestStr,
+      bestLapDuration: effectiveBestDur,
       isPole,
       isFastestLap: isPole,
       eliminatedPhase,
@@ -416,7 +344,7 @@ export function generateUniversalLiveSnapshot(
         laps: (idx % 3) + 1,
       },
       pitStops: 0,
-      inPit: false,
+      inPit: d.status === 'PIT' || d.status === 'GARAGE',
       status: 'ACTIVE',
       sectors: {
         s1,
@@ -526,21 +454,36 @@ export function generateUniversalLiveSnapshot(
  * Universal Qualifying Results Generator:
  * Generates official qualifying results for ANY Grand Prix when Ergast does not have them yet.
  */
-export function generateUniversalQualifyingSession(race: JolpicaRace): JolpicaQualifyingSession {
+export function generateUniversalQualifyingSession(
+  race: JolpicaRace,
+  liveSession?: LiveStreamSession | null,
+): JolpicaQualifyingSession {
   const circuit = getCircuitData(race.circuitName, race.locality, race.country);
   const benchmarkLap = circuit.benchmarkLapSec;
   const poleTimeStr = formatLapSeconds(benchmarkLap);
 
-  const results: JolpicaQualifyingResult[] = DRIVERS_GRID_2026.map((d, idx) => {
+  const sourceDrivers = (liveSession && liveSession.drivers.length > 0)
+    ? liveSession.drivers.map((ld) => ({
+        driverNumber: ld.driverNumber,
+        code: ld.code,
+        fullName: ld.fullName,
+        familyName: ld.familyName,
+        teamName: ld.teamName,
+        teamColor: ld.teamColor,
+        performanceBias: ld.gapToLeaderSec,
+      }))
+    : DRIVERS_GRID_2026;
+
+  const results: JolpicaQualifyingResult[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
     const diff = d.performanceBias;
     const gap = isPole ? 'POLE' : `+${diff.toFixed(3)}s`;
     const driverLap = benchmarkLap + d.performanceBias;
 
-    const q1 = formatLapSeconds(driverLap + 0.65);
-    const q2 = idx < 15 ? formatLapSeconds(driverLap + 0.22) : undefined;
+    const q1 = formatLapSeconds(driverLap + (idx < 10 ? 0.75 : idx < 15 ? 0.45 : 0.25));
+    const q2 = idx < 15 ? formatLapSeconds(driverLap + (idx < 10 ? 0.28 : 0.12)) : undefined;
     const q3 = idx < 10 ? formatLapSeconds(driverLap) : undefined;
-    const bestLap = formatLapSeconds(driverLap);
+    const bestLap = q3 || q2 || q1;
 
     const eliminatedPhase: 'Q1' | 'Q2' | null = idx >= 15 ? 'Q1' : idx >= 10 ? 'Q2' : null;
 

@@ -28,7 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
-      <div className="max-w-4xl mx-auto px-3 sm:px-4">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4">
         {/* Top Brand, Series Switcher & Right Controls */}
         <div className="flex items-center justify-between h-12 gap-2">
           {/* Left: Brand Identity & Series Switcher (anchored together so switcher NEVER shifts) */}

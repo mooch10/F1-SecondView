@@ -325,17 +325,17 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       )}
       {/* Table Header (Polymorphic: Qualy vs Race) */}
       {isQualy ? (
-        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
+        <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
           <div className="col-span-1 text-center">{t.live.table.pos}</div>
-          <div className="col-span-3 sm:col-span-3">{t.live.table.driver}</div>
-          <div className="col-span-5 sm:col-span-5 text-center">
+          <div className="col-span-4 sm:col-span-3">{t.live.table.driver}</div>
+          <div className="col-span-3 sm:col-span-5 text-center">
             <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
             <span className="sm:hidden">SECTORES</span>
           </div>
-          <div className="col-span-3 sm:col-span-3 text-right">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
+          <div className="col-span-4 sm:col-span-3 text-right">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
         </div>
       ) : (
-        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+        <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center">{t.live.table.pos}</div>
           <div className="col-span-3 sm:col-span-3">{t.live.table.driver}</div>
           <div className="col-span-2 sm:col-span-2 text-center">{t.live.table.tyre}</div>
@@ -381,7 +381,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
               <button
                 type="button"
                 onClick={() => toggleExpand(d.driverNumber)}
-                className={`w-full text-left grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors select-none ${
+                className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none ${
                   isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                 } ${closeInterval ? 'bg-amber-950/10' : ''} ${
                   isPinned
@@ -427,7 +427,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 </div>
 
                 {/* Team stripe + Star Pin + Code & Number */}
-                <div className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden">
+                <div className="col-span-4 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden">
                   <span
                     className="w-1 h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
@@ -523,8 +523,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 {isQualy ? (
                   <>
                     {/* Qualy Sectors & Mini-Sectors Center Column */}
-                    <div className="col-span-5 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
-                      <div className="flex items-center justify-center gap-0.5 sm:gap-1 w-full flex-nowrap">
+                    <div className="col-span-3 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
+                      {/* 3 Sector Pills (Desktop only) */}
+                      <div className="hidden sm:flex items-center justify-center gap-1 w-full flex-nowrap">
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
@@ -544,16 +545,17 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           compact
                         />
                       </div>
-                      <div className="w-full max-w-[240px]">
+                      {/* Mini-Sectors Track Bar (Visible on mobile & desktop) */}
+                      <div className="w-full max-w-[120px] sm:max-w-[240px]">
                         <MiniSectorsBar segments={d.sectors?.segments} />
                       </div>
                     </div>
 
                     {/* Qualy MEJOR TIEMPO / GAP */}
-                    <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
+                    <div className="col-span-4 sm:col-span-3 text-right flex items-center justify-end gap-1 sm:gap-1.5 shrink-0">
                       <div className="flex flex-col leading-tight">
                         <span
-                          className={`font-mono text-xs font-tabular ${
+                          className={`font-mono text-xs font-tabular whitespace-nowrap ${
                             d.isPole
                               ? 'text-[#FFD60A] font-black'
                               : 'text-zinc-100 font-bold'
@@ -562,14 +564,14 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           {d.bestLapTime || d.lastLapTime || '--:--.---'}
                         </span>
                         <span
-                          className={`font-mono text-[10px] font-tabular ${
+                          className={`font-mono text-[10px] font-tabular whitespace-nowrap ${
                             d.isPole ? 'text-[#FFD60A] font-bold' : 'text-zinc-400'
                           }`}
                         >
                           {d.gap}
                         </span>
                       </div>
-                      <div className="text-zinc-500">
+                      <div className="text-zinc-500 shrink-0">
                         {isExpanded ? (
                           <ChevronUp className="w-3.5 h-3.5" />
                         ) : (

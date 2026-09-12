@@ -74,7 +74,7 @@ function App() {
       />
 
           {/* Main Content Area */}
-          <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-3 flex flex-col gap-3 pb-16">
+          <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-4 py-3 flex flex-col gap-3 pb-16">
             {activeTab === 'live' && (
               <>
                 {/* Live Subview Mode Switcher (Telemetría / Entre Carreras) */}
@@ -200,7 +200,7 @@ function App() {
 
           {/* Footer */}
           <footer className="border-t border-white/[0.06] py-3.5 px-4 text-[10px] text-zinc-500 font-mono bg-[#0B0E14]">
-            <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-zinc-300 whitespace-nowrap">
                 <span className="text-[#E10600]">DELTA</span> • {t.footer.subtitle}
               </div>

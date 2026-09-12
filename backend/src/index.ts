@@ -7,6 +7,7 @@ import {
   generateUniversalLiveSnapshot,
   resolveActiveSession,
 } from './universalLiveEngine.js';
+import { liveStreamClient } from './liveStreamClient.js';
 import type { LiveSnapshot, SeriesCategory } from './types.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
@@ -54,9 +55,12 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
     const schedule = await jolpica.getSchedule();
     const activeSession = resolveActiveSession(schedule);
 
+    // Fetch real live stream from ESPN if available
+    const liveStream = await liveStreamClient.getLiveStream();
+
     // 3. If an active session is running or recently finished:
     if (!newSnapshot && activeSession) {
-      newSnapshot = generateUniversalLiveSnapshot(activeSession);
+      newSnapshot = generateUniversalLiveSnapshot(activeSession, new Date(), liveStream);
     }
 
     // 4. Fallback: If no active session detected, try OpenF1 default session
@@ -85,7 +89,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
 
     // 5. Final fallback
     if (!newSnapshot && activeSession) {
-      newSnapshot = generateUniversalLiveSnapshot(activeSession);
+      newSnapshot = generateUniversalLiveSnapshot(activeSession, new Date(), liveStream);
     }
 
     if (newSnapshot) {
@@ -212,15 +216,17 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    const yearParam = Number.parseInt(url.searchParams.get('year') || '2026', 10) || 2026;
+
     // Endpoint 2: Schedule & Race Calendar (Low-frequency, 1h Edge Cache) - Multi-series
     if (cleanPath === '/api/schedule.json' || cleanPath === '/api/schedule') {
       if (series === 'f2' || series === 'f3') {
-        const races = await juniorSeries.getSchedule(series);
+        const races = await juniorSeries.getSchedule(series, yearParam);
         res.writeHead(200, {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
         });
-        res.end(JSON.stringify({ races, total: races.length, series }, null, 2));
+        res.end(JSON.stringify({ races, total: races.length, series, year: yearParam }, null, 2));
         return;
       }
 
@@ -239,12 +245,12 @@ const server = createServer(async (req, res) => {
     // Endpoint 3: World Championship Standings (Low-frequency, 1h Edge Cache) - Multi-series
     if (cleanPath === '/api/standings.json' || cleanPath === '/api/standings') {
       if (series === 'f2' || series === 'f3') {
-        const standings = await juniorSeries.getStandings(series);
+        const standings = await juniorSeries.getStandings(series, yearParam);
         res.writeHead(200, {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
         });
-        res.end(JSON.stringify({ ...standings, series }, null, 2));
+        res.end(JSON.stringify({ ...standings, series, year: yearParam }, null, 2));
         return;
       }
 
@@ -260,12 +266,12 @@ const server = createServer(async (req, res) => {
     // Endpoint 4: Driver Changes Alerts (F2 / F3)
     if (cleanPath === '/api/driver-changes.json' || cleanPath === '/api/driver-changes') {
       const targetSeries = series === 'f1' ? 'f2' : series;
-      const changes = juniorSeries.getDriverChanges(targetSeries);
+      const changes = juniorSeries.getDriverChanges(targetSeries, yearParam);
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       });
-      res.end(JSON.stringify({ changes, series: targetSeries }, null, 2));
+      res.end(JSON.stringify({ changes, series: targetSeries, year: yearParam }, null, 2));
       return;
     }
 
@@ -299,7 +305,7 @@ const server = createServer(async (req, res) => {
       }
 
       if (series === 'f2' || series === 'f3') {
-        const raceDetail = await juniorSeries.getRaceResults(series, roundParam);
+        const raceDetail = await juniorSeries.getRaceResults(series, roundParam, yearParam);
         res.writeHead(200, {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',

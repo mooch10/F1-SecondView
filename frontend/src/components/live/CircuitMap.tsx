@@ -68,7 +68,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     const { minX, maxX, minY, maxY } = circuitTrack.bounds;
     const dx = Math.max(1, maxX - minX);
     const dy = Math.max(1, maxY - minY);
-    const isPortrait = dy > dx;
+    const isPortrait = dy > dx * 1.35;
 
     // Responsive Canvas viewBox tailored to circuit shape
     const canvasW = isPortrait ? 600 : 860;

@@ -3,6 +3,7 @@ import {
   generateUniversalQualifyingSession,
   resolveActiveSession,
 } from './universalLiveEngine.js';
+import { liveStreamClient } from './liveStreamClient.js';
 
 export interface JolpicaRace {
   round: number;
@@ -256,10 +257,14 @@ export class JolpicaClient {
         dateTime: raceDateTime,
       });
 
+      const rawCircuitName = r.Circuit.circuitName;
+      const circuitName =
+        rawCircuitName.toLowerCase().includes('madring') ? 'Circuito de Madrid' : rawCircuitName;
+
       return {
         round: Number(r.round),
         raceName: r.raceName,
-        circuitName: r.Circuit.circuitName,
+        circuitName,
         locality: r.Circuit.Location.locality,
         country: r.Circuit.Location.country,
         raceDateTime,
@@ -430,7 +435,13 @@ export class JolpicaClient {
   }
 
   async getQualifying(): Promise<JolpicaQualifyingSession | null> {
-    if (this.qualifyingCache && Date.now() - this.qualifyingCache.timestamp < this.cacheTtlMs) {
+    // 1. Determine active race from current schedule
+    const schedule = await this.getSchedule();
+    const activeSession = resolveActiveSession(schedule);
+    const isLiveActive = !!(activeSession && activeSession.status === 'IN_PROGRESS');
+    const effectiveTtl = isLiveActive ? 5000 : this.cacheTtlMs;
+
+    if (this.qualifyingCache && Date.now() - this.qualifyingCache.timestamp < effectiveTtl) {
       return this.qualifyingCache.data;
     }
 
@@ -470,10 +481,8 @@ export class JolpicaClient {
       };
     }
 
-    // 1. Determine active race from current schedule
-    const schedule = await this.getSchedule();
-    const activeSession = resolveActiveSession(schedule);
     const activeRound = activeSession?.race?.round;
+    const liveSession = await liveStreamClient.getLiveStream();
 
     let race: RawQualifyingRace | undefined;
 
@@ -484,7 +493,7 @@ export class JolpicaClient {
 
       // If Ergast does not have final qualifying results yet for this active round:
       if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
-        const data = generateUniversalQualifyingSession(activeSession.race);
+        const data = generateUniversalQualifyingSession(activeSession.race, liveSession);
         this.qualifyingCache = { timestamp: Date.now(), data };
         return data;
       }
@@ -497,7 +506,7 @@ export class JolpicaClient {
       // Guard: If /last returns an older completed race while an active round is ongoing,
       // return the active round's qualifying session instead of falling back to the previous GP
       if (activeSession && race && Number(race.round) < activeSession.race.round) {
-        const data = generateUniversalQualifyingSession(activeSession.race);
+        const data = generateUniversalQualifyingSession(activeSession.race, liveSession);
         this.qualifyingCache = { timestamp: Date.now(), data };
         return data;
       }
@@ -505,7 +514,7 @@ export class JolpicaClient {
 
     if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
       if (activeSession) {
-        const data = generateUniversalQualifyingSession(activeSession.race);
+        const data = generateUniversalQualifyingSession(activeSession.race, liveSession);
         this.qualifyingCache = { timestamp: Date.now(), data };
         return data;
       }
@@ -514,7 +523,7 @@ export class JolpicaClient {
     }
 
     if (!race || !race.QualifyingResults) {
-      return activeSession ? generateUniversalQualifyingSession(activeSession.race) : null;
+      return activeSession ? generateUniversalQualifyingSession(activeSession.race, liveSession) : null;
     }
 
     const parseToSec = (str?: string): number | null => {
