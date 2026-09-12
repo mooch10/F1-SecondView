@@ -26,13 +26,19 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
   try {
     let newSnapshot: LiveSnapshot | null = null;
 
-    // 1. If an explicit SESSION_KEY is provided via environment, query OpenF1 first
-    if (process.env.SESSION_KEY) {
-      const explicitKey = Number(process.env.SESSION_KEY);
+    // 1. Check OpenF1: Query explicit SESSION_KEY or automatically discover the active/recent session
+    let targetSessionKey: number | null = process.env.SESSION_KEY ? Number(process.env.SESSION_KEY) : null;
+    if (!targetSessionKey) {
+      const activeOrRecent = await openF1.findActiveOrRecentSession(new Date());
+      if (activeOrRecent) {
+        targetSessionKey = activeOrRecent.session_key;
+      }
+    }
+
+    if (targetSessionKey) {
       try {
-        console.log(`[Worker] Updating snapshot for explicit session ${explicitKey}...`);
-        const data = await openF1.getLiveSessionData(explicitKey);
-        if (data.session && data.drivers.length > 0) {
+        const data = await openF1.getLiveSessionData(targetSessionKey);
+        if (data.session && data.drivers.length > 0 && data.laps.length > 0) {
           newSnapshot = buildLiveSnapshot(
             data.session,
             data.drivers,
@@ -47,7 +53,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
           );
         }
       } catch (err) {
-        console.warn('[Worker] Failed to fetch explicit session from OpenF1:', err);
+        console.warn(`[Worker] Failed to fetch session ${targetSessionKey} from OpenF1:`, err);
       }
     }
 

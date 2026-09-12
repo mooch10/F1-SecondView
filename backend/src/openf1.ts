@@ -104,6 +104,9 @@ export class OpenF1Client {
     }
   >();
 
+  private yearSessionsCache: { year: number; timestamp: number; data: OpenF1Session[] } | null = null;
+  private liveDataCache = new Map<number, { timestamp: number; data: any }>();
+
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -145,6 +148,69 @@ export class OpenF1Client {
     }
 
     return [];
+  }
+
+  async getSessionsForYear(year = 2026): Promise<OpenF1Session[]> {
+    if (
+      this.yearSessionsCache &&
+      this.yearSessionsCache.year === year &&
+      Date.now() - this.yearSessionsCache.timestamp < 300000
+    ) {
+      return this.yearSessionsCache.data;
+    }
+    const sessions = await this.fetchJson<OpenF1Session>(`/sessions?year=${year}`);
+    if (sessions.length > 0) {
+      this.yearSessionsCache = { year, timestamp: Date.now(), data: sessions };
+    }
+    return sessions;
+  }
+
+  /**
+   * Automatically discovers the active session in progress or the most recently finished
+   * session from OpenF1 based on current date/time.
+   */
+  async findActiveOrRecentSession(now = new Date()): Promise<OpenF1Session | null> {
+    const year = now.getUTCFullYear();
+    const sessions = await this.getSessionsForYear(year);
+    if (!sessions || sessions.length === 0) return null;
+
+    const nowMs = now.getTime();
+
+    // 1. First priority: Is any session LIVE IN PROGRESS right now?
+    for (const s of sessions) {
+      if (!s.date_start || !s.date_end) continue;
+      const startMs = new Date(s.date_start).getTime();
+      const endMs = new Date(s.date_end).getTime();
+
+      if (nowMs >= startMs - 15 * 60 * 1000 && nowMs <= endMs + 30 * 60 * 1000) {
+        return s;
+      }
+    }
+
+    // 2. Second priority: Did a session finish in the last 12 hours? (Most recent)
+    let latestFinished: OpenF1Session | null = null;
+    let maxEndMs = 0;
+    for (const s of sessions) {
+      if (!s.date_end) continue;
+      const endMs = new Date(s.date_end).getTime();
+      if (nowMs > endMs && nowMs <= endMs + 12 * 3600 * 1000 && endMs > maxEndMs) {
+        maxEndMs = endMs;
+        latestFinished = s;
+      }
+    }
+    if (latestFinished) return latestFinished;
+
+    // 3. Fallback for race weekend: pick the latest session for current race weekend
+    for (let i = sessions.length - 1; i >= 0; i--) {
+      const s = sessions[i];
+      if (!s.date_start) continue;
+      const startMs = new Date(s.date_start).getTime();
+      if (Math.abs(nowMs - startMs) <= 36 * 3600 * 1000) {
+        return s;
+      }
+    }
+
+    return null;
   }
 
   async getSession(sessionKey: number): Promise<OpenF1Session | null> {
@@ -271,6 +337,11 @@ export class OpenF1Client {
    * to respect OpenF1's free tier rate limits (3 req/sec).
    */
   async getLiveSessionData(sessionKey: number) {
+    const cached = this.liveDataCache.get(sessionKey);
+    if (cached && Date.now() - cached.timestamp < 3500) {
+      return cached.data;
+    }
+
     const session = await this.getSession(sessionKey);
     await this.delay(350);
 
@@ -321,7 +392,7 @@ export class OpenF1Client {
       );
     }
 
-    return {
+    const result = {
       session,
       drivers,
       positions,
@@ -333,5 +404,8 @@ export class OpenF1Client {
       locations,
       trackOutline,
     };
+
+    this.liveDataCache.set(sessionKey, { timestamp: Date.now(), data: result });
+    return result;
   }
 }
