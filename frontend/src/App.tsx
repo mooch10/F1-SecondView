@@ -12,7 +12,6 @@ import { QualifyingView } from './components/qualy/QualifyingView';
 import { LastRaceView } from './components/race/LastRaceView';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { StandingsView } from './components/standings/StandingsView';
-import { PitStopHero } from './components/home/PitStopHero';
 import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
 import { useTheme } from './hooks/useTheme';
@@ -20,7 +19,7 @@ import { useWakeLock } from './hooks/useWakeLock';
 import type { ActiveTab } from './types/f1';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('hero');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('live');
   const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const { t } = useLanguage();
@@ -58,12 +57,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-zinc-100 flex flex-col font-chakra antialiased">
-      {activeTab === 'hero' ? (
-        <PitStopHero onEnterDelta={() => setActiveTab('live')} />
-      ) : (
-        <>
-          {/* Top Navigation Bar */}
-          <Navbar
+      {/* Top Navigation Bar */}
+      <Navbar
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             isLiveActive={isLiveSessionActive}
@@ -208,8 +203,6 @@ function App() {
               </p>
             </div>
           </footer>
-        </>
-      )}
     </div>
   );
 }

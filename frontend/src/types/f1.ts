@@ -264,7 +264,7 @@ export interface JolpicaRaceDetail {
   featureRace?: JuniorSessionResult | null;
 }
 
-export type ActiveTab = 'live' | 'last-race' | 'qualy' | 'schedule' | 'standings' | 'hero';
+export type ActiveTab = 'live' | 'last-race' | 'qualy' | 'schedule' | 'standings';
 
 export type SeriesCategory = 'f1' | 'f2' | 'f3';
 

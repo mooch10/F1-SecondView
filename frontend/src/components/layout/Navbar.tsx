@@ -32,9 +32,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo & Racing Identity */}
           <button
             type="button"
-            onClick={() => setActiveTab('hero')}
+            onClick={() => setActiveTab('live')}
             className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
-            title="Inicio / Pit Stop DELTA"
+            title="Inicio DELTA"
           >
             <div
               className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-all active:scale-95"
