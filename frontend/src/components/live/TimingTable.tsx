@@ -5,6 +5,8 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { MiniSectorsBar } from '../qualy/MiniSectorsBar';
 import { SectorPill } from '../qualy/SectorPill';
 import { HeadToHeadModal } from './HeadToHeadModal';
+import { DriverProfileModal } from '../drivers/DriverProfileModal';
+import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 
 interface TimingTableProps {
   drivers: DriverLive[];
@@ -30,6 +32,21 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 }) => {
   const { lang, t } = useLanguage();
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
+
+  // 👤 Driver Profile Modal
+  const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
+    const profile =
+      getF1DriverProfile(driverNumber) ||
+      getF1DriverProfile(code) ||
+      getF1DriverProfile(fullName);
+    if (profile) {
+      setSelectedProfile(profile);
+      setIsProfileOpen(true);
+    }
+  };
 
   // 📌 Driver Pinning (⭐ TU PILOTO)
   const [pinnedDriverNumber, setPinnedDriverNumber] = useState<number | null>(() => {
@@ -246,21 +263,25 @@ export const TimingTable: React.FC<TimingTableProps> = ({
             </div>
 
             {/* Code, Number & Name */}
-            <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5 overflow-hidden">
+            <div
+              className="col-span-4 sm:col-span-3 flex items-center gap-1.5 overflow-hidden cursor-pointer group"
+              onClick={() => openDriverProfile(pinnedDriver.driverNumber, pinnedDriver.code, pinnedDriver.fullName)}
+              title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+            >
               <span
-                className="w-1.5 h-6 sm:h-7 rounded-full shrink-0"
+                className="w-1.5 h-6 sm:h-7 rounded-full shrink-0 group-hover:scale-y-110 transition-transform"
                 style={{ backgroundColor: pinnedDriver.teamColor || '#E10600' }}
               />
               <div className="flex flex-col leading-tight truncate">
                 <div className="flex items-center gap-1">
-                  <span className="font-mono text-sm font-black text-white">
+                  <span className="font-mono text-sm font-black text-white group-hover:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover:decoration-[#FFD60A]/60">
                     {pinnedDriver.code}
                   </span>
                   <span className="text-[10px] text-zinc-400 font-mono">
                     #{pinnedDriver.driverNumber}
                   </span>
                 </div>
-                <span className="text-[10px] text-zinc-400 truncate">
+                <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate transition-colors">
                   {pinnedDriver.fullName}
                 </span>
               </div>
@@ -436,9 +457,16 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     />
                   </button>
 
-                  <div className="flex flex-col leading-tight truncate">
+                  <div
+                    className="flex flex-col leading-tight truncate cursor-pointer group/driver"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDriverProfile(d.driverNumber, d.code, d.fullName);
+                    }}
+                    title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                  >
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-mono text-sm font-bold text-white tracking-tight">
+                      <span className="font-mono text-sm font-bold text-white tracking-tight group-hover/driver:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover/driver:decoration-[#FFD60A]/60">
                         {d.code}
                       </span>
                       <span className="text-[10px] text-zinc-500 font-mono">
@@ -486,7 +514,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-zinc-400 truncate hidden sm:block">
+                    <span className="text-[10px] text-zinc-400 group-hover/driver:text-zinc-200 truncate hidden sm:block transition-colors">
                       {d.fullName}
                     </span>
                   </div>
@@ -747,6 +775,18 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       <span>⚔️</span>
                       <span>{t.live.h2hBtn}</span>
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDriverProfile(d.driverNumber, d.code, d.fullName);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-zinc-300 hover:text-white border border-white/10 hover:bg-white/[0.08] text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span>👤</span>
+                      <span>{lang === 'es' ? 'Ficha de Piloto' : 'Driver Profile'}</span>
+                    </button>
                   </div>
 
                   {/* Detailed Mini-Sectors Bar */}
@@ -967,6 +1007,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
         driverBId={h2hDriverB}
         onSelectDriverA={setH2hDriverA}
         onSelectDriverB={setH2hDriverB}
+      />
+
+      {/* 👤 Official Driver Profile Modal */}
+      <DriverProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        profile={selectedProfile}
+        isPinned={selectedProfile ? pinnedDriverNumber === selectedProfile.number : false}
+        onTogglePin={(num) => togglePin(num)}
+        onCompare={(num) => {
+          setIsProfileOpen(false);
+          openH2HWithDriver(num);
+        }}
       />
     </div>
   );

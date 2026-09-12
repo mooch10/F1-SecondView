@@ -5,6 +5,8 @@ import type { DriverChangeAlert, StandingsData } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { DriverChangesAlert } from './DriverChangesAlert';
+import { DriverProfileModal } from '../drivers/DriverProfileModal';
+import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 
 export const StandingsView: React.FC = () => {
   const { t } = useLanguage();
@@ -13,6 +15,42 @@ export const StandingsView: React.FC = () => {
   const [driverChanges, setDriverChanges] = useState<DriverChangeAlert[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
+
+  // 👤 Driver Profile Modal
+  const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [pinnedDriverNumber, setPinnedDriverNumber] = useState<number | null>(() => {
+    try {
+      const saved = localStorage.getItem('f1_pinned_driver');
+      return saved ? parseInt(saved, 10) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const togglePin = (driverNumber: number) => {
+    setPinnedDriverNumber((prev) => {
+      const next = prev === driverNumber ? null : driverNumber;
+      try {
+        if (next === null) {
+          localStorage.removeItem('f1_pinned_driver');
+        } else {
+          localStorage.setItem('f1_pinned_driver', String(next));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
+
+  const handleDriverClick = (d: { code?: string; name?: string }) => {
+    const profile = getF1DriverProfile(d.code) || getF1DriverProfile(d.name);
+    if (profile) {
+      setSelectedProfile(profile);
+      setIsProfileOpen(true);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -99,7 +137,9 @@ export const StandingsView: React.FC = () => {
             {data.drivers.map((d) => (
               <div
                 key={`${d.code}-${d.pos}`}
-                className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.02] transition-colors"
+                onClick={() => handleDriverClick(d)}
+                className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.04] active:bg-white/[0.06] transition-colors cursor-pointer group"
+                title="Ver ficha de piloto"
               >
                 {/* Pos */}
                 <div className="col-span-1 text-center font-mono text-xs sm:text-sm font-black tabular-nums">
@@ -124,10 +164,10 @@ export const StandingsView: React.FC = () => {
                   />
                   <div className="truncate">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase">
+                      <span className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase group-hover:underline decoration-zinc-400">
                         {d.code}
                       </span>
-                      <span className="text-xs text-zinc-400 font-medium truncate hidden sm:inline">
+                      <span className="text-xs text-zinc-400 group-hover:text-zinc-200 font-medium truncate hidden sm:inline">
                         {d.name}
                       </span>
                     </div>
@@ -213,6 +253,15 @@ export const StandingsView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Driver Profile Modal */}
+      <DriverProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        profile={selectedProfile}
+        isPinned={selectedProfile ? pinnedDriverNumber === selectedProfile.number : false}
+        onTogglePin={togglePin}
+      />
     </div>
   );
 };

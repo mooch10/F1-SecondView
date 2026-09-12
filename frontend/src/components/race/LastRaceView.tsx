@@ -12,6 +12,8 @@ import { fetchLastRaceDetail } from '../../services/api';
 import type { JolpicaRaceDetail, JolpicaRaceResult } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
+import { DriverProfileModal } from '../drivers/DriverProfileModal';
+import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 
 export const LastRaceView: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -20,6 +22,45 @@ export const LastRaceView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
   const [selectedSession, setSelectedSession] = useState<'feature' | 'sprint'>('feature');
+
+  // 👤 Driver Profile Modal
+  const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [pinnedDriverNumber, setPinnedDriverNumber] = useState<number | null>(() => {
+    try {
+      const saved = localStorage.getItem('f1_pinned_driver');
+      return saved ? parseInt(saved, 10) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const togglePin = (driverNumber: number) => {
+    setPinnedDriverNumber((prev) => {
+      const next = prev === driverNumber ? null : driverNumber;
+      try {
+        if (next === null) {
+          localStorage.removeItem('f1_pinned_driver');
+        } else {
+          localStorage.setItem('f1_pinned_driver', String(next));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
+
+  const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
+    const profile =
+      getF1DriverProfile(driverNumber) ||
+      getF1DriverProfile(code) ||
+      getF1DriverProfile(fullName);
+    if (profile) {
+      setSelectedProfile(profile);
+      setIsProfileOpen(true);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -148,7 +189,11 @@ export const LastRaceView: React.FC = () => {
 
           {/* Winner Showcase Card */}
           {winner && (
-            <div className="bg-[#0B0E14] border border-[#FFD60A]/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3">
+            <div
+              onClick={() => openDriverProfile(winner.driverNumber, winner.code, winner.fullName)}
+              className="bg-[#0B0E14] border border-[#FFD60A]/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3 cursor-pointer hover:border-[#FFD60A]/70 hover:bg-[#FFD60A]/[0.02] transition-colors"
+              title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+            >
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg text-black font-mono shadow-sm shrink-0"
                 style={{ backgroundColor: winner.teamColor || '#FFD60A' }}
@@ -159,7 +204,7 @@ export const LastRaceView: React.FC = () => {
                 <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
                   <Trophy className="w-2.5 h-2.5" /> {t.lastRace.winnerBadge}
                 </span>
-                <span className="text-sm font-bold text-white truncate font-sans">
+                <span className="text-sm font-bold text-white truncate font-sans hover:text-[#FFD60A] transition-colors">
                   {winner.fullName}
                 </span>
                 <div className="flex items-center gap-2 text-[11px] font-mono mt-0.5">
@@ -193,7 +238,9 @@ export const LastRaceView: React.FC = () => {
             return (
               <div
                 key={p.driverNumber}
-                className={`p-2.5 rounded-lg border flex items-center justify-between font-mono text-xs ${medalBorder}`}
+                onClick={() => openDriverProfile(p.driverNumber, p.code, p.fullName)}
+                className={`p-2.5 rounded-lg border flex items-center justify-between font-mono text-xs cursor-pointer hover:opacity-90 hover:border-white/30 transition-all ${medalBorder}`}
+                title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span
@@ -202,7 +249,7 @@ export const LastRaceView: React.FC = () => {
                     {p.pos}
                   </span>
                   <div className="flex flex-col leading-tight truncate">
-                    <span className="font-bold text-white text-xs truncate">
+                    <span className="font-bold text-white text-xs truncate hover:text-[#FFD60A] transition-colors">
                       {p.code} • {p.familyName}
                     </span>
                     <span className="text-[10px] text-zinc-400 truncate">
@@ -296,14 +343,21 @@ export const LastRaceView: React.FC = () => {
                   </div>
 
                   {/* Driver & Team */}
-                  <div className="col-span-5 sm:col-span-4 flex items-center gap-2 overflow-hidden">
+                  <div
+                    className="col-span-5 sm:col-span-4 flex items-center gap-2 overflow-hidden cursor-pointer group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDriverProfile(d.driverNumber, d.code, d.fullName);
+                    }}
+                    title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                  >
                     <span
-                      className="w-1 h-6 rounded-full flex-shrink-0"
+                      className="w-1 h-6 rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
                       style={{ backgroundColor: d.teamColor || '#71717A' }}
                     />
                     <div className="flex flex-col leading-tight truncate">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono text-sm font-bold text-white tracking-tight">
+                        <span className="font-mono text-sm font-bold text-white tracking-tight group-hover:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover:decoration-[#FFD60A]/60">
                           {d.code}
                         </span>
                         <span className="text-[10px] text-zinc-500 font-mono">
@@ -315,7 +369,7 @@ export const LastRaceView: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-zinc-400 truncate hidden sm:block">
+                      <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
                         {d.fullName}
                       </span>
                     </div>
@@ -455,6 +509,16 @@ export const LastRaceView: React.FC = () => {
                         </span>
                       </div>
                     </div>
+
+                    {/* View Driver Profile Button */}
+                    <button
+                      type="button"
+                      onClick={() => openDriverProfile(d.driverNumber, d.code, d.fullName)}
+                      className="mt-3 w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <span>👤</span>
+                      <span>{lang === 'es' ? 'Ver Ficha Oficial de Piloto' : 'View Official Driver Profile'}</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -462,6 +526,15 @@ export const LastRaceView: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Driver Profile Modal */}
+      <DriverProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        profile={selectedProfile}
+        isPinned={selectedProfile ? pinnedDriverNumber === selectedProfile.number : false}
+        onTogglePin={togglePin}
+      />
     </div>
   );
 };

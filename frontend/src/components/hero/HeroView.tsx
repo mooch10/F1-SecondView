@@ -152,17 +152,37 @@ export const HeroView: React.FC<HeroViewProps> = ({ onEnter }) => {
         <div className="absolute -bottom-24 -left-1/4 w-[150%] h-96 bg-[radial-gradient(ellipse_at_center,_rgba(200,225,255,0.08)_0%,_transparent_70%)] animate-pulse" style={{ animationDuration: '6s' }} />
       </div>
 
-      {/* Minimal Top Brand Bar */}
-      <header className="relative z-20 w-full px-6 pt-6 sm:pt-8 flex items-center justify-start max-w-md mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md bg-[#E10600] flex items-center justify-center font-black text-white text-[11px] italic tracking-tighter shadow-[0_0_12px_rgba(225,6,0,0.4)]">
-            D
+      {/* Centered F1 Vibes DELTA Wordmark above the car */}
+      <div className="relative z-20 w-full pt-20 sm:pt-28 px-4 flex flex-col items-center justify-center select-none">
+        <div className="flex flex-col items-center">
+          {/* Main Racing DELTA Typography */}
+          <div className="relative flex items-center justify-center">
+            {/* Ambient Red Racing Glow behind letters */}
+            <div className="absolute inset-0 blur-2xl bg-[#E10600]/35 rounded-full scale-150 pointer-events-none" />
+
+            <h1
+              className="relative text-5xl sm:text-7xl font-black italic tracking-[0.24em] sm:tracking-[0.28em] uppercase select-none transition-transform"
+              style={{
+                fontFamily: '"Titillium Web", "Barlow Condensed", sans-serif',
+                transform: 'skewX(-10deg)',
+                background: 'linear-gradient(180deg, #FFFFFF 15%, #F1F5F9 55%, #94A3B8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.95))',
+              }}
+            >
+              DELTA
+            </h1>
           </div>
-          <span className="font-extrabold tracking-widest text-zinc-300 text-xs uppercase italic font-sans">
-            DELTA
-          </span>
+
+          {/* Sleek F1 Underline Speed Slash */}
+          <div className="flex items-center gap-1.5 mt-2 opacity-95" style={{ transform: 'skewX(-10deg)' }}>
+            <div className="w-8 sm:w-14 h-[2.5px] bg-gradient-to-r from-transparent to-[#E10600]" />
+            <div className="w-20 sm:w-32 h-[3px] bg-[#E10600] shadow-[0_0_12px_#E10600]" />
+            <div className="w-8 sm:w-14 h-[2.5px] bg-gradient-to-l from-transparent to-[#E10600]" />
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* Spacer to keep layout balanced */}
       <div className="flex-1" />
