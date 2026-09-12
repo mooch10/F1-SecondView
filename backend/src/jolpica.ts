@@ -1,5 +1,8 @@
 import type { LastRacePodium } from './types.js';
-import { getSpanishGpQualifyingSession } from './spanishGpLive.js';
+import {
+  generateUniversalQualifyingSession,
+  resolveActiveSession,
+} from './universalLiveEngine.js';
 
 export interface JolpicaRace {
   round: number;
@@ -431,75 +434,87 @@ export class JolpicaClient {
       return this.qualifyingCache.data;
     }
 
+    interface RawQualifyingResultItem {
+      number: string;
+      position: string;
+      Driver: {
+        driverId?: string;
+        code?: string;
+        givenName: string;
+        familyName: string;
+      };
+      Constructor: {
+        constructorId: string;
+        name: string;
+      };
+      Q1?: string;
+      Q2?: string;
+      Q3?: string;
+    }
+
+    interface RawQualifyingRace {
+      raceName: string;
+      round: string;
+      date: string;
+      Circuit: {
+        circuitName: string;
+      };
+      QualifyingResults?: RawQualifyingResultItem[];
+    }
+
     interface RawQualifyingResponse {
       MRData?: {
         RaceTable?: {
-          Races?: Array<{
-            raceName: string;
-            round: string;
-            date: string;
-            Circuit: {
-              circuitName: string;
-            };
-            QualifyingResults?: Array<{
-              number: string;
-              position: string;
-              Driver: {
-                driverId?: string;
-                code?: string;
-                givenName: string;
-                familyName: string;
-              };
-              Constructor: {
-                constructorId: string;
-                name: string;
-              };
-              Q1?: string;
-              Q2?: string;
-              Q3?: string;
-            }>;
-          }>;
+          Races?: RawQualifyingRace[];
         };
       };
     }
 
-    const nowIso = new Date().toISOString();
-    const isSpanishGpActive = nowIso >= '2026-09-12T14:00:00Z' && nowIso < '2026-09-20T00:00:00Z';
+    // 1. Determine active race from current schedule
+    const schedule = await this.getSchedule();
+    const activeSession = resolveActiveSession(schedule);
+    const activeRound = activeSession?.race?.round;
 
-    // Try current Round 14 qualifying first
-    let raw = await this.fetchRaw<RawQualifyingResponse>('/current/14/qualifying.json');
-    let race = raw?.MRData?.RaceTable?.Races?.[0];
+    let race: RawQualifyingRace | undefined;
 
-    // If Spanish GP is active and Ergast does not have final results yet, serve high-fidelity Spanish GP qualy
-    if ((!race || !race.QualifyingResults || race.QualifyingResults.length === 0) && isSpanishGpActive) {
-      const data = getSpanishGpQualifyingSession();
-      this.qualifyingCache = { timestamp: Date.now(), data };
-      return data;
-    }
-
-    if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
-      raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
+    // If an active round is currently running or recent on the calendar
+    if (activeRound) {
+      const raw = await this.fetchRaw<RawQualifyingResponse>(`/current/${activeRound}/qualifying.json`);
       race = raw?.MRData?.RaceTable?.Races?.[0];
-      // If /last returns round 13 (Monza) but Spanish GP is the active event, return Spanish GP
-      if (race?.round === '13' && isSpanishGpActive) {
-        const data = getSpanishGpQualifyingSession();
+
+      // If Ergast does not have final qualifying results yet for this active round:
+      if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+        const data = generateUniversalQualifyingSession(activeSession.race);
         this.qualifyingCache = { timestamp: Date.now(), data };
         return data;
       }
     }
 
     if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
-      if (isSpanishGpActive) {
-        const data = getSpanishGpQualifyingSession();
+      const raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
+      race = raw?.MRData?.RaceTable?.Races?.[0];
+
+      // Guard: If /last returns an older completed race while an active round is ongoing,
+      // return the active round's qualifying session instead of falling back to the previous GP
+      if (activeSession && race && Number(race.round) < activeSession.race.round) {
+        const data = generateUniversalQualifyingSession(activeSession.race);
         this.qualifyingCache = { timestamp: Date.now(), data };
         return data;
       }
-      raw = await this.fetchRaw<RawQualifyingResponse>('/2024/last/qualifying.json');
+    }
+
+    if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+      if (activeSession) {
+        const data = generateUniversalQualifyingSession(activeSession.race);
+        this.qualifyingCache = { timestamp: Date.now(), data };
+        return data;
+      }
+      const raw = await this.fetchRaw<RawQualifyingResponse>('/2024/last/qualifying.json');
       race = raw?.MRData?.RaceTable?.Races?.[0];
     }
 
     if (!race || !race.QualifyingResults) {
-      return isSpanishGpActive ? getSpanishGpQualifyingSession() : null;
+      return activeSession ? generateUniversalQualifyingSession(activeSession.race) : null;
     }
 
     const parseToSec = (str?: string): number | null => {
@@ -518,7 +533,7 @@ export class JolpicaClient {
     const poleTimeStr = firstResult?.Q3 || firstResult?.Q2 || firstResult?.Q1 || '';
     const poleSec = parseToSec(poleTimeStr);
 
-    const results: JolpicaQualifyingResult[] = race.QualifyingResults.map((r) => {
+    const results: JolpicaQualifyingResult[] = (race.QualifyingResults || []).map((r: RawQualifyingResultItem) => {
       const pos = Number(r.position);
       const code = r.Driver.code || r.Driver.familyName.substring(0, 3).toUpperCase();
       const fullName = `${r.Driver.givenName} ${r.Driver.familyName}`;

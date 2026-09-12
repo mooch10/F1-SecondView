@@ -3,7 +3,10 @@ import { JolpicaClient } from './jolpica.js';
 import { JuniorSeriesClient } from './juniorSeries.js';
 import { buildLiveSnapshot } from './normalizer.js';
 import { OpenF1Client } from './openf1.js';
-import { getSpanishGpLiveSnapshot } from './spanishGpLive.js';
+import {
+  generateUniversalLiveSnapshot,
+  resolveActiveSession,
+} from './universalLiveEngine.js';
 import type { LiveSnapshot, SeriesCategory } from './types.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
@@ -20,13 +23,9 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
   isUpdating = true;
 
   try {
-    const nowIso = new Date().toISOString();
-    // Check if the current time corresponds to Round 14 Spanish GP weekend
-    const isSpanishGpActive = nowIso >= '2026-09-12T13:30:00Z' && nowIso < '2026-09-20T00:00:00Z';
-
     let newSnapshot: LiveSnapshot | null = null;
 
-    // If an explicit SESSION_KEY is provided via environment, query OpenF1 first
+    // 1. If an explicit SESSION_KEY is provided via environment, query OpenF1 first
     if (process.env.SESSION_KEY) {
       const explicitKey = Number(process.env.SESSION_KEY);
       try {
@@ -51,12 +50,16 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       }
     }
 
-    // During live Spanish GP (or if OpenF1 returned 401 paywall lockout / no data):
-    if (!newSnapshot && isSpanishGpActive) {
-      newSnapshot = getSpanishGpLiveSnapshot();
+    // 2. Query official 2026 calendar to automatically determine active Grand Prix and session
+    const schedule = await jolpica.getSchedule();
+    const activeSession = resolveActiveSession(schedule);
+
+    // 3. If an active session is running or recently finished:
+    if (!newSnapshot && activeSession) {
+      newSnapshot = generateUniversalLiveSnapshot(activeSession);
     }
 
-    // Fallback: If no Spanish GP and no explicit session, try OpenF1 default session
+    // 4. Fallback: If no active session detected, try OpenF1 default session
     if (!newSnapshot) {
       try {
         const defaultKey = 9590;
@@ -80,9 +83,9 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       }
     }
 
-    // Final safety fallback
-    if (!newSnapshot) {
-      newSnapshot = isSpanishGpActive ? getSpanishGpLiveSnapshot() : cachedSnapshot;
+    // 5. Final fallback
+    if (!newSnapshot && activeSession) {
+      newSnapshot = generateUniversalLiveSnapshot(activeSession);
     }
 
     if (newSnapshot) {
@@ -97,7 +100,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
 
       cachedSnapshot = newSnapshot;
       console.log(
-        `[Worker] Snapshot updated successfully: ${newSnapshot.session.sessionName} (${newSnapshot.session.circuit}), ${newSnapshot.drivers.length} drivers, Phase ${newSnapshot.session.qualifyingPhase || 'N/A'}, Status ${newSnapshot.session.status}`,
+        `[Worker] Snapshot updated: ${newSnapshot.session.sessionName} (${newSnapshot.session.circuit}), ${newSnapshot.drivers.length} drivers, Phase ${newSnapshot.session.qualifyingPhase || 'N/A'}, Status ${newSnapshot.session.status}`,
       );
     }
 
