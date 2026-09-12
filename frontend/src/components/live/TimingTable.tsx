@@ -378,10 +378,17 @@ export const TimingTable: React.FC<TimingTableProps> = ({
               )}
 
               {/* Level 1: Main Row (Tap to expand) */}
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggleExpand(d.driverNumber)}
-                className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleExpand(d.driverNumber);
+                  }
+                }}
+                className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none cursor-pointer ${
                   isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                 } ${closeInterval ? 'bg-amber-950/10' : ''} ${
                   isPinned
@@ -684,7 +691,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
                   </>
                 )}
-              </button>
+              </div>
 
               {/* Level 2: Expanded Micro-Sectors & Details */}
               {isExpanded && (

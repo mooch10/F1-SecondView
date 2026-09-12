@@ -38,7 +38,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
     if (targetSessionKey) {
       try {
         const data = await openF1.getLiveSessionData(targetSessionKey);
-        if (data.session && data.drivers.length > 0 && data.laps.length > 0) {
+        if (data.session && data.drivers.length > 0 && (data.laps.length > 0 || data.positions.length > 0)) {
           newSnapshot = buildLiveSnapshot(
             data.session,
             data.drivers,

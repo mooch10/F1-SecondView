@@ -8,6 +8,7 @@ import type {
   SessionType,
   TrackOutline,
   TrackWeather,
+  TyreCompound,
 } from './types.js';
 import type { JolpicaQualifyingResult, JolpicaQualifyingSession, JolpicaRace } from './jolpica.js';
 import type { LiveStreamSession } from './liveStreamClient.js';
@@ -332,18 +333,18 @@ export function generateUniversalLiveSnapshot(
       teamColor: d.teamColor,
       gap,
       interval,
-      isDrsZone: false,
+      isDrsZone: !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
       lastLapTime: effectiveBestStr,
       bestLapTime: effectiveBestStr,
       bestLapDuration: effectiveBestDur,
-      isPole,
+      isPole: isQualy && isPole,
       isFastestLap: isPole,
       eliminatedPhase,
       tyre: {
-        compound: 'SOFT',
-        laps: (idx % 3) + 1,
+        compound: (isQualy ? 'SOFT' : idx % 3 === 0 ? 'HARD' : idx % 2 === 0 ? 'MEDIUM' : 'SOFT') as TyreCompound,
+        laps: isQualy ? (idx % 3) + 1 : 8 + (idx % 14),
       },
-      pitStops: 0,
+      pitStops: isQualy ? 0 : idx % 4 === 0 ? 2 : 1,
       inPit: d.status === 'PIT' || d.status === 'GARAGE',
       status: 'ACTIVE',
       sectors: {
@@ -423,7 +424,9 @@ export function generateUniversalLiveSnapshot(
     circuit: race.circuitName,
     status: activeSession.status,
     flag: activeSession.flag,
-    currentLap: 0,
+    currentLap: isQualy
+      ? 0
+      : Math.max(1, Math.min(circuit.totalLaps, Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps))),
     totalLaps: circuit.totalLaps,
     progressPercentage: activeSession.progressPercentage,
     timestamp: nowSec,
