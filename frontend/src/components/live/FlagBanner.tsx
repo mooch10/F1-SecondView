@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Flag, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Flag, ShieldAlert } from 'lucide-react';
 import type { FlagStatus, SessionLive } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -161,9 +161,19 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
     }
   };
 
+  const isNotStarted = session.status === 'NOT_STARTED';
   const effectiveFlag: FlagStatus =
-    session.status === 'FINISHED' ? 'CHEQUERED' : session.flag;
-  const flagConfig = getFlagConfig(effectiveFlag);
+    session.status === 'FINISHED' || isNotStarted ? 'CHEQUERED' : session.flag;
+
+  const flagConfig = isNotStarted
+    ? {
+        border: 'border-l-4 border-l-cyan-500/70',
+        text: 'text-cyan-400',
+        indicator: 'bg-cyan-500',
+        icon: <Clock className="w-4 h-4 text-cyan-400" />,
+        label: lang === 'es' ? 'SESIÓN NO INICIADA • PISTA CERRADA' : 'NOT STARTED • TRACK CLOSED',
+      }
+    : getFlagConfig(effectiveFlag);
 
   return (
     <div className="flex flex-col gap-2">
@@ -201,6 +211,18 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
               {session.qualifyingPhase || 'Q1'}
             </div>
           </div>
+        ) : isNotStarted ? (
+          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
+            <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+              {lang === 'es' ? 'ESTADO' : 'STATUS'}
+            </span>
+            <div className="text-base sm:text-xl font-mono font-bold tracking-tight text-cyan-400 tabular-nums">
+              {lang === 'es' ? 'GRILLA' : 'GRID'}
+              <span className="text-xs font-normal text-zinc-500 ml-1">
+                (0/{resolvedTotalLaps})
+              </span>
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
             <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
@@ -222,6 +244,8 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
           <span className="text-zinc-400 uppercase tracking-wider font-semibold">
             {session.sessionType === 'Qualifying'
               ? `${t.live.qualyProgress} ${session.qualifyingPhase || 'Q1'}`
+              : isNotStarted
+              ? (lang === 'es' ? 'INICIO PROGRAMADO: 10:00 HS' : 'SCHEDULED START: 10:00 HS')
               : t.live.gpProgress}
           </span>
           <span className="font-bold text-white tabular-nums">
@@ -236,6 +260,10 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
               ) : (
                 <span className="text-[#27F4D2]">{t.live.liveTimes}</span>
               )
+            ) : isNotStarted ? (
+              <span className="text-cyan-400 font-bold">
+                {lang === 'es' ? 'PARRILLA CONFIRMADA' : 'CONFIRMED GRID'}
+              </span>
             ) : (
               <>
                 {session.currentLap} / {resolvedTotalLaps} {lang === 'es' ? 'VUELTAS' : 'LAPS'} •{' '}
@@ -249,10 +277,12 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
             className={`h-full transition-all duration-500 rounded-full ${
               session.sessionType === 'Qualifying'
                 ? 'bg-gradient-to-r from-[#27F4D2] via-[#FFD800] to-[#E10600]'
+                : isNotStarted
+                ? 'bg-cyan-500/50'
                 : 'bg-gradient-to-r from-[#E10600] via-[#FF8000] to-[#34C759]'
             }`}
             style={{
-              width: `${progressPercent}%`,
+              width: `${isNotStarted ? 0 : progressPercent}%`,
             }}
           />
         </div>

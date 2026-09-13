@@ -200,12 +200,12 @@ export class OpenF1Client {
     }
     if (latestFinished) return latestFinished;
 
-    // 3. Fallback for race weekend: pick the latest session for current race weekend
+    // 3. Fallback for race weekend: pick the latest session for current race weekend that already started
     for (let i = sessions.length - 1; i >= 0; i--) {
       const s = sessions[i];
       if (!s.date_start) continue;
       const startMs = new Date(s.date_start).getTime();
-      if (Math.abs(nowMs - startMs) <= 36 * 3600 * 1000) {
+      if (startMs <= nowMs && Math.abs(nowMs - startMs) <= 36 * 3600 * 1000) {
         return s;
       }
     }

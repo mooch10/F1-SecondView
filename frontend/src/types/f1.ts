@@ -4,7 +4,7 @@ export type DriverStatus = 'ACTIVE' | 'PIT' | 'DNF' | 'DNS' | 'DSQ';
 
 export type FlagStatus = 'GREEN' | 'YELLOW' | 'VSC' | 'SC' | 'RED' | 'CHEQUERED';
 
-export type SessionState = 'SCHEDULED' | 'IN_PROGRESS' | 'FINISHED' | 'SUSPENDED';
+export type SessionState = 'SCHEDULED' | 'NOT_STARTED' | 'IN_PROGRESS' | 'FINISHED' | 'SUSPENDED';
 
 export type SessionType = 'Race' | 'Qualifying' | 'Practice';
 

@@ -200,28 +200,27 @@ export function resolveActiveSession(
     return latestFinished;
   }
 
-  // If today is a race weekend day (Friday-Sunday of the next/active race)
+  // 3. Third Pass: Find the next upcoming session or most recent session of active race
   const nextRace = schedule.find((r) => r.isNext) || schedule[0];
   if (nextRace) {
-    const raceDay = new Date(nextRace.raceDateTime);
-    const diffDays = Math.abs((nowMs - raceDay.getTime()) / (24 * 3600 * 1000));
-    if (diffDays <= 2.5) {
-      // It's the race weekend! Determine if it's Saturday (Qualy) or Sunday (Race)
-      const dayOfWeek = now.getUTCDay();
-      const isQualyDay = dayOfWeek === 6; // Saturday
-      const sessionName = isQualyDay
-        ? `Clasificación • ${nextRace.raceName}`
-        : `Carrera • ${nextRace.raceName}`;
-      const sessionType: SessionType = isQualyDay ? 'Qualifying' : 'Race';
+    const sessions = nextRace.sessions || [];
+    // Find upcoming session in this race
+    const upcoming = sessions.find((s) => s.dateTime && new Date(s.dateTime).getTime() > nowMs);
+    const targetSession = upcoming || sessions[sessions.length - 1];
+    if (targetSession) {
+      const nameLower = targetSession.name.toLowerCase();
+      const isQualy = nameLower.includes('clasificación') || nameLower.includes('qualy') || nameLower.includes('qualifying');
+      const isRace = nameLower.includes('carrera') || nameLower.includes('race');
+      const sessionType: SessionType = isQualy ? 'Qualifying' : isRace ? 'Race' : 'Practice';
 
       return {
         race: nextRace,
-        sessionName,
+        sessionName: `${targetSession.name} • ${nextRace.raceName}`,
         sessionType,
-        qualifyingPhase: isQualyDay ? 'Q3' : null,
-        status: 'IN_PROGRESS',
-        flag: 'GREEN',
-        progressPercentage: 80,
+        qualifyingPhase: isQualy ? 'Q1' : null,
+        status: 'NOT_STARTED',
+        flag: 'CHEQUERED',
+        progressPercentage: 0,
       };
     }
   }
@@ -260,6 +259,7 @@ export function generateUniversalLiveSnapshot(
   const nowSec = Math.floor(now.getTime() / 1000);
 
   const isQualy = activeSession.sessionType === 'Qualifying';
+  const isNotStarted = activeSession.status === 'NOT_STARTED';
 
   const sourceDrivers = (liveSession && liveSession.drivers.length > 0)
     ? liveSession.drivers.map((ld) => ({
@@ -271,27 +271,31 @@ export function generateUniversalLiveSnapshot(
         teamColor: ld.teamColor,
         performanceBias: ld.gapToLeaderSec,
         order: ld.order,
-        status: ld.status,
-        statusText: ld.statusText,
-        lapsCompleted: ld.lapsCompleted,
+        status: isNotStarted ? ('GARAGE' as const) : ld.status,
+        statusText: isNotStarted ? 'En Grilla' : ld.statusText,
+        lapsCompleted: isNotStarted ? 0 : ld.lapsCompleted,
       }))
     : DRIVERS_GRID_2026.map((d, i) => ({
         ...d,
         order: i + 1,
-        status: 'ON_TRACK' as const,
-        statusText: 'En Pista',
-        lapsCompleted: [19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][i] ?? 18,
+        status: isNotStarted ? ('GARAGE' as const) : ('ON_TRACK' as const),
+        statusText: isNotStarted ? 'En Grilla' : 'En Pista',
+        lapsCompleted: isNotStarted ? 0 : [19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][i] ?? 18,
       }));
 
   const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
     const driverLapDuration = benchmarkLap + d.performanceBias;
     const diffSec = d.performanceBias;
-    const gap = isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${diffSec.toFixed(3)}`;
+    const gap = isNotStarted
+      ? (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `P${d.order}`)
+      : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${diffSec.toFixed(3)}`);
 
     const prevDuration = idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
     const intervalDiff = driverLapDuration - prevDuration;
-    const interval = isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`;
+    const interval = isNotStarted
+      ? '- - -'
+      : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`);
 
     // Sectors breakdown calibrated for Circuito de Madrid: S1 (~30.7%), S2 (~37.5%), S3 (remainder)
     const s1 = Number((driverLapDuration * 0.307).toFixed(3));
@@ -302,9 +306,11 @@ export function generateUniversalLiveSnapshot(
     const s2Status: SectorStatus = idx === 0 ? 'purple' : idx < 7 ? 'green' : 'yellow';
     const s3Status: SectorStatus = idx === 1 ? 'purple' : idx < 8 ? 'green' : 'yellow';
 
-    // Position car along track outline
+    // Position car along track outline (at starting grid positions if not started)
     const outlineLen = circuit.outline.length;
-    const stepOffset = Math.floor((nowSec * 2 + idx * 6) % outlineLen);
+    const stepOffset = isNotStarted
+      ? Math.floor((idx * 3) % outlineLen)
+      : Math.floor((nowSec * 2 + idx * 6) % outlineLen);
     const coord = circuit.outline[stepOffset] || [0, 0];
 
     const eliminatedPhase: 'Q1' | 'Q2' | null = isQualy
@@ -333,20 +339,20 @@ export function generateUniversalLiveSnapshot(
       teamColor: d.teamColor,
       gap,
       interval,
-      isDrsZone: !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      isOvertakeZone: !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      lastLapTime: effectiveBestStr,
+      isDrsZone: !isNotStarted && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      isOvertakeZone: !isNotStarted && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      lastLapTime: isNotStarted ? (isPole ? effectiveBestStr : '--:--.---') : effectiveBestStr,
       bestLapTime: effectiveBestStr,
       bestLapDuration: effectiveBestDur,
-      isPole: isQualy && isPole,
-      isFastestLap: isPole,
+      isPole: isPole,
+      isFastestLap: !isNotStarted && isPole,
       eliminatedPhase,
       tyre: {
         compound: (isQualy ? 'SOFT' : idx % 3 === 0 ? 'HARD' : idx % 2 === 0 ? 'MEDIUM' : 'SOFT') as TyreCompound,
-        laps: isQualy ? (idx % 3) + 1 : 8 + (idx % 14),
+        laps: isNotStarted ? 0 : isQualy ? (idx % 3) + 1 : 8 + (idx % 14),
       },
-      pitStops: isQualy ? 0 : idx % 4 === 0 ? 2 : 1,
-      inPit: d.status === 'PIT' || d.status === 'GARAGE',
+      pitStops: isNotStarted || isQualy ? 0 : idx % 4 === 0 ? 2 : 1,
+      inPit: isNotStarted ? false : (d.status === 'PIT' || d.status === 'GARAGE'),
       status: 'ACTIVE',
       sectors: {
         s1,
@@ -361,9 +367,9 @@ export function generateUniversalLiveSnapshot(
           s3: generateMiniSegments(s3Status),
         },
       },
-      speedTrap: Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
-      i1Speed: Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
-      i2Speed: Number((294.0 - d.performanceBias * 1.9).toFixed(1)),
+      speedTrap: isNotStarted ? 0 : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
+      i1Speed: isNotStarted ? 0 : Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
+      i2Speed: isNotStarted ? 0 : Number((294.0 - d.performanceBias * 1.9).toFixed(1)),
       location: {
         x: coord[0],
         y: coord[1],
@@ -386,32 +392,47 @@ export function generateUniversalLiveSnapshot(
     windDirection: 180,
   };
 
-  const messages: RaceControlMessage[] = [
-    {
-      id: 1,
-      time: '14:00:00',
-      text: `INICIO DE SESIÓN - SEMÁFORO EN VERDE EN PIT EXIT (${race.circuitName})`,
-      flag: 'GREEN',
-    },
-    {
-      id: 2,
-      time: '14:15:30',
-      text: `PISTA LIBRE - SECTOR 2 (${race.locality})`,
-      flag: null,
-    },
-    {
-      id: 3,
-      time: '14:28:10',
-      text: 'AUTO 43 (COLAPINTO) - TIEMPO VÁLIDO EN EL TOP 10',
-      flag: null,
-    },
-    {
-      id: 4,
-      time: '14:45:00',
-      text: `BANDERA VERDE - REINICIO DE ACTIVIDAD EN PISTA (${race.circuitName})`,
-      flag: 'GREEN',
-    },
-  ];
+  const messages: RaceControlMessage[] = isNotStarted
+    ? [
+        {
+          id: 1,
+          time: '09:00:00',
+          text: `GRILLA DE SALIDA OFICIAL • ${activeSession.sessionName}`,
+          flag: null,
+        },
+        {
+          id: 2,
+          time: '09:30:00',
+          text: 'ACTIVIDAD EN PISTA PROGRAMADA PARA LAS 10:00 HS (HORA ARGENTINA)',
+          flag: null,
+        },
+      ]
+    : [
+        {
+          id: 1,
+          time: '14:00:00',
+          text: `INICIO DE SESIÓN - SEMÁFORO EN VERDE EN PIT EXIT (${race.circuitName})`,
+          flag: 'GREEN',
+        },
+        {
+          id: 2,
+          time: '14:15:30',
+          text: `PISTA LIBRE - SECTOR 2 (${race.locality})`,
+          flag: null,
+        },
+        {
+          id: 3,
+          time: '14:28:10',
+          text: 'AUTO 43 (COLAPINTO) - TIEMPO VÁLIDO EN EL TOP 10',
+          flag: null,
+        },
+        {
+          id: 4,
+          time: '14:45:00',
+          text: `BANDERA VERDE - REINICIO DE ACTIVIDAD EN PISTA (${race.circuitName})`,
+          flag: 'GREEN',
+        },
+      ];
 
   const session: SessionLive = {
     sessionKey: 9600 + race.round,
@@ -425,7 +446,7 @@ export function generateUniversalLiveSnapshot(
     circuit: race.circuitName,
     status: activeSession.status,
     flag: activeSession.flag,
-    currentLap: isQualy
+    currentLap: isQualy || isNotStarted
       ? 0
       : Math.max(1, Math.min(circuit.totalLaps, Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps))),
     totalLaps: circuit.totalLaps,

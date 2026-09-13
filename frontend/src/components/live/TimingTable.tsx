@@ -444,7 +444,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 </div>
 
                 {/* Team stripe + Star Pin + Code & Number */}
-                <div className="col-span-4 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden">
+                <div className={`${isQualy ? 'col-span-4' : 'col-span-3'} sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden`}>
                   <span
                     className="w-1 h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
@@ -475,24 +475,24 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </button>
 
                   <div
-                    className="flex flex-col leading-tight truncate cursor-pointer group/driver"
+                    className="flex flex-col leading-tight truncate cursor-pointer group/driver min-w-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       openDriverProfile(d.driverNumber, d.code, d.fullName);
                     }}
                     title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
                   >
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-mono text-sm font-bold text-white tracking-tight group-hover/driver:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover/driver:decoration-[#FFD60A]/60">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap min-w-0">
+                      <span className="font-mono text-xs sm:text-sm font-bold text-white tracking-tight group-hover/driver:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover/driver:decoration-[#FFD60A]/60 shrink-0">
                         {d.code}
                       </span>
-                      <span className="text-[10px] text-zinc-500 font-mono">
+                      <span className="text-[10px] text-zinc-500 font-mono shrink-0 hidden xs:inline">
                         #{d.driverNumber}
                       </span>
-                      {/* Official Championship Points Badge in Race (incluye punto de Vuelta Rápida en Top 10) */}
+                      {/* Official Championship Points Badge in Race (Desktop) */}
                       {isRace && totalPoints > 0 && (
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black border tracking-tight shrink-0 select-none shadow-xs ${
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black border tracking-tight shrink-0 select-none shadow-xs hidden sm:inline-block ${
                             hasFastestLapBonus
                               ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
                               : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
@@ -513,20 +513,20 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {/* Active FIA Penalty Badge in Race (En rojo oficial de sanción) */}
                       {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span
-                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs"
+                          className="px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs"
                           title={lang === 'es' ? `Penalización oficial FIA: +${d.penaltySeconds}s` : `Official FIA penalty: +${d.penaltySeconds}s`}
                         >
-                          +{d.penaltySeconds}s {t.live.table.penalty}
+                          +{d.penaltySeconds}s
                         </span>
                       )}
                       {/* Elimination Phase Tag in Qualy */}
                       {isQualy && d.eliminatedPhase && (
-                        <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                        <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 shrink-0">
                           {d.eliminatedPhase}
                         </span>
                       )}
                       {d.inPit && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
+                        <span className="px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
                           PIT
                         </span>
                       )}
@@ -600,11 +600,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 ) : (
                   <>
                     {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado (+ pit badge en mobile) */}
-                    <div className="col-span-2 sm:col-span-2 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
+                    <div className="col-span-2 sm:col-span-2 flex items-center justify-center gap-0.5 sm:gap-1.5">
                       {getTyreBadge(d.tyre) || (
                         <span className="text-[10px] text-zinc-600 font-mono">-</span>
                       )}
-                      {/* En mobile, badge compacto de pit integrado */}
+                      {/* En mobile, badge compacto de pit integrado al lado */}
                       <div className="sm:hidden">
                         {d.inPit ? (
                           <span
@@ -656,18 +656,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Race Gap & Interval - 3 columnas con espacio suficiente */}
-                    <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1.5 sm:pr-2">
+                    <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1 sm:pr-2">
                       <span className="font-mono text-xs font-semibold text-zinc-200 font-tabular truncate">
                         {d.gap}
                       </span>
                       {d.interval && d.interval !== 'LEADER' && (
-                        <div className="flex items-center justify-end gap-1 sm:gap-1.5">
+                        <div className="flex items-center justify-end gap-1">
                           {closeInterval && (
                             <span
                               className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
                               title={lang === 'es' ? 'Modo Overtake habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode active (< 1.0s behind car ahead)'}
                             >
-                              OVERTAKE
+                              <span className="hidden sm:inline">OVERTAKE</span>
+                              <span className="sm:hidden">OT</span>
                             </span>
                           )}
                           <span
@@ -684,7 +685,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Race Last Lap & Fastest Lap Badge - 3 columnas en mobile con separación clara */}
-                    <div className="col-span-3 sm:col-span-2 text-right flex items-center justify-end gap-1 sm:gap-1.5 pl-1">
+                    <div className="col-span-3 sm:col-span-2 text-right flex items-center justify-end gap-1 pl-1">
                       <div className="flex flex-col leading-tight">
                         <span
                           className={`font-mono text-xs font-tabular ${
@@ -696,8 +697,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           {d.lastLapTime || '--:--.---'}
                         </span>
                         {d.isFastestLap && (
-                          <span className="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
-                            {t.live.table.fastestLap}
+                          <span className="text-[8px] sm:text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
+                            <span className="hidden sm:inline">{t.live.table.fastestLap}</span>
+                            <span className="sm:hidden">V. RÁPIDA</span>
                           </span>
                         )}
                       </div>
