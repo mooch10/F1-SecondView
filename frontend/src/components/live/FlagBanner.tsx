@@ -161,7 +161,9 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
     }
   };
 
-  const flagConfig = getFlagConfig(session.flag);
+  const effectiveFlag: FlagStatus =
+    session.status === 'FINISHED' ? 'CHEQUERED' : session.flag;
+  const flagConfig = getFlagConfig(effectiveFlag);
 
   return (
     <div className="flex flex-col gap-2">

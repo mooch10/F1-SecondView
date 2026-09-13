@@ -487,8 +487,8 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
             <div className="col-span-1 text-center">POS</div>
-            <div className="col-span-4 sm:col-span-3">PILOTO</div>
-            <div className="col-span-3 sm:col-span-5 text-center">
+            <div className="col-span-3 sm:col-span-3">PILOTO</div>
+            <div className="col-span-4 sm:col-span-5 text-center">
               <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
               <span className="sm:hidden">SECTORES</span>
             </div>
@@ -535,7 +535,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
                     {/* Driver & Team */}
                     <div
-                      className="col-span-4 sm:col-span-3 flex items-center gap-2 sm:gap-2.5 overflow-hidden cursor-pointer group"
+                      className="col-span-3 sm:col-span-3 flex items-center gap-1.5 sm:gap-2.5 overflow-hidden cursor-pointer group"
                       onClick={(e) => {
                         e.stopPropagation();
                         openDriverProfile(d.driverNumber, d.code, d.fullName);
@@ -572,9 +572,9 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                     </div>
 
                     {/* Sectors & Mini-Sectors Center Column */}
-                    <div className="col-span-3 sm:col-span-5 flex flex-col items-center justify-center gap-1.5 px-1 sm:px-2">
-                      {/* 3 Sector Pills (Desktop only) */}
-                      <div className="hidden sm:flex items-center justify-center gap-1.5 sm:gap-2 w-full flex-nowrap">
+                    <div className="col-span-4 sm:col-span-5 flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-0.5 sm:px-2 min-w-0">
+                      {/* 3 Sector Badges (Mobile & Desktop) */}
+                      <div className="flex items-center justify-center gap-1 sm:gap-2 w-full flex-nowrap">
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
@@ -595,8 +595,8 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         />
                       </div>
 
-                      {/* Mini-Sectors Track Bar */}
-                      <div className="w-full max-w-[130px] sm:max-w-[260px]">
+                      {/* Mini-Sectors Track Bar (Desktop & Tablet) */}
+                      <div className="hidden sm:block w-full max-w-[260px]">
                         <MiniSectorsBar segments={d.sectors?.segments} />
                       </div>
                     </div>

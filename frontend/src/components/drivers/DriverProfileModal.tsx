@@ -171,12 +171,9 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                 <span className="text-[10px] uppercase text-zinc-500 font-bold block">
                   Fecha de Nacimiento
                 </span>
-                <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <div className="mt-0.5">
                   <span className="text-zinc-200 font-medium text-xs">
                     {profile.birthDate}
-                  </span>
-                  <span className="text-[11px] font-bold text-amber-400 whitespace-nowrap">
-                    ({age} años)
                   </span>
                 </div>
               </div>

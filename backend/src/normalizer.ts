@@ -723,7 +723,12 @@ export function buildLiveSnapshot(
     }
   }
 
-  if (drivers.length === 0) {
+  // Check if session has passed its scheduled end time
+  const isPastEndTime = session?.date_end
+    ? Date.now() > new Date(session.date_end).getTime() + 10 * 60 * 1000
+    : false;
+
+  if (sessionState === 'FINISHED' || isPastEndTime || drivers.length === 0) {
     sessionState = 'FINISHED';
     flag = 'CHEQUERED';
   }

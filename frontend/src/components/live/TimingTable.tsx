@@ -541,8 +541,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   <>
                     {/* Qualy Sectors & Mini-Sectors Center Column */}
                     <div className="col-span-3 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
-                      {/* 3 Sector Pills (Desktop only) */}
-                      <div className="hidden sm:flex items-center justify-center gap-1 w-full flex-nowrap">
+                      {/* 3 Sector Pills (Mobile & Desktop) */}
+                      <div className="flex items-center justify-center gap-1 w-full flex-nowrap">
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
@@ -562,8 +562,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           compact
                         />
                       </div>
-                      {/* Mini-Sectors Track Bar (Visible on mobile & desktop) */}
-                      <div className="w-full max-w-[120px] sm:max-w-[240px]">
+                      {/* Mini-Sectors Track Bar (Desktop only) */}
+                      <div className="hidden sm:block w-full max-w-[240px]">
                         <MiniSectorsBar segments={d.sectors?.segments} />
                       </div>
                     </div>

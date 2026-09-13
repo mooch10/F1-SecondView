@@ -45,7 +45,7 @@ export const MiniSectorsBar: React.FC<MiniSectorsBarProps> = ({
   if (!detailed) {
     return (
       <div
-        className="flex items-center gap-1.5 w-full select-none"
+        className="flex items-center gap-1 sm:gap-1.5 w-full select-none py-0.5"
         title="Mini-sectores en tiempo real (S1 | S2 | S3)"
       >
         {/* Sector 1 Mini-Segments */}
@@ -53,31 +53,31 @@ export const MiniSectorsBar: React.FC<MiniSectorsBarProps> = ({
           {s1List.map((st, i) => (
             <span
               key={`s1-${i}-${st}`}
-              className={`h-1.5 flex-1 rounded-[1px] transition-colors ${getSegmentClass(st)}`}
+              className={`h-2.5 sm:h-2 flex-1 rounded-[1.5px] transition-colors ${getSegmentClass(st)}`}
             />
           ))}
         </div>
 
-        <div className="w-[1px] h-2 bg-white/20 shrink-0" />
+        <div className="w-[1.5px] h-3 bg-white/30 shrink-0" />
 
         {/* Sector 2 Mini-Segments */}
         <div className="flex items-center gap-[2px] flex-1">
           {s2List.map((st, i) => (
             <span
               key={`s2-${i}-${st}`}
-              className={`h-1.5 flex-1 rounded-[1px] transition-colors ${getSegmentClass(st)}`}
+              className={`h-2.5 sm:h-2 flex-1 rounded-[1.5px] transition-colors ${getSegmentClass(st)}`}
             />
           ))}
         </div>
 
-        <div className="w-[1px] h-2 bg-white/20 shrink-0" />
+        <div className="w-[1.5px] h-3 bg-white/30 shrink-0" />
 
         {/* Sector 3 Mini-Segments */}
         <div className="flex items-center gap-[2px] flex-1">
           {s3List.map((st, i) => (
             <span
               key={`s3-${i}-${st}`}
-              className={`h-1.5 flex-1 rounded-[1px] transition-colors ${getSegmentClass(st)}`}
+              className={`h-2.5 sm:h-2 flex-1 rounded-[1.5px] transition-colors ${getSegmentClass(st)}`}
             />
           ))}
         </div>
