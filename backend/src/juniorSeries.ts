@@ -5,6 +5,7 @@ import type {
   JolpicaRaceResult,
 } from './jolpica.js';
 import type { DriverChangeAlert, JuniorRaceDetail, JuniorSessionResult } from './types.js';
+import { F2_AUTHENTIC_ROUNDS, F3_AUTHENTIC_ROUNDS } from './juniorRoundsData.js';
 
 const F2_UUID = 'a217f31e-70a6-40d1-9848-6aa2239bfb01';
 const F3_UUID = '08ad7230-eb99-43e3-b158-405b49e994c6';
@@ -82,6 +83,9 @@ export const F3_DRIVER_NUMBERS: Record<string, number> = {
   WHA: 21, // Hitech
   DAV: 23, // AIX
   LAC: 25, // DAMS
+  POW: 9,  // PREMA
+  XIE: 26, // DAMS
+  DEP: 3,  // Trident
 };
 
 export function getTeamColor(teamName: string, series: 'f2' | 'f3'): string {
@@ -599,6 +603,9 @@ const F3_FALLBACK_DRIVERS: JolpicaDriverStanding[] = [
   { pos: 18, points: 20, wins: 0, code: 'LAC', name: 'Nicola Lacorte', nationality: 'Italian', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
   { pos: 19, points: 16, wins: 0, code: 'LE', name: 'Kanato Le', nationality: 'Japanese', team: 'ART Grand Prix', teamColor: '#0059B3' },
   { pos: 20, points: 14, wins: 0, code: 'GIU', name: 'Alessandro Giusti', nationality: 'French', team: 'MP Motorsport', teamColor: '#FF8800' },
+  { pos: 21, points: 12, wins: 0, code: 'POW', name: 'Alex Powell', nationality: 'Jamaican-American', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 22, points: 10, wins: 0, code: 'XIE', name: 'Gerrard Xie', nationality: 'Chinese', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
+  { pos: 23, points: 8, wins: 0, code: 'DEP', name: 'Matteo De Palo', nationality: 'Italian', team: 'Trident', teamColor: '#2563EB' },
 ];
 
 const F3_FALLBACK_CONSTRUCTORS: JolpicaConstructorStanding[] = [
@@ -825,309 +832,272 @@ export class JuniorSeriesClient {
   ): JuniorRaceDetail {
     const allDrivers = series === 'f2' ? F2_FALLBACK_DRIVERS : F3_FALLBACK_DRIVERS;
     const numMap = series === 'f2' ? F2_DRIVER_NUMBERS : F3_DRIVER_NUMBERS;
+    const roundConfig = series === 'f2' ? F2_AUTHENTIC_ROUNDS[targetRound] : F3_AUTHENTIC_ROUNDS[targetRound];
 
-    // 1. Establish authentic Qualifying Grid (Pole to P20)
-    // Deterministic base rotation by round, prioritizing key winners/poles
-    const qualyDrivers = [...allDrivers];
-    if (series === 'f2') {
-      if (targetRound === 10) {
-        // Monza F2: Pole Câmara, P2 Tsolov, P3 Minì, P4 Dunne, P5 Dürksen, P6 León, P7 Beganovic, P8 Maini, P9 van Hoepen, P10 Stenshorne
-        const order = ['CAM', 'TSO', 'MIN', 'DUN', 'DUR', 'LEO', 'BEG', 'MAI', 'HOE', 'STE', 'BEN', 'GOE', 'MON', 'MIY', 'HER', 'BIL', 'FIT', 'VAR', 'BOY', 'SHI', 'INT', 'VIL'];
-        qualyDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else if (targetRound === 11) {
-        // Madrid F2: Pole Câmara, P2 Tsolov, P3 Dürksen, P4 Minì, P5 Dunne, P6 Maini, P7 León, P8 Beganovic, P9 Stenshorne, P10 van Hoepen
-        const order = ['CAM', 'TSO', 'DUR', 'MIN', 'DUN', 'MAI', 'LEO', 'BEG', 'STE', 'HOE', 'MON', 'BEN', 'GOE', 'HER', 'MIY', 'BIL', 'BOY', 'FIT', 'VAR', 'SHI', 'INT', 'VIL'];
-        qualyDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else {
-        const offset = (targetRound * 5) % allDrivers.length;
-        qualyDrivers.splice(0, qualyDrivers.length, ...allDrivers.slice(offset), ...allDrivers.slice(0, offset));
-      }
+    // Helper to find driver or build fallback driver
+    const getDriver = (code: string) => {
+      const found = allDrivers.find((d) => d.code === code);
+      if (found) return found;
+      return {
+        pos: 99,
+        points: 0,
+        wins: 0,
+        code,
+        name: code,
+        nationality: 'Internacional',
+        team: 'Junior Team',
+        teamColor: '#71717A',
+      };
+    };
+
+    // 1. Qualifying Grid
+    let qualyCodes: string[];
+    if (roundConfig && roundConfig.qualy.length > 0) {
+      qualyCodes = roundConfig.qualy;
     } else {
-      if (targetRound === 8) {
-        // Monza F3: Pole Slater, P2 Naël, P3 Ugochukwu, P4 Rivera, P5 Badoer, P6 Kato, P7 Taponen, P8 Strømsted, P9 del Pino, P10 Clerot, P11 Yamakoshi, P12 Gładysz
-        const order = ['SLA', 'NAE', 'UGO', 'RIV', 'BAD', 'KAT', 'TAP', 'STR', 'PIN', 'CLE', 'YAM', 'GLA', 'COL', 'GIU', 'NAK', 'WHA', 'DAV', 'LAC', 'DEL', 'LE'];
-        qualyDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else if (targetRound === 9) {
-        // Madrid Finale F3: Pole Slater, P2 Rivera, P3 Ugochukwu, P4 Naël, P5 Kato, P6 Badoer, P7 Taponen, P8 Strømsted, P9 del Pino, P10 Yamakoshi, P11 Clerot, P12 Gładysz
-        const order = ['SLA', 'RIV', 'UGO', 'NAE', 'KAT', 'BAD', 'TAP', 'STR', 'PIN', 'YAM', 'CLE', 'GLA', 'COL', 'WHA', 'GIU', 'NAK', 'DEL', 'DAV', 'LAC', 'LE'];
-        qualyDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else {
-        const offset = (targetRound * 5) % allDrivers.length;
-        qualyDrivers.splice(0, qualyDrivers.length, ...allDrivers.slice(offset), ...allDrivers.slice(0, offset));
-      }
+      const offset = (targetRound * 5) % allDrivers.length;
+      qualyCodes = [...allDrivers.slice(offset), ...allDrivers.slice(0, offset)].map((d) => d.code);
     }
+    const qualyDrivers = qualyCodes.map(getDriver);
 
-    // Map qualifying positions (grid for Feature Race)
     const featureGridMap = new Map<string, number>();
     qualyDrivers.forEach((d, idx) => featureGridMap.set(d.code, idx + 1));
 
-    // 2. Feature Race Simulation:
-    // Authentic finish with overtakes, position changes, and 1-2 realistic DNFs in the back
-    let featureFinishDrivers = [...qualyDrivers];
-    if (series === 'f2') {
-      if (targetRound === 10) {
-        // Monza F2 Feature: Tsolov passed Câmara for P1! Dunne stormed to P3. Dürksen held P5.
-        const order = ['TSO', 'CAM', 'DUN', 'MIN', 'DUR', 'BEG', 'LEO', 'MAI', 'HOE', 'GOE', 'STE', 'MON', 'BEN', 'HER', 'MIY', 'BIL', 'BOY', 'FIT', 'VAR', 'SHI', 'INT', 'VIL'];
-        featureFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else if (targetRound === 11) {
-        // Madrid F2 Feature: Câmara won from pole, Tsolov P2, Dürksen P3 on podium, Dunne P4
-        const order = ['CAM', 'TSO', 'DUR', 'DUN', 'MIN', 'MAI', 'BEG', 'LEO', 'STE', 'HOE', 'BEN', 'MON', 'GOE', 'HER', 'BIL', 'MIY', 'FIT', 'BOY', 'VAR', 'SHI', 'INT', 'VIL'];
-        featureFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else {
-        // Generic round overtake simulation: swap positions deterministically so pos != grid
-        const shuffled = [...qualyDrivers];
-        for (let i = 0; i < shuffled.length - 2; i += 3) {
-          const temp = shuffled[i];
-          shuffled[i] = shuffled[i + 1];
-          shuffled[i + 1] = temp;
-        }
-        featureFinishDrivers = shuffled;
-      }
+    // 2. Feature Race
+    const nowMs = Date.now();
+    const eventTime = new Date(raceEvent.raceDateTime).getTime();
+    const isFeaturePending =
+      (roundConfig && roundConfig.feature.isPending) ||
+      (!isNaN(eventTime) && eventTime > nowMs);
+
+    const totalFeatureLaps = series === 'f2' ? 32 : 24;
+    const featurePoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+
+    let featureResults: JolpicaRaceResult[];
+
+    if (isFeaturePending) {
+      // Race has not happened yet -> confirmed starting grid from Qualifying
+      featureResults = qualyDrivers.slice(0, 20).map((d, idx) => {
+        const grid = idx + 1;
+        const parts = d.name.split(' ');
+        const familyName = parts.slice(1).join(' ') || d.name;
+        const carNumber = numMap[d.code] || idx + 1;
+
+        return {
+          pos: grid,
+          driverNumber: carNumber,
+          code: d.code,
+          fullName: d.name,
+          familyName,
+          teamName: d.team,
+          teamColor: d.teamColor,
+          points: 0,
+          grid,
+          posChange: 0,
+          laps: 0,
+          status: 'Parrilla confirmada',
+          timeOrStatus: 'Parrilla confirmada',
+          isWinner: false,
+          isPodium: false,
+          isFastestLap: false,
+        };
+      });
     } else {
-      if (targetRound === 8) {
-        // Monza F3 Feature: Naël passed Slater for P1! Ugochukwu P3, Rivera P4, Kato P5 (+1), Badoer P6 (-1)
-        const order = ['NAE', 'SLA', 'UGO', 'RIV', 'KAT', 'BAD', 'TAP', 'STR', 'PIN', 'YAM', 'CLE', 'GLA', 'COL', 'WHA', 'NAK', 'GIU', 'DAV', 'LAC', 'DEL', 'LE'];
-        featureFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else if (targetRound === 9) {
-        // Madrid Finale F3 Feature: Slater won, Rivera P2, Ugochukwu P3, Naël P4
-        const order = ['SLA', 'RIV', 'UGO', 'NAE', 'BAD', 'KAT', 'TAP', 'PIN', 'STR', 'YAM', 'CLE', 'GLA', 'COL', 'WHA', 'GIU', 'NAK', 'DEL', 'DAV', 'LAC', 'LE'];
-        featureFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
+      let featureFinishCodes: string[];
+      if (roundConfig && roundConfig.feature.finish.length > 0) {
+        featureFinishCodes = roundConfig.feature.finish;
       } else {
-        const shuffled = [...qualyDrivers];
-        for (let i = 0; i < shuffled.length - 2; i += 3) {
-          const temp = shuffled[i];
-          shuffled[i] = shuffled[i + 1];
-          shuffled[i + 1] = temp;
-        }
-        featureFinishDrivers = shuffled;
+        featureFinishCodes = qualyCodes;
       }
+      const featureFinishDrivers = featureFinishCodes.map(getDriver);
+
+      const dnfMap = new Map<string, { status: string; lap: number }>();
+      if (roundConfig?.feature.dnfs) {
+        for (const dnf of roundConfig.feature.dnfs) {
+          dnfMap.set(dnf.code, dnf);
+        }
+      }
+
+      const flCode = roundConfig?.feature.fastestLap.code || featureFinishCodes[1] || featureFinishCodes[0];
+      const flTime = roundConfig?.feature.fastestLap.time || (series === 'f2' ? '1:32.410' : '1:38.105');
+
+      featureResults = featureFinishDrivers.slice(0, 20).map((d, idx) => {
+        const pos = idx + 1;
+        const grid = featureGridMap.get(d.code) || pos;
+        const posChange = grid - pos;
+        const parts = d.name.split(' ');
+        const familyName = parts.slice(1).join(' ') || d.name;
+        const isWinner = pos === 1;
+        const carNumber = numMap[d.code] || idx + 1;
+        const dnf = dnfMap.get(d.code);
+
+        let status = 'Finished';
+        let laps = totalFeatureLaps;
+        let timeOrStatus = '';
+
+        if (dnf) {
+          status = dnf.status;
+          laps = dnf.lap;
+          timeOrStatus = 'DNF';
+        } else if (isWinner) {
+          timeOrStatus = roundConfig?.feature.time || (series === 'f2' ? '51:42.894' : '38:45.120');
+        } else {
+          timeOrStatus = roundConfig?.feature.gaps[pos - 2] || `+${(idx * 2.315 + (idx % 3) * 0.4).toFixed(3)}s`;
+        }
+
+        const isFastestLap = d.code === flCode;
+        const fastestLapTime = isFastestLap ? flTime : undefined;
+        const points =
+          (dnf ? 0 : featurePoints[idx] || 0) +
+          (isFastestLap && pos <= 10 ? 1 : 0) +
+          (grid === 1 ? 2 : 0);
+
+        return {
+          pos,
+          driverNumber: carNumber,
+          code: d.code,
+          fullName: d.name,
+          familyName,
+          teamName: d.team,
+          teamColor: d.teamColor,
+          points,
+          grid,
+          posChange,
+          laps,
+          status,
+          timeOrStatus,
+          isWinner,
+          isPodium: pos <= 3 && !dnf,
+          isFastestLap,
+          fastestLapTime,
+        };
+      });
     }
 
-    const featurePoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
-    const totalFeatureLaps = series === 'f2' ? 32 : 24;
-
-    const featureResults: JolpicaRaceResult[] = featureFinishDrivers.slice(0, 20).map((d, idx) => {
-      const pos = idx + 1;
-      const grid = featureGridMap.get(d.code) || pos;
-      const posChange = grid - pos;
-      const parts = d.name.split(' ');
-      const familyName = parts.slice(1).join(' ') || d.name;
-      const isWinner = pos === 1;
-      const carNumber = numMap[d.code] || idx + 1;
-
-      // Realistic retirements for the last 2 positions
-      let status = 'Finished';
-      let laps = totalFeatureLaps;
-      let timeOrStatus = '';
-
-      if (pos === 19) {
-        status = 'Fallo mecánico';
-        laps = totalFeatureLaps - 11;
-        timeOrStatus = 'DNF';
-      } else if (pos === 20) {
-        status = 'Colisión';
-        laps = totalFeatureLaps - 23;
-        timeOrStatus = 'DNF';
-      } else if (isWinner) {
-        timeOrStatus = series === 'f2' ? '56:34.218' : '42:18.905';
-      } else {
-        const gapSec = (idx * 2.145 + ((idx * 7) % 3) * 0.42).toFixed(3);
-        timeOrStatus = `+${gapSec}s`;
-      }
-
-      const isFastestLap = pos === 2; // P2 sets fastest lap
-      const fastestLapTime = isFastestLap ? (series === 'f2' ? '1:32.410' : '1:38.105') : undefined;
-      const points = (featurePoints[idx] || 0) + (isFastestLap && pos <= 10 ? 1 : 0) + (grid === 1 ? 2 : 0);
-
-      return {
-        pos,
-        driverNumber: carNumber,
-        code: d.code,
-        fullName: d.name,
-        familyName,
-        teamName: d.team,
-        teamColor: d.teamColor,
-        points,
-        grid,
-        posChange,
-        laps,
-        status,
-        timeOrStatus,
-        isWinner,
-        isPodium: pos <= 3,
-        isFastestLap,
-        fastestLapTime,
-      };
-    });
-
-    // 3. Sprint Race Simulation:
-    // In F2, Sprint reverses top 10 from Qualifying. In F3, Sprint reverses top 12.
+    // 3. Sprint Race Simulation
+    // Reverse top 10 (F2) or top 12 (F3) from Qualifying
     const reverseCount = series === 'f2' ? 10 : 12;
-    const sprintStartingGridDrivers = [
-      ...qualyDrivers.slice(0, reverseCount).reverse(),
-      ...qualyDrivers.slice(reverseCount, 20),
+    const sprintStartingGridCodes = [
+      ...qualyCodes.slice(0, reverseCount).reverse(),
+      ...qualyCodes.slice(reverseCount),
     ];
+    const sprintStartingGridDrivers = sprintStartingGridCodes.map(getDriver);
 
     const sprintGridMap = new Map<string, number>();
     sprintStartingGridDrivers.forEach((d, idx) => sprintGridMap.set(d.code, idx + 1));
 
-    // Sprint finishing order:
-    // Reverse-grid drama: drivers starting P8-P12 charge forward, reverse-pole fights to hold on!
-    let sprintFinishDrivers = [...sprintStartingGridDrivers];
-    if (series === 'f2') {
-      if (targetRound === 10) {
-        // Monza F2 Sprint:
-        // Stenshorne held reverse-grid pole (grid 1 -> pos 1)
-        // Dürksen stormed from grid 6 -> pos 2 (▲ +4)
-        // Tsolov charged from grid 9 -> pos 3 (▲ +6)
-        // Maini grid 3 -> pos 4
-        // Câmara charged from grid 10 -> pos 5 (▲ +5)
-        const order = ['STE', 'DUR', 'TSO', 'MAI', 'CAM', 'HOE', 'BEG', 'DUN', 'MIN', 'LEO', 'GOE', 'BEN', 'MON', 'HER', 'MIY', 'BOY', 'FIT', 'VAR', 'SHI', 'BIL', 'INT', 'VIL'];
-        sprintFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else if (targetRound === 11) {
-        // Madrid F2 Sprint:
-        // Dürksen won from grid 8 (▲ +7)! Câmara P2 from grid 10 (▲ +8)! Tsolov P3 from grid 9 (▲ +6)!
-        const order = ['DUR', 'CAM', 'TSO', 'STE', 'HOE', 'BEG', 'MAI', 'DUN', 'MIN', 'LEO', 'MON', 'BEN', 'GOE', 'HER', 'MIY', 'BIL', 'BOY', 'FIT', 'VAR', 'SHI', 'INT', 'VIL'];
-        sprintFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else {
-        // Generic round: reverse-grid charge
-        const shuffled = [...sprintStartingGridDrivers];
-        if (shuffled.length >= 10) {
-          const p9 = shuffled[8];
-          shuffled.splice(8, 1);
-          shuffled.splice(1, 0, p9); // moves to P2
-          const p10 = shuffled[9];
-          shuffled.splice(9, 1);
-          shuffled.splice(3, 0, p10); // moves to P4
-        }
-        sprintFinishDrivers = shuffled;
-      }
-    } else {
-      if (targetRound === 8) {
-        // Monza F3 Sprint:
-        // Badoer won from grid 8 (▲ +7)! Yamakoshi P2 from grid 2! Slater stormed from grid 12 to P3 (▲ +9)!
-        // Ugochukwu grid 10 -> P4 (▲ +6)! Gładysz grid 1 -> P5 (-4).
-        const order = ['BAD', 'YAM', 'SLA', 'UGO', 'GLA', 'PIN', 'NAE', 'KAT', 'STR', 'RIV', 'CLE', 'TAP', 'COL', 'WHA', 'GIU', 'NAK', 'DAV', 'LAC', 'DEL', 'LE'];
-        sprintFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else if (targetRound === 9) {
-        // Madrid F3 Sprint:
-        // Slater charged from grid 12 to P1 (▲ +11)! Rivera P2 from grid 9 (▲ +7)! Ugochukwu P3 from grid 10 (▲ +7)!
-        const order = ['SLA', 'RIV', 'UGO', 'BAD', 'KAT', 'NAE', 'TAP', 'PIN', 'STR', 'YAM', 'CLE', 'GLA', 'COL', 'WHA', 'GIU', 'NAK', 'DEL', 'DAV', 'LAC', 'LE'];
-        sprintFinishDrivers.sort((a, b) => {
-          const ia = order.indexOf(a.code);
-          const ib = order.indexOf(b.code);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        });
-      } else {
-        const shuffled = [...sprintStartingGridDrivers];
-        if (shuffled.length >= 10) {
-          const p10 = shuffled[9];
-          shuffled.splice(9, 1);
-          shuffled.splice(1, 0, p10);
-        }
-        sprintFinishDrivers = shuffled;
-      }
-    }
-
-    const sprintPoints = series === 'f2'
-      ? [10, 8, 6, 5, 4, 3, 2, 1] // Top 8 in F2
-      : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // Top 10 in F3
-
     const totalSprintLaps = series === 'f2' ? 24 : 18;
+    const sprintPoints =
+      series === 'f2'
+        ? [10, 8, 6, 5, 4, 3, 2, 1] // Top 8 in F2
+        : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // Top 10 in F3
 
-    const sprintResults: JolpicaRaceResult[] = sprintFinishDrivers.slice(0, 20).map((d, idx) => {
-      const pos = idx + 1;
-      const grid = sprintGridMap.get(d.code) || pos;
-      const posChange = grid - pos;
-      const parts = d.name.split(' ');
-      const familyName = parts.slice(1).join(' ') || d.name;
-      const isWinner = pos === 1;
-      const carNumber = numMap[d.code] || idx + 1;
+    // Check if Sprint is pending (e.g. for future rounds)
+    const sprintSessionDate = raceEvent.sessions?.find((s) => s.name.toLowerCase().includes('sprint'))?.dateTime;
+    const sprintTimeMs = sprintSessionDate ? new Date(sprintSessionDate).getTime() : eventTime - 24 * 3600 * 1000;
+    const isSprintPending =
+      (roundConfig && roundConfig.sprint.isPending) ||
+      (!isNaN(sprintTimeMs) && sprintTimeMs > nowMs);
 
-      let status = 'Finished';
-      let laps = totalSprintLaps;
-      let timeOrStatus = '';
+    let sprintResults: JolpicaRaceResult[];
 
-      if (pos === 20) {
-        status = 'Colisión';
-        laps = totalSprintLaps - 16;
-        timeOrStatus = 'DNF';
-      } else if (isWinner) {
-        timeOrStatus = series === 'f2' ? '38:12.441' : '28:45.110';
+    if (isSprintPending) {
+      sprintResults = sprintStartingGridDrivers.slice(0, 20).map((d, idx) => {
+        const grid = idx + 1;
+        const parts = d.name.split(' ');
+        const familyName = parts.slice(1).join(' ') || d.name;
+        const carNumber = numMap[d.code] || idx + 1;
+
+        return {
+          pos: grid,
+          driverNumber: carNumber,
+          code: d.code,
+          fullName: d.name,
+          familyName,
+          teamName: d.team,
+          teamColor: d.teamColor,
+          points: 0,
+          grid,
+          posChange: 0,
+          laps: 0,
+          status: 'Parrilla confirmada',
+          timeOrStatus: 'Parrilla confirmada',
+          isWinner: false,
+          isPodium: false,
+          isFastestLap: false,
+        };
+      });
+    } else {
+      let sprintFinishCodes: string[];
+      if (roundConfig && roundConfig.sprint.finish.length > 0) {
+        sprintFinishCodes = roundConfig.sprint.finish;
       } else {
-        const gapSec = (idx * 1.482 + ((idx * 5) % 3) * 0.35).toFixed(3);
-        timeOrStatus = `+${gapSec}s`;
+        sprintFinishCodes = sprintStartingGridCodes;
+      }
+      const sprintFinishDrivers = sprintFinishCodes.map(getDriver);
+
+      const sprintDnfMap = new Map<string, { status: string; lap: number }>();
+      if (roundConfig?.sprint.dnfs) {
+        for (const dnf of roundConfig.sprint.dnfs) {
+          sprintDnfMap.set(dnf.code, dnf);
+        }
       }
 
-      const isFastestLap = pos === 3; // P3 sets fastest lap in Sprint
-      const fastestLapTime = isFastestLap ? (series === 'f2' ? '1:33.205' : '1:39.020') : undefined;
+      const flCode = roundConfig?.sprint.fastestLap.code || sprintFinishCodes[0];
+      const flTime = roundConfig?.sprint.fastestLap.time || (series === 'f2' ? '1:33.205' : '1:39.020');
       const sprintPtsCutoff = series === 'f2' ? 8 : 10;
-      const points = (sprintPoints[idx] || 0) + (isFastestLap && pos <= sprintPtsCutoff ? 1 : 0);
 
-      return {
-        pos,
-        driverNumber: carNumber,
-        code: d.code,
-        fullName: d.name,
-        familyName,
-        teamName: d.team,
-        teamColor: d.teamColor,
-        points,
-        grid,
-        posChange,
-        laps,
-        status,
-        timeOrStatus,
-        isWinner,
-        isPodium: pos <= 3,
-        isFastestLap,
-        fastestLapTime,
-      };
-    });
+      sprintResults = sprintFinishDrivers.slice(0, 20).map((d, idx) => {
+        const pos = idx + 1;
+        const grid = sprintGridMap.get(d.code) || pos;
+        const posChange = grid - pos;
+        const parts = d.name.split(' ');
+        const familyName = parts.slice(1).join(' ') || d.name;
+        const isWinner = pos === 1;
+        const carNumber = numMap[d.code] || idx + 1;
+        const dnf = sprintDnfMap.get(d.code);
+
+        let status = 'Finished';
+        let laps = totalSprintLaps;
+        let timeOrStatus = '';
+
+        if (dnf) {
+          status = dnf.status;
+          laps = dnf.lap;
+          timeOrStatus = 'DNF';
+        } else if (isWinner) {
+          timeOrStatus = roundConfig?.sprint.time || (series === 'f2' ? '35:28.014' : '26:14.305');
+        } else {
+          timeOrStatus = roundConfig?.sprint.gaps[pos - 2] || `+${(idx * 1.52 + (idx % 3) * 0.3).toFixed(3)}s`;
+        }
+
+        const isFastestLap = d.code === flCode;
+        const fastestLapTime = isFastestLap ? flTime : undefined;
+        const points =
+          (dnf ? 0 : sprintPoints[idx] || 0) +
+          (isFastestLap && pos <= sprintPtsCutoff ? 1 : 0);
+
+        return {
+          pos,
+          driverNumber: carNumber,
+          code: d.code,
+          fullName: d.name,
+          familyName,
+          teamName: d.team,
+          teamColor: d.teamColor,
+          points,
+          grid,
+          posChange,
+          laps,
+          status,
+          timeOrStatus,
+          isWinner,
+          isPodium: pos <= 3 && !dnf,
+          isFastestLap,
+          fastestLapTime,
+        };
+      });
+    }
 
     const featureFastest = featureResults.find((r) => r.isFastestLap) || featureResults[0];
     const sprintFastest = sprintResults.find((r) => r.isFastestLap) || sprintResults[0];
@@ -1140,7 +1110,7 @@ export class JuniorSeriesClient {
         driverName: sprintFastest.fullName,
         teamName: sprintFastest.teamName,
         time: sprintFastest.fastestLapTime || (series === 'f2' ? '1:33.205' : '1:39.020'),
-        lap: 11,
+        lap: roundConfig?.sprint.fastestLap.lap || 11,
       },
     };
 
@@ -1152,9 +1122,18 @@ export class JuniorSeriesClient {
         driverName: featureFastest.fullName,
         teamName: featureFastest.teamName,
         time: featureFastest.fastestLapTime || (series === 'f2' ? '1:32.410' : '1:38.105'),
-        lap: 19,
+        lap: roundConfig?.feature.fastestLap.lap || 19,
       },
     };
+
+    const winnerDriver = isFeaturePending
+      ? null
+      : {
+          code: featureResults[0].code,
+          fullName: featureResults[0].fullName,
+          teamName: featureResults[0].teamName,
+          time: featureResults[0].timeOrStatus,
+        };
 
     return {
       round: targetRound,
@@ -1165,12 +1144,7 @@ export class JuniorSeriesClient {
       date: raceEvent.raceDateTime,
       series,
       results: featureResults,
-      winner: {
-        code: featureResults[0].code,
-        fullName: featureResults[0].fullName,
-        teamName: featureResults[0].teamName,
-        time: featureResults[0].timeOrStatus,
-      },
+      winner: winnerDriver as any,
       fastestLap: featureSession.fastestLap,
       sprintRace: sprintSession,
       featureRace: featureSession,
