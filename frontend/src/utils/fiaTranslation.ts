@@ -1,4 +1,5 @@
 import type { DriverLive } from '../types/f1';
+import { translateSessionName } from './sessionTranslation';
 
 export function formatMessageTime(timeStr?: string): string {
   if (!timeStr) return '--:--:--';
@@ -233,6 +234,42 @@ export function translateFIAMessage(raw?: string, drivers?: DriverLive[], lang: 
     text = text.replace(
       /CAR (\d+)(?:\s*\(([A-Z]+)\))?\s*-\s*(.*)/gi,
       (_, num, code, rest) => `${resolveDriverSurname(num, code, drivers)} - ${rest.trim()}`
+    );
+    text = text.replace(
+      /GRILLA DE SALIDA OFICIAL • (.*)/gi,
+      (_, session) => `OFFICIAL STARTING GRID • ${translateSessionName(session, 'en').toUpperCase()}`
+    );
+    text = text.replace(
+      /ACTIVIDAD EN PISTA PROGRAMADA PARA LAS (\d{1,2}:\d{2}) HS \(HORA ARGENTINA\)/gi,
+      (_, time) => `ON-TRACK ACTIVITY SCHEDULED FOR ${time} (ARGENTINA TIME)`
+    );
+    text = text.replace(
+      /BANDERA A CUADROS • CARRERA FINALIZADA \((.*?)\)/gi,
+      (_, loc) => `CHEQUERED FLAG • RACE FINISHED (${loc})`
+    );
+    text = text.replace(
+      /GANADOR OFICIAL: AUTO (\d+)(?:\s*\(([A-Z]+)\))?/gi,
+      (_, num, code) => `OFFICIAL WINNER: CAR ${num}${code ? ` (${code})` : ''}`
+    );
+    text = text.replace(
+      /INICIO DE SESIÓN - SEMÁFORO EN VERDE EN PIT EXIT \((.*?)\)/gi,
+      (_, loc) => `SESSION START - GREEN LIGHT AT PIT EXIT (${loc})`
+    );
+    text = text.replace(
+      /PISTA LIBRE - SECTOR (\d+) \((.*?)\)/gi,
+      (_, sector, loc) => `TRACK CLEAR - SECTOR ${sector} (${loc})`
+    );
+    text = text.replace(
+      /AUTO (\d+)\s*\((.*?)\)\s*-\s*TIEMPO VÁLIDO EN EL TOP 10/gi,
+      (_, num, code) => `CAR ${num} (${code}) - VALID TIME IN TOP 10`
+    );
+    text = text.replace(
+      /BANDERA VERDE - REINICIO DE ACTIVIDAD EN PISTA \((.*?)\)/gi,
+      (_, loc) => `GREEN FLAG - TRACK ACTIVITY RESUMED (${loc})`
+    );
+    text = text.replace(
+      /BANDERA ROJA - SESIÓN DETENIDA \((.*?)\)/gi,
+      (_, loc) => `RED FLAG - SESSION SUSPENDED (${loc})`
     );
     return text;
   }

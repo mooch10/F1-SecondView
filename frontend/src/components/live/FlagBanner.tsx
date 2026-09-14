@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, CheckCircle2, Clock, Flag, ShieldAlert } from 'lucide-react';
 import type { FlagStatus, SessionLive } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { translateSessionName } from '../../utils/sessionTranslation';
 
 interface FlagBannerProps {
   session: SessionLive | null;
@@ -204,9 +205,9 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
               ? (lang === 'es' ? 'QUALY' : 'QUALIFYING')
               : session.sessionType === 'Practice'
               ? (lang === 'es' ? 'PRÁCTICA LIBRE' : 'FREE PRACTICE')
-              : session.sessionName && session.sessionName !== 'Gran Premio'
-              ? session.sessionName
-              : 'GRAND PRIX'}
+              : session.sessionName
+              ? translateSessionName(session.sessionName, lang).toUpperCase()
+              : (lang === 'es' ? 'GRAN PREMIO' : 'GRAND PRIX')}
           </h1>
         </div>
 

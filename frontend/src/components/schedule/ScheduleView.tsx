@@ -13,6 +13,7 @@ import { fetchRaceResultsByRound, fetchSchedule } from '../../services/api';
 import type { JolpicaRace, JolpicaRaceDetail } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
+import { translateSessionName } from '../../utils/sessionTranslation';
 
 export const ScheduleView: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -136,19 +137,7 @@ export const ScheduleView: React.FC = () => {
     }
   };
 
-  const translateSessionName = (name: string) => {
-    if (lang === 'es') return name;
-    const map: Record<string, string> = {
-      'Carrera': 'Race',
-      'Clasificación': 'Qualifying',
-      'Práctica 1': 'Practice 1',
-      'Práctica 2': 'Practice 2',
-      'Práctica 3': 'Practice 3',
-      'Sprint': 'Sprint',
-      'Clasificación Sprint': 'Sprint Shootout',
-    };
-    return map[name] || name;
-  };
+  const translateSession = (name: string) => translateSessionName(name, lang);
 
   if (loading) {
     return (
@@ -401,7 +390,9 @@ export const ScheduleView: React.FC = () => {
                                       }`}
                                       style={selectedSubSession === 'feature' ? { backgroundColor: theme.primary } : undefined}
                                     >
-                                      Feature Race
+                                      {series === 'f1'
+                                        ? (lang === 'es' ? 'Carrera Principal' : 'Grand Prix')
+                                        : (lang === 'es' ? 'Carrera Principal' : 'Feature Race')}
                                     </button>
                                     <button
                                       type="button"
@@ -413,7 +404,7 @@ export const ScheduleView: React.FC = () => {
                                       }`}
                                       style={selectedSubSession === 'sprint' ? { backgroundColor: theme.primary } : undefined}
                                     >
-                                      Sprint Race
+                                      {lang === 'es' ? 'Carrera Sprint' : 'Sprint Race'}
                                     </button>
                                   </div>
                                 )}
@@ -576,7 +567,7 @@ export const ScheduleView: React.FC = () => {
                                   : undefined
                               }
                             >
-                              <span className="font-semibold uppercase">{translateSessionName(s.name)}</span>
+                              <span className="font-semibold uppercase">{translateSession(s.name)}</span>
                               <div className="flex items-center gap-2 tabular-nums">
                                 <span className="text-zinc-400 text-[11px]">
                                   {formatLocalDate(s.dateTime)}

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { MiniSectorStatus } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface MiniSectorsBarProps {
   segments?: {
@@ -18,6 +19,7 @@ export const MiniSectorsBar: React.FC<MiniSectorsBarProps> = ({
   segments,
   detailed = false,
 }) => {
+  const { t } = useLanguage();
   const getSegmentClass = (status: MiniSectorStatus) => {
     switch (status) {
       case 'purple':
@@ -88,16 +90,16 @@ export const MiniSectorsBar: React.FC<MiniSectorsBarProps> = ({
   return (
     <div className="flex flex-col gap-1.5 w-full bg-[#131722] border border-white/[0.06] rounded-lg p-2.5">
       <div className="flex items-center justify-between text-[9px] font-mono text-zinc-400 font-bold uppercase tracking-wider mb-0.5">
-        <span>Mini-Sectores Telemetría en Vivo</span>
+        <span>{t.live.miniSectors.title}</span>
         <div className="flex items-center gap-2 text-[8px]">
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> Récord Sesión
+            <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> {t.live.miniSectors.sessionRecord}
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> Personal
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> {t.live.miniSectors.personal}
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" /> Sin Mejora
+            <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" /> {t.live.miniSectors.noImprovement}
           </span>
         </div>
       </div>

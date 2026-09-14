@@ -777,7 +777,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
                       {lang === 'es' ? 'Diferencia' : 'Gap'}
                     </span>
                     <span className="font-bold text-emerald-400 tabular-nums">
-                      {selectedDriver.gap || 'LÍDER'}
+                      {selectedDriver.gap || (lang === 'es' ? 'LÍDER' : 'LEADER')}
                     </span>
                   </div>
 

@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeroViewProps {
   onEnter: () => void;
 }
 
 export const HeroView: React.FC<HeroViewProps> = ({ onEnter }) => {
+  const { t } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isExiting, setIsExiting] = useState(false);
 
@@ -225,12 +227,12 @@ export const HeroView: React.FC<HeroViewProps> = ({ onEnter }) => {
           {/* Subtle button accent line glow */}
           <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent group-hover:via-white/80 transition-opacity" />
 
-          <span className="tracking-[0.2em]">Ingresar</span>
+          <span className="tracking-[0.2em]">{t.hero.enter}</span>
           <span className="text-[#E10600] group-hover:translate-x-1 transition-transform font-mono font-bold">→</span>
         </button>
 
         <p className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase text-center">
-          Telemetría · Fechas · Historial · F1 / F2 / F3
+          {t.hero.subtitle}
         </p>
       </footer>
     </div>

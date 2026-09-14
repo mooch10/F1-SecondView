@@ -717,7 +717,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         {d.isFastestLap && (
                           <span className="text-[8px] sm:text-[9px] font-bold text-purple-400 uppercase tracking-tighter">
                             <span className="hidden sm:inline">{t.live.table.fastestLap}</span>
-                            <span className="sm:hidden">V. RÁPIDA</span>
+                            <span className="sm:hidden">{t.live.table.fastestLapShort}</span>
                           </span>
                         )}
                       </div>

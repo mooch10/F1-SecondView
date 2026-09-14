@@ -239,7 +239,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             >
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
-                  PILOTO A <ChevronDown className="w-2.5 h-2.5 text-zinc-500" />
+                  {lang === 'es' ? 'PILOTO A' : 'DRIVER A'} <ChevronDown className="w-2.5 h-2.5 text-zinc-500" />
                 </span>
                 <span className="font-mono text-xs font-black text-amber-300">
                   {driverA ? `P${driverA.pos}` : '-'}
@@ -283,7 +283,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             >
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
-                  PILOTO B <ChevronDown className="w-2.5 h-2.5 text-zinc-500" />
+                  {lang === 'es' ? 'PILOTO B' : 'DRIVER B'} <ChevronDown className="w-2.5 h-2.5 text-zinc-500" />
                 </span>
                 <span className="font-mono text-xs font-black text-amber-300">
                   {driverB ? `P${driverB.pos}` : '-'}

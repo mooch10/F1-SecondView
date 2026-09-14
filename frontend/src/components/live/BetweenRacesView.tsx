@@ -10,6 +10,7 @@ import {
 import { fetchScheduleDetails } from '../../services/api';
 import type { JolpicaRace, LastRacePodium } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { translateSessionName } from '../../utils/sessionTranslation';
 
 interface BetweenRacesViewProps {
   onSwitchToLiveTiming?: () => void;
@@ -88,19 +89,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
     }
   };
 
-  const translateSessionName = (name: string) => {
-    if (lang === 'es') return name;
-    const map: Record<string, string> = {
-      'Carrera': 'Race',
-      'Clasificación': 'Qualifying',
-      'Práctica 1': 'Practice 1',
-      'Práctica 2': 'Practice 2',
-      'Práctica 3': 'Practice 3',
-      'Sprint': 'Sprint',
-      'Clasificación Sprint': 'Sprint Shootout',
-    };
-    return map[name] || name;
-  };
+  const translateSession = (name: string) => translateSessionName(name, lang);
 
   if (loading) {
     return (
@@ -206,12 +195,12 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                   <div
                     key={idx}
                     className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono gap-2 ${
-                      s.name === 'Carrera'
+                      s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')
                         ? 'bg-[#1C2230] border-l-2 border-l-[#E10600] border-t border-b border-r border-white/[0.08] text-white font-bold'
                         : 'bg-[#0B0E14] border border-white/[0.08] text-zinc-400'
                     }`}
                   >
-                    <span className="font-semibold uppercase truncate">{translateSessionName(s.name)}</span>
+                    <span className="font-semibold uppercase truncate">{translateSession(s.name)}</span>
                     <div className="flex items-center gap-1.5 sm:gap-2 tabular-nums shrink-0">
                       <span className="text-zinc-400 text-[10px] sm:text-[11px] whitespace-nowrap">
                         {formatLocalDate(s.dateTime)}

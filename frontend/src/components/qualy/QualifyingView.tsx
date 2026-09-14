@@ -22,6 +22,7 @@ import { MiniSectorsBar } from './MiniSectorsBar';
 import { SectorPill } from './SectorPill';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
+import { translateSessionName } from '../../utils/sessionTranslation';
 
 function parseLapDuration(lapStr?: string): number | null {
   if (!lapStr || lapStr === '-' || lapStr.includes('NO') || lapStr.includes('---')) return null;
@@ -163,7 +164,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         const dur = d.q2Duration;
         const gap =
           idx === 0
-            ? 'LÍDER'
+            ? (lang === 'es' ? 'LÍDER' : 'LEADER')
             : leaderDur !== null && dur !== null && typeof dur === 'number'
               ? `+${(dur - leaderDur).toFixed(3)}`
               : '- - -';
@@ -193,7 +194,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
       const dur = d.q1Duration;
       const gap =
         idx === 0
-          ? 'LÍDER'
+          ? (lang === 'es' ? 'LÍDER' : 'LEADER')
           : leaderDur !== null && dur !== null && typeof dur === 'number'
             ? `+${(dur - leaderDur).toFixed(3)}`
             : '- - -';
@@ -269,7 +270,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         displayTime: item.d.q2 || '',
         displayGap:
           idx === 0
-            ? 'LÍDER'
+            ? (lang === 'es' ? 'LÍDER' : 'LEADER')
             : leaderDur !== null
               ? `+${(item.dur - leaderDur).toFixed(3)}`
               : '- - -',
@@ -293,7 +294,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
       displayTime: item.d.q1 || '',
       displayGap:
         idx === 0
-          ? 'LÍDER'
+          ? (lang === 'es' ? 'LÍDER' : 'LEADER')
           : leaderDur !== null
             ? `+${(item.dur - leaderDur).toFixed(3)}`
             : '- - -',
@@ -339,14 +340,20 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
     return (
       <div
         className="inline-flex items-center gap-1 font-mono text-[10px] font-bold select-none"
-        title={`Compuesto ${tyre.compound} (${tyre.laps} vueltas)`}
+        title={
+          lang === 'es'
+            ? `Compuesto ${tyre.compound} (${tyre.laps} vueltas)`
+            : `Pirelli ${tyre.compound} Compound (${tyre.laps} laps)`
+        }
       >
         <span
           className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-black shrink-0 ${ringClass}`}
         >
           {letter}
         </span>
-        <span className="text-zinc-400 tabular-nums">{tyre.laps}v</span>
+        <span className="text-zinc-400 tabular-nums">
+          {tyre.laps}{lang === 'es' ? 'v' : 'l'}
+        </span>
       </div>
     );
   };
@@ -387,7 +394,9 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase font-chakra">
-                {liveSnapshot?.session.sessionName || 'Sesión de Calificación'}
+                {liveSnapshot?.session.sessionName
+                  ? translateSessionName(liveSnapshot.session.sessionName, lang)
+                  : (lang === 'es' ? 'Sesión de Clasificación' : 'Qualifying Session')}
               </h2>
               <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-mono">
                 <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
@@ -485,13 +494,13 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
-            <div className="col-span-1 text-center">POS</div>
-            <div className="col-span-3 sm:col-span-3">PILOTO</div>
+            <div className="col-span-1 text-center">{t.qualy.headers.pos}</div>
+            <div className="col-span-3 sm:col-span-3">{t.qualy.headers.driver}</div>
             <div className="col-span-4 sm:col-span-5 text-center">
-              <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
-              <span className="sm:hidden">SECTORES</span>
+              <span className="hidden sm:inline">{t.qualy.headers.sectorsAndMini}</span>
+              <span className="sm:hidden">{t.qualy.headers.sectors}</span>
             </div>
-            <div className="col-span-4 sm:col-span-3 text-right">TIEMPO / GAP</div>
+            <div className="col-span-4 sm:col-span-3 text-right">{t.qualy.headers.timeGap}</div>
           </div>
 
           {/* Rows */}
@@ -941,7 +950,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                           </span>
                           {item.isPhaseLeader && (
                             <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight">
-                              {phaseFilter === 'ALL' || phaseFilter === 'Q3' ? 'POLE 🥇' : 'LÍDER'}
+                              {phaseFilter === 'ALL' || phaseFilter === 'Q3' ? 'POLE 🥇' : (lang === 'es' ? 'LÍDER' : 'LEADER')}
                             </span>
                           )}
                           {d.eliminatedPhase && phaseFilter === 'ALL' && (

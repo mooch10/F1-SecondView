@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SectorStatus } from '../../types/f1';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface SectorPillProps {
   sectorNumber: 1 | 2 | 3;
@@ -16,6 +17,7 @@ export const SectorPill: React.FC<SectorPillProps> = ({
   compact = false,
   showLabel = true,
 }) => {
+  const { t } = useLanguage();
   const formatSectorTime = (sec?: number | null) => {
     if (typeof sec !== 'number' || Number.isNaN(sec) || sec <= 0) return '- - -';
     return sec.toFixed(3);
@@ -84,11 +86,11 @@ export const SectorPill: React.FC<SectorPillProps> = ({
       </span>
       <span className="text-[8px] font-mono uppercase tracking-tight mt-0.5 opacity-80">
         {status === 'purple'
-          ? 'RÉCORD SESIÓN 🟣'
+          ? t.live.miniSectors.sessionRecordShort
           : status === 'green'
-          ? 'MEJORA PERSONAL 🟢'
+          ? t.live.miniSectors.personalImprovement
           : status === 'yellow'
-          ? 'SIN MEJORA 🟡'
+          ? t.live.miniSectors.noImprovementShort
           : '-'}
       </span>
     </div>
