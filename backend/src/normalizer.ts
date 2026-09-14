@@ -265,6 +265,11 @@ export function buildLiveSnapshot(
   const safeLocations = Array.isArray(rawLocations) ? rawLocations : [];
 
   const sessionType = getSessionType(session?.session_name, session?.session_type);
+  const isPastEndTime = session?.date_end
+    ? Date.now() > new Date(session.date_end).getTime() + 10 * 60 * 1000
+    : false;
+  const hasChequered = safeRaceControl.some((m) => m.message.toUpperCase().includes('CHEQUERED'));
+  const isSessionFinishedEarly = isPastEndTime || hasChequered;
   const qualifyingPhase = sessionType === 'Qualifying' ? getQualifyingPhase(safeRaceControl) : null;
   const qualyBoundaries =
     sessionType === 'Qualifying' ? getQualifyingPhaseBoundaries(safeRaceControl) : undefined;
@@ -429,45 +434,53 @@ export function buildLiveSnapshot(
     const driverMaxLap =
       driverLaps.length > 0 ? Math.max(...driverLaps.map((l) => l.lap_number)) : 0;
 
-    // DNF detection: Only if car is explicitly retired, stopped on track, had incident,
-    // or driver is in pits and stopped recording laps >= 10 laps behind leader while race continues.
-    // Lapped/rezagado cars that are still actively circulating are NEVER marked DNF.
-    const driverRc = safeRaceControl.find((m) => {
+    // DNF detection: Only if car is explicitly retired/stopped on track without completing distance,
+    // or driver stopped recording laps >= 8 laps behind leader while race continues.
+    // In accordance with FIA Sporting Regulations, cars completing >= 90% distance or within 2 laps of leader are NEVER marked DNF.
+    const acronym = driver.name_acronym ? driver.name_acronym.trim().toUpperCase() : '';
+    const carRegex = new RegExp(`\\bCARS?\\s+${num}\\b|\\(${acronym}\\)`, 'i');
+
+    const retirementRc = safeRaceControl.find((m) => {
+      if (!carRegex.test(m.message)) return false;
       const msg = m.message.toUpperCase();
       return (
-        msg.includes(`CAR ${num}`) ||
-        msg.includes(`CARS ${num}`) ||
-        (driver.name_acronym && msg.includes(driver.name_acronym.toUpperCase()))
+        msg.includes('STOPPED') ||
+        msg.includes('RETIRED') ||
+        msg.includes('OUT OF THE RACE') ||
+        msg.includes('RETIREMENT')
       );
     });
 
-    const isRcRetired = Boolean(
-      driverRc &&
-        (driverRc.message.toUpperCase().includes('STOPPED') ||
-          driverRc.message.toUpperCase().includes('RETIRED') ||
-          driverRc.message.toUpperCase().includes('OUT OF THE RACE') ||
-          driverRc.message.toUpperCase().includes('COLLISION') ||
-          driverRc.message.toUpperCase().includes('ACCIDENT')),
-    );
+    const completedLeaderDistance =
+      maxLapNumber > 0 && driverMaxLap >= Math.floor(maxLapNumber * 0.9);
+    const isActivelyCircling =
+      sessionType === 'Race' && maxLapNumber > 0 && maxLapNumber - driverMaxLap <= 2;
 
-    const isLongStoppedInPit =
-      sessionType === 'Race' &&
-      maxLapNumber >= 15 &&
-      maxLapNumber - driverMaxLap >= 10 &&
-      latestLap?.is_pit_out_lap === false;
-
-    const isDnf = isRcRetired || isLongStoppedInPit;
+    let isDnf = false;
+    if (sessionType === 'Race') {
+      if (completedLeaderDistance || isActivelyCircling) {
+        isDnf = false;
+      } else if (retirementRc) {
+        isDnf = true;
+      } else if (
+        maxLapNumber >= 15 &&
+        maxLapNumber - driverMaxLap >= 8 &&
+        (!latestLap || !latestLap.is_pit_out_lap)
+      ) {
+        isDnf = true;
+      }
+    }
 
     let retirementReason: string | undefined;
     if (isDnf) {
-      if (driverRc) {
-        const msg = driverRc.message.toUpperCase();
-        if (msg.includes('COLLISION') || msg.includes('INCIDENT')) {
-          retirementReason = 'Colisión / Daños';
-        } else if (msg.includes('STOPPED')) {
+      if (retirementRc) {
+        const msg = retirementRc.message.toUpperCase();
+        if (msg.includes('STOPPED')) {
           retirementReason = 'Detenido en pista';
         } else if (msg.includes('MECHANICAL') || msg.includes('ENGINE')) {
           retirementReason = 'Fallo mecánico';
+        } else if (msg.includes('COLLISION') || msg.includes('DAMAGE')) {
+          retirementReason = 'Colisión / Daños';
         } else {
           retirementReason = 'Abandono';
         }
@@ -476,10 +489,22 @@ export function buildLiveSnapshot(
       }
     }
 
-    const driverStatus: DriverStatus = isDnf ? 'DNF' : latestLap?.is_pit_out_lap ? 'PIT' : 'ACTIVE';
+    const isPit = !isDnf && !isSessionFinishedEarly && Boolean(latestLap?.is_pit_out_lap);
+    const driverStatus: DriverStatus = isDnf ? 'DNF' : isPit ? 'PIT' : 'ACTIVE';
 
     const isLeader = pos === 1;
-    const gap = isDnf ? 'RET' : formatGap(intervalData?.gap_to_leader, isLeader);
+    let gap = '- - -';
+    if (isDnf) {
+      gap = 'RET';
+    } else if (isLeader) {
+      gap = 'LEADER';
+    } else if (sessionType === 'Race' && maxLapNumber - driverMaxLap > 0) {
+      const lapsDown = maxLapNumber - driverMaxLap;
+      gap = lapsDown === 1 ? '+1 LAP' : `+${lapsDown} LAPS`;
+    } else {
+      gap = formatGap(intervalData?.gap_to_leader, isLeader);
+    }
+
     const intervalStr = isDnf
       ? 'RET'
       : isLeader
@@ -610,7 +635,7 @@ export function buildLiveSnapshot(
       penaltySeconds,
       tyre: tyreInfo,
       pitStops,
-      inPit: latestLap?.is_pit_out_lap || false,
+      inPit: isPit,
       status: driverStatus,
       retiredLap: isDnf ? driverMaxLap : undefined,
       retirementReason,
@@ -725,19 +750,23 @@ export function buildLiveSnapshot(
       }
     });
   } else {
-    // Race: Sort active drivers by position, DNF drivers at the end
+    // Race: Sort active drivers by position, DNF drivers at the end ordered by laps completed
     drivers.sort((a, b) => {
       if (a.status === 'DNF' && b.status !== 'DNF') return 1;
       if (a.status !== 'DNF' && b.status === 'DNF') return -1;
+      if (a.status === 'DNF' && b.status === 'DNF') {
+        const aLaps = a.retiredLap || 0;
+        const bLaps = b.retiredLap || 0;
+        if (aLaps !== bLaps) return bLaps - aLaps;
+        return a.pos - b.pos;
+      }
       return a.pos - b.pos;
     });
 
-    // Re-index positions for active drivers
-    let currentActivePos = 1;
+    // Re-index all positions
+    let currentPos = 1;
     for (const d of drivers) {
-      if (d.status !== 'DNF') {
-        d.pos = currentActivePos++;
-      }
+      d.pos = currentPos++;
     }
   }
 
@@ -763,11 +792,6 @@ export function buildLiveSnapshot(
   }
 
   const totalCircuitLaps = sessionType === 'Race' ? getCircuitTotalLaps(session, maxLapNumber) : 0;
-
-  // Check if session has passed its scheduled end time
-  const isPastEndTime = session?.date_end
-    ? Date.now() > new Date(session.date_end).getTime() + 10 * 60 * 1000
-    : false;
 
   const isRaceFinished =
     sessionType === 'Race' &&
