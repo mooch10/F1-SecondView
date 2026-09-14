@@ -295,7 +295,11 @@ export function generateUniversalLiveSnapshot(
   const calculatedCurrentLap = isQualy || isNotStarted
     ? 0
     : Math.max(1, Math.min(circuit.totalLaps, Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps)));
-  const isRaceFinished = isRaceSession && (calculatedCurrentLap >= circuit.totalLaps || activeSession.progressPercentage >= 100);
+  const isRaceFinished =
+    isRaceSession &&
+    (activeSession.status === 'FINISHED' ||
+      calculatedCurrentLap >= circuit.totalLaps ||
+      activeSession.progressPercentage >= 100);
 
   const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
@@ -504,7 +508,7 @@ export function generateUniversalLiveSnapshot(
     circuit: race.circuitName,
     status: isRaceFinished ? 'FINISHED' : activeSession.status,
     flag: isRaceFinished ? 'CHEQUERED' : activeSession.flag,
-    currentLap: calculatedCurrentLap,
+    currentLap: isRaceFinished ? circuit.totalLaps : calculatedCurrentLap,
     totalLaps: circuit.totalLaps,
     progressPercentage: isRaceFinished ? 100 : activeSession.progressPercentage,
     timestamp: nowSec,

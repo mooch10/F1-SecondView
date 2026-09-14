@@ -380,7 +380,7 @@ const F2_FALLBACK_SCHEDULE: JolpicaRace[] = [
       { name: 'Sprint Race', dateTime: '2026-09-12T12:15:00Z' },
       { name: 'Feature Race', dateTime: '2026-09-13T09:30:00Z' },
     ],
-    isNext: true,
+    isNext: false,
   },
   {
     round: 12,
@@ -393,7 +393,7 @@ const F2_FALLBACK_SCHEDULE: JolpicaRace[] = [
       { name: 'Sprint Race', dateTime: '2026-09-25T10:15:00Z' },
       { name: 'Feature Race', dateTime: '2026-09-26T07:35:00Z' },
     ],
-    isNext: false,
+    isNext: true,
   },
   {
     round: 13,
@@ -816,7 +816,7 @@ export class JuniorSeriesClient {
       return cached.data;
     }
 
-    const detail = this.buildAuthenticRoundDetail(series, targetRound, raceEvent, year);
+    const detail = this.buildAuthenticRoundDetail(series, targetRound, raceEvent, year, roundParam === 'last');
     this.raceDetailCache.set(cacheKey, { timestamp: Date.now(), data: detail });
     return detail;
   }
@@ -826,6 +826,7 @@ export class JuniorSeriesClient {
     targetRound: number,
     raceEvent: JolpicaRace,
     year: number,
+    isLastRound = false,
   ): JuniorRaceDetail {
     const allDrivers = series === 'f2' ? F2_FALLBACK_DRIVERS : F3_FALLBACK_DRIVERS;
     const numMap = series === 'f2' ? F2_DRIVER_NUMBERS : F3_DRIVER_NUMBERS;
@@ -864,8 +865,13 @@ export class JuniorSeriesClient {
     const nowMs = Date.now();
     const eventTime = new Date(raceEvent.raceDateTime).getTime();
     const isFeaturePending =
-      (roundConfig && roundConfig.feature.isPending) ||
-      (!isNaN(eventTime) && eventTime > nowMs);
+      isLastRound
+        ? false
+        : roundConfig && roundConfig.feature.finish.length > 0 && !roundConfig.feature.isPending
+          ? false
+          : roundConfig && roundConfig.feature.isPending
+            ? true
+            : (!isNaN(eventTime) && eventTime > nowMs);
 
     const totalFeatureLaps = series === 'f2' ? 32 : 24;
     const featurePoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -993,8 +999,13 @@ export class JuniorSeriesClient {
     const sprintSessionDate = raceEvent.sessions?.find((s) => s.name.toLowerCase().includes('sprint'))?.dateTime;
     const sprintTimeMs = sprintSessionDate ? new Date(sprintSessionDate).getTime() : eventTime - 24 * 3600 * 1000;
     const isSprintPending =
-      (roundConfig && roundConfig.sprint.isPending) ||
-      (!isNaN(sprintTimeMs) && sprintTimeMs > nowMs);
+      isLastRound
+        ? false
+        : roundConfig && roundConfig.sprint.finish.length > 0 && !roundConfig.sprint.isPending
+          ? false
+          : roundConfig && roundConfig.sprint.isPending
+            ? true
+            : (!isNaN(sprintTimeMs) && sprintTimeMs > nowMs);
 
     let sprintResults: JolpicaRaceResult[];
 

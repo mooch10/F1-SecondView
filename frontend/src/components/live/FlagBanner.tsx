@@ -9,10 +9,11 @@ interface FlagBannerProps {
 }
 
 const OFFICIAL_CIRCUIT_LAPS: Record<string, number> = {
-  madrid: 66,
-  ifema: 66,
-  valdebebas: 66,
-  spain: 66,
+  madrid: 57,
+  madring: 57,
+  ifema: 57,
+  valdebebas: 57,
+  spain: 57,
   bahrain: 57,
   sakhir: 57,
   jeddah: 50,
@@ -97,14 +98,6 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
 
   const resolvedTotalLaps =
     session.totalLaps || getCircuitOfficialLaps(session.circuit, session.location, session.country);
-  const progressPercent = Math.min(
-    100,
-    Math.max(
-      0,
-      session.progressPercentage ??
-        Math.round((session.currentLap / (resolvedTotalLaps || 1)) * 100),
-    ),
-  );
 
   const getFlagConfig = (flag: FlagStatus) => {
     switch (flag) {
@@ -170,10 +163,24 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
   const isNotStarted = session.status === 'NOT_STARTED';
   const isRaceFinished =
     session.sessionType === 'Race' &&
-    resolvedTotalLaps > 0 &&
-    session.currentLap >= resolvedTotalLaps;
+    (session.status === 'FINISHED' ||
+      session.flag === 'CHEQUERED' ||
+      (resolvedTotalLaps > 0 && session.currentLap >= resolvedTotalLaps));
   const effectiveFlag: FlagStatus =
     session.status === 'FINISHED' || isRaceFinished || isNotStarted ? 'CHEQUERED' : session.flag;
+
+  const displayLap = isRaceFinished || session.status === 'FINISHED' ? resolvedTotalLaps : session.currentLap;
+  const effectiveProgressPercent =
+    isRaceFinished || session.status === 'FINISHED'
+      ? 100
+      : Math.min(
+          100,
+          Math.max(
+            0,
+            session.progressPercentage ??
+              Math.round((displayLap / (resolvedTotalLaps || 1)) * 100),
+          ),
+        );
 
   const flagConfig = isNotStarted
     ? {
@@ -185,15 +192,18 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
       }
     : getFlagConfig(effectiveFlag);
 
+  const rawCircuit = session.circuit ? session.circuit.toUpperCase() : '';
+  const cleanCircuit = rawCircuit.includes('MADRING') ? 'CIRCUITO DE MADRID' : rawCircuit;
+
   return (
     <div className="flex flex-col gap-2">
       {/* Session Title & Digital Instrument Box */}
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm">
         <div>
-          {(session.circuit || session.country) ? (
+          {(cleanCircuit || session.country) ? (
             <div className="text-xs font-mono tracking-wider uppercase text-zinc-400">
-              {session.circuit ? session.circuit.toUpperCase() : ''}
-              {session.circuit && session.country ? ' • ' : ''}
+              {cleanCircuit}
+              {cleanCircuit && session.country ? ' • ' : ''}
               {session.country ? session.country.toUpperCase() : ''}
             </div>
           ) : null}
@@ -241,7 +251,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
                 : t.live.lap}
             </span>
             <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
-              {isRaceFinished ? resolvedTotalLaps : session.currentLap}
+              {displayLap}
               <span className="text-xs sm:text-sm font-normal text-zinc-500 ml-1">
                 / {resolvedTotalLaps}
               </span>
@@ -278,8 +288,8 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
               </span>
             ) : (
               <>
-                {session.currentLap} / {resolvedTotalLaps} {lang === 'es' ? 'VUELTAS' : 'LAPS'} •{' '}
-                <span className="text-[#FFD60A]">{progressPercent}%</span>
+                {displayLap} / {resolvedTotalLaps} {lang === 'es' ? 'VUELTAS' : 'LAPS'} •{' '}
+                <span className="text-[#FFD60A]">{effectiveProgressPercent}%</span>
               </>
             )}
           </span>
@@ -294,7 +304,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
                 : 'bg-gradient-to-r from-[#E10600] via-[#FF8000] to-[#34C759]'
             }`}
             style={{
-              width: `${isNotStarted ? 0 : progressPercent}%`,
+              width: `${isNotStarted ? 0 : effectiveProgressPercent}%`,
             }}
           />
         </div>

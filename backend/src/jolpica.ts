@@ -498,17 +498,20 @@ export class JolpicaClient {
       };
     }
 
-    const activeRound = activeSession?.race?.round;
     const liveSession = await liveStreamClient.getLiveStream();
+    const isQualyLive = !!(
+      activeSession &&
+      activeSession.status === 'IN_PROGRESS' &&
+      activeSession.sessionType === 'Qualifying'
+    );
 
     let race: RawQualifyingRace | undefined;
 
-    // If an active round is currently running or recent on the calendar
-    if (activeRound) {
-      const raw = await this.fetchRaw<RawQualifyingResponse>(`/current/${activeRound}/qualifying.json`);
+    // 1. If qualifying is LIVE IN PROGRESS right now:
+    if (isQualyLive && activeSession) {
+      const raw = await this.fetchRaw<RawQualifyingResponse>(`/current/${activeSession.race.round}/qualifying.json`);
       race = raw?.MRData?.RaceTable?.Races?.[0];
 
-      // If Ergast does not have final qualifying results yet for this active round:
       if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
         const data = generateUniversalQualifyingSession(activeSession.race, liveSession);
         this.qualifyingCache = { timestamp: Date.now(), data };
@@ -516,34 +519,26 @@ export class JolpicaClient {
       }
     }
 
+    // 2. When not live: Return the last completed qualifying session
     if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
       const raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
       race = raw?.MRData?.RaceTable?.Races?.[0];
-
-      // Guard: If /last returns an older completed race while an active round is ongoing,
-      // return the active round's qualifying session instead of falling back to the previous GP
-      if (activeSession && race && Number(race.round) < activeSession.race.round) {
-        const data = generateUniversalQualifyingSession(activeSession.race, liveSession);
-        this.qualifyingCache = { timestamp: Date.now(), data };
-        return data;
-      }
     }
 
     if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
-      if (activeSession) {
-        const data = generateUniversalQualifyingSession(activeSession.race, liveSession);
-        this.qualifyingCache = { timestamp: Date.now(), data };
-        return data;
-      }
-      let raw = await this.fetchRaw<RawQualifyingResponse>('/2026/last/qualifying.json');
-      if (!raw?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults) {
-        raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
-      }
+      const raw = await this.fetchRaw<RawQualifyingResponse>('/2026/last/qualifying.json');
       race = raw?.MRData?.RaceTable?.Races?.[0];
     }
 
-    if (!race || !race.QualifyingResults) {
-      return activeSession ? generateUniversalQualifyingSession(activeSession.race, liveSession) : null;
+    if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+      const raw = await this.fetchRaw<RawQualifyingResponse>('/2026/14/qualifying.json');
+      race = raw?.MRData?.RaceTable?.Races?.[0];
+    }
+
+    if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
+      // Fallback: Last completed race is Round 14 (Madrid)
+      const lastCompletedRace = schedule.find((r) => r.round === 14) || schedule[schedule.length - 1];
+      return lastCompletedRace ? generateUniversalQualifyingSession(lastCompletedRace, liveSession) : null;
     }
 
     const parseToSec = (str?: string): number | null => {

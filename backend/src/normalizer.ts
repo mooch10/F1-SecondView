@@ -112,10 +112,11 @@ function getLapQualifyingPhase(
 }
 
 const CIRCUIT_LAPS: Record<string, number> = {
-  madrid: 66,
-  ifema: 66,
-  valdebebas: 66,
-  spain: 66,
+  madrid: 57,
+  madring: 57,
+  ifema: 57,
+  valdebebas: 57,
+  spain: 57,
   bahrain: 57,
   sakhir: 57,
   jeddah: 50,
@@ -134,6 +135,7 @@ const CIRCUIT_LAPS: Record<string, number> = {
   villeneuve: 70,
   barcelona: 66,
   catalunya: 66,
+  montmelo: 66,
   spielberg: 71,
   red_bull_ring: 71,
   silverstone: 52,
@@ -163,7 +165,7 @@ const CIRCUIT_LAPS: Record<string, number> = {
   abu_dhabi: 58,
 };
 
-function getCircuitTotalLaps(session: OpenF1Session | null, _maxLap?: number): number {
+function getCircuitTotalLaps(session: OpenF1Session | null, maxLapNumber?: number): number {
   if (!session) return 58;
   const terms = [session.circuit_short_name, session.location, session.country_name]
     .filter(Boolean)
@@ -180,6 +182,9 @@ function getCircuitTotalLaps(session: OpenF1Session | null, _maxLap?: number): n
         return laps;
       }
     }
+  }
+  if (maxLapNumber && maxLapNumber >= 40 && maxLapNumber <= 80) {
+    return maxLapNumber;
   }
   return 58;
 }
@@ -758,19 +763,30 @@ export function buildLiveSnapshot(
   }
 
   const totalCircuitLaps = sessionType === 'Race' ? getCircuitTotalLaps(session, maxLapNumber) : 0;
-  const currentLap =
-    sessionType === 'Race' ? Math.min(maxLapNumber, totalCircuitLaps) : maxLapNumber;
-  const isRaceFinished = sessionType === 'Race' && totalCircuitLaps > 0 && maxLapNumber >= totalCircuitLaps;
 
   // Check if session has passed its scheduled end time
   const isPastEndTime = session?.date_end
     ? Date.now() > new Date(session.date_end).getTime() + 10 * 60 * 1000
     : false;
 
+  const isRaceFinished =
+    sessionType === 'Race' &&
+    (sessionState === 'FINISHED' ||
+      flag === 'CHEQUERED' ||
+      isPastEndTime ||
+      (totalCircuitLaps > 0 && maxLapNumber >= totalCircuitLaps));
+
   if (sessionState === 'FINISHED' || isPastEndTime || isRaceFinished || drivers.length === 0) {
     sessionState = 'FINISHED';
     flag = 'CHEQUERED';
   }
+
+  const currentLap =
+    sessionType === 'Race'
+      ? sessionState === 'FINISHED' && totalCircuitLaps > 0
+        ? totalCircuitLaps
+        : Math.min(maxLapNumber, totalCircuitLaps || maxLapNumber)
+      : maxLapNumber;
 
   const messages: RaceControlMessage[] = safeRaceControl
     .slice(-20)
@@ -784,9 +800,11 @@ export function buildLiveSnapshot(
 
   const progressPercentage =
     sessionType === 'Race'
-      ? totalCircuitLaps > 0
-        ? Math.min(100, Math.round((currentLap / totalCircuitLaps) * 100))
-        : 0
+      ? sessionState === 'FINISHED' || isRaceFinished
+        ? 100
+        : totalCircuitLaps > 0
+          ? Math.min(100, Math.round((currentLap / totalCircuitLaps) * 100))
+          : 0
       : sessionState === 'FINISHED'
         ? 100
         : qualifyingPhase === 'Q3'
@@ -804,6 +822,11 @@ export function buildLiveSnapshot(
       ? drivers[0].bestLapTime
       : null;
 
+  const rawCircuit = session?.circuit_short_name ?? '';
+  const circuitNameClean = rawCircuit.toLowerCase().includes('madring')
+    ? 'Circuito de Madrid'
+    : rawCircuit;
+
   const sessionLive: SessionLive = {
     sessionKey: session?.session_key ?? 0,
     sessionName: session?.session_name ?? 'Gran Premio',
@@ -813,12 +836,12 @@ export function buildLiveSnapshot(
     poleLapTime,
     location: session?.location ?? '',
     country: session?.country_name ?? '',
-    circuit: session?.circuit_short_name ?? '',
+    circuit: circuitNameClean,
     status: sessionState,
     flag,
     currentLap,
     totalLaps: totalCircuitLaps,
-    progressPercentage: isRaceFinished ? 100 : progressPercentage,
+    progressPercentage: sessionState === 'FINISHED' || isRaceFinished ? 100 : progressPercentage,
     timestamp: Math.floor(Date.now() / 1000),
   };
 

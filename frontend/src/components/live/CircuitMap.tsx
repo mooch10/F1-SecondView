@@ -328,7 +328,10 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
               </span>
             </div>
             <span className="text-[10px] text-zinc-400 font-mono">
-              {circuitName || circuitTrack?.circuitName || sessionName || 'Circuito'} •{' '}
+              {(() => {
+                const raw = circuitName || circuitTrack?.circuitName || sessionName || 'Circuito';
+                return raw.toLowerCase().includes('madring') ? 'Circuito de Madrid' : raw;
+              })()} •{' '}
               {sortedDrivers.length} {lang === 'es' ? 'autos' : 'cars'}
             </span>
           </div>
