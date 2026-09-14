@@ -106,6 +106,7 @@ export class OpenF1Client {
 
   private yearSessionsCache: { year: number; timestamp: number; data: OpenF1Session[] } | null = null;
   private liveDataCache = new Map<number, { timestamp: number; data: any }>();
+  private liveCooldownUntil = 0;
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -113,14 +114,36 @@ export class OpenF1Client {
 
   private async fetchJson<T>(endpoint: string, retries = 3): Promise<T[]> {
     const url = `${this.baseUrl}${endpoint}`;
+    const token = process.env.OPENF1_TOKEN;
 
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
+        const headers: Record<string, string> = {
+          Accept: 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(url, {
+          headers,
           signal: AbortSignal.timeout(this.timeoutMs),
         });
 
+        if (response.status === 401 || response.status === 403) {
+          console.info(
+            `[OpenF1] Endpoint ${endpoint} requires a paid subscription/token (HTTP ${response.status}). Activating live fallback.`,
+          );
+          this.liveCooldownUntil = Date.now() + 60000;
+          return [];
+        }
+
         if (response.status === 429) {
+          if (attempt === retries) {
+            console.warn(`[OpenF1] 429 Rate limit reached on ${endpoint}. Entering cooldown for 30s.`);
+            this.liveCooldownUntil = Date.now() + 30000;
+            return [];
+          }
           const waitMs = attempt * 1200;
           console.warn(
             `[OpenF1] 429 Rate limited on ${endpoint}. Waiting ${waitMs}ms (attempt ${attempt}/${retries})...`,
@@ -337,6 +360,21 @@ export class OpenF1Client {
    * to respect OpenF1's free tier rate limits (3 req/sec).
    */
   async getLiveSessionData(sessionKey: number) {
+    if (Date.now() < this.liveCooldownUntil && !process.env.OPENF1_TOKEN) {
+      return {
+        session: null,
+        drivers: [],
+        positions: [],
+        intervals: [],
+        stints: [],
+        laps: [],
+        raceControl: [],
+        weather: [],
+        locations: [],
+        trackOutline: null,
+      };
+    }
+
     const cached = this.liveDataCache.get(sessionKey);
     if (cached && Date.now() - cached.timestamp < 3500) {
       return cached.data;
