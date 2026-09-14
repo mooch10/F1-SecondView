@@ -37,7 +37,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Campos Racing',
     teamColor: '#FF7700',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/campos/niktso01/2026camposniktso01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/camposracing/niktso01/2026camposracingniktso01right.webp',
     biography:
       'El León Búlgaro, protegido de Fernando Alonso (A14 Management) y Red Bull Junior Team. Tras una sensacional campaña en F3, dio el salto a Campos Racing en F2 compitiendo por el título con victorias sobresalientes y madurez implacable.',
     biographyEn:
@@ -66,7 +66,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Invicta Racing',
     teamColor: '#FFE000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/invicta/rafcam01/2026invictarafcam01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/invictaracing/rafcam01/2026invictaracingrafcam01right.webp',
     biography:
       'Vigente campeón de la Fórmula 3 y talento estelar de la Ferrari Driver Academy. Asumió el codiciado monoplaza #1 de Invicta Racing desplegando velocidad fulgurante, poles decisivas y temple bajo presión.',
     biographyEn:
@@ -95,7 +95,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Rodin Motorsport',
     teamColor: '#9333EA',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/rodin/aledun01/2026rodinaledun01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/rodinmotorsport/aledun01/2026rodinmotorsportaledun01right.webp',
     biography:
       'Piloto irlandés respaldado por McLaren Driver Development y campeón británico de F4. Célebre por su estilo de adelantamiento intrépido, gran tenacidad rueda a rueda y maestría en lluvia.',
     biographyEn:
@@ -124,7 +124,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'PREMA Racing',
     teamColor: '#DC0000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/prema/gabmin01/2026premagabmin01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/mpmotorsport/gabmin01/2026mpmotorsportgabmin01right.webp',
     biography:
       'Especialista siciliano de Alpine Academy y subcampeón de F3. Ganador en las calles de Mónaco, aclamado por su precisión quirúrgica a una vuelta y regularidad sumando puntos en cada fecha.',
     biographyEn:
@@ -153,7 +153,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'DAMS Lucas Oil',
     teamColor: '#0099FF',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/dams/dinbeg01/2026damsdinbeg01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/damslucasoil/dinbeg01/2026damslucasoildinbeg01right.webp',
     biography:
       'Campeón europeo de FRECA y miembro de la Ferrari Driver Academy. Lidera la escudería DAMS Lucas Oil con gran solidez estratégica y victorias contundentes en trazados clásicos.',
     biographyEn:
@@ -182,7 +182,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Van Amersfoort Racing',
     teamColor: '#EA580C',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/var/noeleo01/2026varnoeleo01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/camposracing/noeleo01/2026camposracingnoeleo01right.webp',
     biography:
       'Campeón de Euroformula Open y podio recurrente de F3. El piloto regiomontano brilla en Van Amersfoort Racing por sus agresivas remontadas desde mitad de parrilla y ritmo de carrera.',
     biographyEn:
@@ -211,7 +211,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Invicta Racing',
     teamColor: '#FFE000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/invicta/kusmai01/2026invictakusmai01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/artgrandprix/kusmai01/2026artgrandprixkusmai01right.webp',
     biography:
       'Protegido de Mika Häkkinen y piloto reserva de Alpine F1 Team. Poleman consolidado en F2 con gran ritmo puro a una vuelta y férrea solidez defensiva.',
     biographyEn:
@@ -240,7 +240,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'ART Grand Prix',
     teamColor: '#0059B3',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/art/lauhoe01/2026artlauhoe01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/trident/lauvan01/2026tridentlauvan01right.webp',
     biography:
       'Piloto neerlandés de ART Grand Prix con depurada técnica de clasificación y destacada regularidad en los puntos a lo largo del calendario europeo.',
     biographyEn:
@@ -269,7 +269,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Invicta Racing',
     teamColor: '#FFE000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/invicta/josdur01/2026invictajosdur01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/invictaracing/josdur01/2026invictaracingjosdur01right.webp',
     biography:
       'Histórico ganador paraguayo de carreras en F2. Su audaz estilo de frenadas tardías y adelantamientos vibrantes le valieron la butaca del equipo campeón Invicta Racing.',
     biographyEn:
@@ -298,7 +298,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Trident',
     teamColor: '#2563EB',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/trident/marste01/2026tridentmarste01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/rodinmotorsport/marste01/2026rodinmotorsportmarste01right.webp',
     biography:
       'Joven valor noruego del programa McLaren Driver Development. Ganador de carreras en F3 y subcampeón de FRECA, célebre por su ritmo vertiginoso en curvas de alta carga.',
     biographyEn:
@@ -327,7 +327,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Hitech Pulse-Eight',
     teamColor: '#D4D4D8',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/hitech/ritmiy01/2026hitechritmiy01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/hitech/ritmiy01/2026hitechritmiy01right.webp',
     biography:
       'Doble monarca japonés de Super Formula y Super GT500. Respaldado por Toyota Gazoo Racing, aporta enorme madurez técnica, puesta a punto y constancia en Hitech Pulse-Eight.',
     biographyEn:
@@ -356,7 +356,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'ART Grand Prix',
     teamColor: '#0059B3',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/art/tasint01/2026arttasint01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/artgrandprix/tasint01/2026artgrandprixtasint01right.webp',
     biography:
       'Pionero tailandés en ascenso hacia la F1 con ART Grand Prix. Demostró gran sensibilidad en condiciones de lluvia y podios destacados en Hungaroring y Silverstone.',
     biographyEn:
@@ -385,7 +385,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Trident',
     teamColor: '#2563EB',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/trident/johben01/2026tridentjohben01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/trident/johben01/2026tridentjohben01right.webp',
     biography:
       'Subcampeón de la prestigiosa serie británica GB3. El piloto inglés se incorporó a Trident demostrando una veloz adaptación al monoplaza de F2 y solvencia en tráfico.',
     biographyEn:
@@ -414,7 +414,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Van Amersfoort Racing',
     teamColor: '#EA580C',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/var/rafvil01/2026varrafvil01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/vanamersfoortracing/rafvil01/2026vanamersfoortracingrafvil01right.webp',
     biography:
       'Experimentado piloto mexicano de monoplazas, titular de Van Amersfoort Racing con sólidas apariciones en la zona de puntos en circuitos demandantes como Spa y Monza.',
     biographyEn:
@@ -443,7 +443,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'MP Motorsport',
     teamColor: '#FF8800',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/mp/oligoe01/2026mpoligoe01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/mpmotorsport/oligoe01/2026mpmotorsportoligoe01right.webp',
     biography:
       'Miembro del Red Bull Junior Team y campeón de Euroformula Open. Destacado por su alta velocidad punta y solvencia técnica en circuitos rápidos con MP Motorsport.',
     biographyEn:
@@ -472,7 +472,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Campos Racing',
     teamColor: '#FF7700',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/campos/sebmon01/2026campossebmon01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/premaracing/sebmon01/2026premaracingsebmon01right.webp',
     biography:
       'Hijo del legendario Juan Pablo Montoya. Piloto combativo y apasionado que representa con orgullo a Colombia en Campos Racing con vistosos sobrepasos en carrera.',
     biographyEn:
@@ -501,7 +501,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Rodin Motorsport',
     teamColor: '#9333EA',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/rodin/rombil01/2026rodinrombil01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/damslucasoil/rombil01/2026damslucasoilrombil01right.webp',
     biography:
       'Campeón de Formula Regional Oceania y podio de FRECA. Piloto talentoso de Rodin Motorsport con gran fortaleza física y consistencia en el pelotón de F2.',
     biographyEn:
@@ -530,7 +530,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Hitech Pulse-Eight',
     teamColor: '#D4D4D8',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/hitech/colher01/2026hitechcolher01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/hitech/colher01/2026hitechcolher01right.webp',
     biography:
       'Ganador más joven en la historia de IndyCar y piloto de desarrollo de Cadillac F1. Se sumó a la F2 con Hitech para completar los pasos hacia la parrilla de Fórmula 1.',
     biographyEn:
@@ -559,7 +559,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'DAMS Lucas Oil',
     teamColor: '#0099FF',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/dams/emefit01/2026damsemefit01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/aixracing/emefit02/2026aixracingemefit02right.webp',
     biography:
       'Hijo del bicampeón mundial Emerson Fittipaldi y piloto de la Sauber Academy. Joven valor brasileño de destacada madurez y velocidad en pistas técnicas.',
     biographyEn:
@@ -588,7 +588,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'AIX Racing',
     teamColor: '#0284C7',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/aix/nicvar01/2026aixnicvar01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/vanamersfoortracing/nicvar01/2026vanamersfoortracingnicvar01right.webp',
     biography:
       'Ganador de las 24 Horas de Le Mans y campeón mundial FIA WEC. La estrella argentina combina su brillante experiencia en resistencia internacional con monoplazas en F2.',
     biographyEn:
@@ -617,7 +617,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'PREMA Racing',
     teamColor: '#DC0000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/prema/marboy01/2026premamarboy01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/premaracing/marboy01/2026premaracingmarboy01right.webp',
     biography:
       'Piloto español ganador de carreras en F3 y podio de Eurocup-3. Compite en PREMA Racing aportando finura de trazada y excelente cuidado de los compuestos.',
     biographyEn:
@@ -646,7 +646,7 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'AIX Racing',
     teamColor: '#0284C7',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f2/2026/aix/ciashi01/2026aixciashi01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/aixracing/ciashi01/2026aixracingciashi01right.webp',
     biography:
       'Subcampeón de Euroformula Open y piloto escocés de AIX Racing. Reconocido por su combatividad en duelos directos y constante progresión en F2.',
     biographyEn:
@@ -678,7 +678,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Trident',
     teamColor: '#2563EB',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/trident/fresla01/2026tridentfresla01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/trident/fresla01/2026tridentfresla01right.webp',
     biography:
       'Sensación británica y campeón dominante de la F4 italiana y Euro 4 con récord histórico de victorias. Lideró el asalto de Trident coronándose campeón de pilotos de la F3.',
     biographyEn:
@@ -707,7 +707,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Campos Racing',
     teamColor: '#FF7700',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/campos/thenae01/2026camposthenae01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/camposracing/thenae01/2026camposracingthenae01right-1.webp',
     biography:
       'Campeón de la F4 española y subcampeón de F3 con Campos Racing. Intrépido en frenadas y autor de múltiples victorias dominantes a lo largo del año.',
     biographyEn:
@@ -736,7 +736,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Campos Racing',
     teamColor: '#FF7700',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/campos/ugougo01/2026camposugougo01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/camposracing/ugougo01/2026camposracingugougo01right.webp',
     biography:
       'Ganador del Gran Premio de Macao (FIA FR World Cup) y protegido de McLaren Driver Development. Pilar del título de equipos de Campos Racing con victorias memorables.',
     biographyEn:
@@ -765,7 +765,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'ART Grand Prix',
     teamColor: '#0059B3',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/art/taikat01/2026arttaikat01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/artgrandprix/taikat01/2026artgrandprixtaikat01right.webp',
     biography:
       'Campeón de la F4 francesa y estrella de Honda Formula Dream Project. Deslumbró en ART Grand Prix con poles consecutivas y victoria estelar en Mónaco.',
     biographyEn:
@@ -794,7 +794,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'MP Motorsport',
     teamColor: '#FF8800',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/mp/alegiu01/2026mpalegiu01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/mpmotorsport/alegus01/2026mpmotorsportalegus01right.webp',
     biography:
       'Miembro de la Williams Racing Driver Academy y ganador múltiple en FRECA. Líder de MP Motorsport destacado por su cabeza fría y gestión de neumáticos.',
     biographyEn:
@@ -823,7 +823,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Campos Racing',
     teamColor: '#FF7700',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/campos/ernriv01/2026camposernriv01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/camposracing/ernriv01/2026camposracingernriv01right.webp',
     biography:
       'Joven promesa mexicana del Red Bull Junior Team. Triunfador de la F4 española que conquistó podios y victorias para Campos Racing en su año debut.',
     biographyEn:
@@ -852,7 +852,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Van Amersfoort Racing',
     teamColor: '#EA580C',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/var/pedcle01/2026varpedcle01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/rodinmotorsport/pedcle01/2026rodinmotorsportpedcle01right.webp',
     biography:
       'Primer campeón en la historia de la F4 brasileña. Titular de Van Amersfoort Racing con notable ritmo en mojado y victoria en Spa-Francorchamps.',
     biographyEn:
@@ -881,7 +881,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'ART Grand Prix',
     teamColor: '#0059B3',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/art/tuuktap01/2026arttuuktap01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/mpmotorsport/tuutap01/2026mpmotorsporttuutap01right-1.webp',
     biography:
       'Finés volador de la Ferrari Driver Academy y campeón de FR Middle East. Ganador en F3 célebre por su ritmo imparable en condiciones de baja adherencia.',
     biographyEn:
@@ -910,7 +910,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'PREMA Racing',
     teamColor: '#DC0000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/prema/brabad01/2026premabrabad01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/rodinmotorsport/brabad01/2026rodinmotorsportbrabad01right-1.webp',
     biography:
       'Hijo del ex-piloto de F1 Luca Badoer y miembro de McLaren Driver Development. Triunfador de carrera con PREMA Racing mostrando solvencia en circuitos veloces.',
     biographyEn:
@@ -939,7 +939,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Van Amersfoort Racing',
     teamColor: '#EA580C',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/var/hiyyam01/2026varhiyyam01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/vanamersfoortracing/hiyyam01/2026vanamersfoortracinghiyyam01right-1.webp',
     biography:
       'Subcampeón de la F4 italiana y vencedor en F3 con Van Amersfoort Racing. Piloto japonés de gran precisión en curvas enlazadas y reflejos en largadas.',
     biographyEn:
@@ -968,7 +968,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Trident',
     teamColor: '#2563EB',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/trident/noastr01/2026tridentnoastr01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/trident/noastr01/2026tridentnoastr01right.webp',
     biography:
       'Joven promesa danesa de Trident, con notables podios internacionales en FRECA y la F3. Excelente ritmo de carrera en Monza, Silverstone y Madrid.',
     biographyEn:
@@ -997,7 +997,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'MP Motorsport',
     teamColor: '#FF8800',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/mp/brudel01/2026mpbrudel01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/vanamersfoortracing/brudel01/2026vanamersfoortracingbrudel01right.webp',
     biography:
       'Piloto madrileño sobrino del ex-F1 Pedro de la Rosa y podio de Eurocup-3. Brilló en su Gran Premio de casa en Madrid y Monza sumando podios para MP Motorsport.',
     biographyEn:
@@ -1026,7 +1026,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'ART Grand Prix',
     teamColor: '#0059B3',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/art/macgla01/2026artmacgla01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/artgrandprix/macgla01/2026artgrandprixmacgla01right.webp',
     biography:
       'Talento polaco de ART Grand Prix con brillante palmarés en karting y monoplazas juveniles. Muy consistente en la zona de puntos durante toda la gira europea.',
     biographyEn:
@@ -1055,7 +1055,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'MP Motorsport',
     teamColor: '#FF8800',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/mp/matcol01/2026mpmatcol01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/mpmotorsport/matcol01/2026mpmotorsportmatcol01right.webp',
     biography:
       'Campeón de la F4 española y joya del automovilismo argentino con MP Motorsport. Destacado por su ritmo demoledor en clasificación y podios en Silverstone y Red Bull Ring.',
     biographyEn:
@@ -1084,7 +1084,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Hitech Pulse-Eight',
     teamColor: '#D4D4D8',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/hitech/jamwha01/2026hitechjamwha01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/premaracing/jamwha01/2026premaracingjamwha01right.webp',
     biography:
       'Australiano ex-Ferrari Driver Academy y subcampeón de FRECA. Líder de Hitech Pulse-Eight con gran agresividad al defender posición en curvas veloces.',
     biographyEn:
@@ -1113,7 +1113,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Hitech Pulse-Eight',
     teamColor: '#D4D4D8',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/hitech/jinnak01/2026hitechjinnak01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/hitech/jinnak01/2026hitechjinnak01right.webp',
     biography:
       'Piloto de TGR Driver Challenge de Toyota que busca el salto a la élite europea. Muy veloz en sectores técnicos y protagonista de grandes batallas con Hitech.',
     biographyEn:
@@ -1142,7 +1142,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'AIX Racing',
     teamColor: '#0284C7',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/aix/yevdav01/2026aixyevdav01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/aixracing/yevdav01/2026aixracingyevdav01right-1.webp',
     biography:
       'Histórico primer piloto de Sri Lanka en la FIA Fórmula 3. Destacado por su espíritu combativo y puntos meritorios para AIX Racing en Monza y Hungaroring.',
     biographyEn:
@@ -1171,7 +1171,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'PREMA Racing',
     teamColor: '#DC0000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/prema/enzdel01/2026premaenzdel01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/vanamersfoortracing/enzdil01/2026vanamersfoortracingenzdil01right-1.webp',
     biography:
       'Francés nacido en China y miembro de Red Bull Junior Team. Piloto agresivo y decidido de PREMA Racing, con brillantes adelantamientos en pistas estrechas.',
     biographyEn:
@@ -1200,7 +1200,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'DAMS Lucas Oil',
     teamColor: '#0099FF',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/dams/niclac01/2026damsniclac01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/damslucasoil/niclar02/2026damslucasoilniclar02right.webp',
     biography:
       'Miembro de la Alpine Academy e hijo de Roberto Lacorte. Demostró continua evolución en monoplazas sumando valiosos puntos para DAMS Lucas Oil.',
     biographyEn:
@@ -1229,7 +1229,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'PREMA Racing',
     teamColor: '#DC0000',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/prema/alepow01/2026premaalepow01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/premaracing/alepow01/2026premaracingalepow01right1.webp',
     biography:
       'Piloto jamaiquino-estadounidense protegido de Mercedes-AMG F1 y multicampeón de karting. Titular de PREMA Racing con veloces remontadas.',
     biographyEn:
@@ -1258,7 +1258,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'ART Grand Prix',
     teamColor: '#0059B3',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/art/kanle01/2026artkanle01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/artgrandprix/kanle01/2026artgrandprixkanle01right.webp',
     biography:
       'Veloz piloto japonés con podios en GB3 y F4 UAE que reforzó la escuadra de ART Grand Prix puntuando de manera regular.',
     biographyEn:
@@ -1287,7 +1287,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'DAMS Lucas Oil',
     teamColor: '#0099FF',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/dams/gerxie01/2026damsgerxie01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/damslucasoil/gerxie01/2026damslucasoilgerxie01right.webp',
     biography:
       'Ganador del Gran Premio de Macao de F4 y talento chino en ascenso continuo dentro de la alineación de DAMS Lucas Oil.',
     biographyEn:
@@ -1316,7 +1316,7 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     team: 'Trident',
     teamColor: '#2563EB',
     headshotUrl:
-      'https://res.cloudinary.com/prod-f2f3/c_fill,w_720/q_auto/v1/common/f3/2026/trident/matdep01/2026tridentmatdep01right.webp',
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/trident/matdep01/2026tridentmatdep01right-1.webp',
     biography:
       'Piloto romano de Trident con podios en FRECA y gran consistencia en tandas largas de carrera en F3.',
     biographyEn:
