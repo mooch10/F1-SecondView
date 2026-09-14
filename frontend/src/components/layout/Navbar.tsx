@@ -33,10 +33,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-12 gap-2">
           {/* Left: Brand Identity & Series Switcher (anchored together so switcher NEVER shifts) */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Return to Hero Trigger: Exclusively Logo + 'DELTA' text */}
             <button
               type="button"
               onClick={() => (onReturnToHero ? onReturnToHero() : setActiveTab('live'))}
-              className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
+              className="inline-flex items-center gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
               title="Portada / Inicio DELTA"
             >
               <div
@@ -45,15 +46,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 D
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold tracking-tight text-zinc-100 group-hover:text-white text-base uppercase italic font-sans transition-colors">
-                  DELTA
-                </span>
-                <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 group-hover:text-zinc-200 uppercase border border-white/[0.08] hidden sm:inline-block transition-colors">
-                  {theme.badge}
-                </span>
-              </div>
+              <span className="font-extrabold tracking-tight text-zinc-100 group-hover:text-white text-base uppercase italic font-sans transition-colors">
+                DELTA
+              </span>
             </button>
+
+            {/* Series Category Badge (Non-clickable, strictly outside the button) */}
+            <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 uppercase border border-white/[0.08] hidden sm:inline-block pointer-events-none select-none">
+              {theme.badge}
+            </span>
 
             {/* Series Switcher Pill Group: [ F1 | F2 | F3 ] */}
             <div className="flex items-center bg-[#131722] p-0.5 rounded-lg border border-white/[0.08] text-xs font-mono shrink-0">

@@ -259,12 +259,14 @@ export const F2_AUTHENTIC_ROUNDS: Record<number, AuthenticRoundConfig> = {
     circuit: 'Madrid',
     qualy: ['BEG', 'DUN', 'CAM', 'STE', 'TSO', 'BIL', 'HOE', 'LEO', 'MIY', 'FIT', 'DUR', 'MIN', 'MAI', 'GOE', 'MON', 'BOY', 'INT', 'VIL', 'SHI', 'BEN', 'VAR', 'HER'],
     feature: {
-      isPending: true,
-      time: 'Parrilla confirmada',
+      time: '53:14.892',
       finish: ['BEG', 'DUN', 'CAM', 'STE', 'TSO', 'BIL', 'HOE', 'LEO', 'MIY', 'FIT', 'DUR', 'MIN', 'MAI', 'GOE', 'MON', 'BOY', 'INT', 'VIL', 'SHI', 'BEN', 'VAR', 'HER'],
-      gaps: [],
-      dnfs: [],
-      fastestLap: { code: 'BEG', time: '1:44.331', lap: 0 }
+      gaps: ['+1.412s', '+3.890s', '+5.620s', '+7.110s', '+9.840s', '+12.450s', '+15.100s', '+18.420s', '+22.100s', '+26.800s', '+31.400s', '+36.200s', '+41.900s', '+47.800s', '+54.100s', '+1:01.200', '+1:08.400', '+1 Lap', '+1 Lap'],
+      dnfs: [
+        { code: 'VAR', status: 'Fallo de motor', lap: 22 },
+        { code: 'HER', status: 'Rotura de suspensión', lap: 15 }
+      ],
+      fastestLap: { code: 'BEG', time: '1:44.331', lap: 26 }
     },
     sprint: {
       time: '36:48.112',

@@ -539,86 +539,87 @@ const F3_FALLBACK_SCHEDULE: JolpicaRace[] = [
       { name: 'Sprint Race', dateTime: '2026-09-12T08:30:00Z' },
       { name: 'Feature Race', dateTime: '2026-09-13T07:30:00Z' },
     ],
-    isNext: true,
+    isNext: false,
   },
 ];
 
 const F2_FALLBACK_DRIVERS: JolpicaDriverStanding[] = [
-  { pos: 1, points: 177, wins: 4, code: 'TSO', name: 'Nikola Tsolov', nationality: 'Bulgarian', team: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 2, points: 169, wins: 3, code: 'CAM', name: 'Rafael Câmara', nationality: 'Brazilian', team: 'Invicta Racing', teamColor: '#FFE000' },
-  { pos: 3, points: 147, wins: 2, code: 'MIN', name: 'Gabriele Minì', nationality: 'Italian', team: 'PREMA Racing', teamColor: '#DC0000' },
-  { pos: 4, points: 138, wins: 2, code: 'DUN', name: 'Alex Dunne', nationality: 'Irish', team: 'Rodin Motorsport', teamColor: '#9333EA' },
-  { pos: 5, points: 124, wins: 1, code: 'LEO', name: 'Noel León', nationality: 'Mexican', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
-  { pos: 6, points: 116, wins: 1, code: 'MAI', name: 'Kush Maini', nationality: 'Indian', team: 'Invicta Racing', teamColor: '#FFE000' },
-  { pos: 7, points: 108, wins: 1, code: 'BEG', name: 'Dino Beganovic', nationality: 'Swedish', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
-  { pos: 8, points: 97, wins: 1, code: 'DUR', name: 'Joshua Dürksen', nationality: 'Paraguayan', team: 'Invicta Racing', teamColor: '#FFE000' },
-  { pos: 9, points: 86, wins: 0, code: 'HOE', name: 'Laurens van Hoepen', nationality: 'Dutch', team: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 10, points: 78, wins: 1, code: 'STE', name: 'Martinius Stenshorne', nationality: 'Norwegian', team: 'Trident', teamColor: '#2563EB' },
-  { pos: 11, points: 69, wins: 0, code: 'INT', name: 'Tasanapol Inthraphuvasak', nationality: 'Thai', team: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 12, points: 62, wins: 0, code: 'MIY', name: 'Ritomo Miyata', nationality: 'Japanese', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 1, points: 187, wins: 4, code: 'TSO', name: 'Nikola Tsolov', nationality: 'Bulgarian', team: 'Campos Racing', teamColor: '#FF7700' },
+  { pos: 2, points: 187, wins: 3, code: 'CAM', name: 'Rafael Câmara', nationality: 'Brazilian', team: 'Invicta Racing', teamColor: '#FFE000' },
+  { pos: 3, points: 158, wins: 2, code: 'DUN', name: 'Alex Dunne', nationality: 'Irish', team: 'Rodin Motorsport', teamColor: '#9333EA' },
+  { pos: 4, points: 147, wins: 2, code: 'MIN', name: 'Gabriele Minì', nationality: 'Italian', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 5, points: 134, wins: 2, code: 'BEG', name: 'Dino Beganovic', nationality: 'Swedish', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
+  { pos: 6, points: 133, wins: 1, code: 'LEO', name: 'Noel León', nationality: 'Mexican', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
+  { pos: 7, points: 116, wins: 1, code: 'MAI', name: 'Kush Maini', nationality: 'Indian', team: 'Invicta Racing', teamColor: '#FFE000' },
+  { pos: 8, points: 98, wins: 0, code: 'HOE', name: 'Laurens van Hoepen', nationality: 'Dutch', team: 'ART Grand Prix', teamColor: '#0059B3' },
+  { pos: 9, points: 97, wins: 1, code: 'DUR', name: 'Joshua Dürksen', nationality: 'Paraguayan', team: 'Invicta Racing', teamColor: '#FFE000' },
+  { pos: 10, points: 94, wins: 1, code: 'STE', name: 'Martinius Stenshorne', nationality: 'Norwegian', team: 'Trident', teamColor: '#2563EB' },
+  { pos: 11, points: 74, wins: 0, code: 'MIY', name: 'Ritomo Miyata', nationality: 'Japanese', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 12, points: 69, wins: 0, code: 'INT', name: 'Tasanapol Inthraphuvasak', nationality: 'Thai', team: 'ART Grand Prix', teamColor: '#0059B3' },
   { pos: 13, points: 55, wins: 0, code: 'BEN', name: 'John Bennett', nationality: 'British', team: 'Trident', teamColor: '#2563EB' },
   { pos: 14, points: 48, wins: 0, code: 'VIL', name: 'Rafael Villagómez', nationality: 'Mexican', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
   { pos: 15, points: 44, wins: 0, code: 'GOE', name: 'Oliver Goethe', nationality: 'German', team: 'MP Motorsport', teamColor: '#FF8800' },
   { pos: 16, points: 38, wins: 0, code: 'MON', name: 'Sebastián Montoya', nationality: 'Colombian', team: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 17, points: 34, wins: 0, code: 'HER', name: 'Colton Herta', nationality: 'American', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
-  { pos: 18, points: 27, wins: 0, code: 'BIL', name: 'Roman Bilinski', nationality: 'British-Polish', team: 'Rodin Motorsport', teamColor: '#9333EA' },
-  { pos: 19, points: 21, wins: 0, code: 'FIT', name: 'Emerson Fittipaldi Jr.', nationality: 'Brazilian', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
+  { pos: 17, points: 35, wins: 0, code: 'BIL', name: 'Roman Bilinski', nationality: 'British-Polish', team: 'Rodin Motorsport', teamColor: '#9333EA' },
+  { pos: 18, points: 34, wins: 0, code: 'HER', name: 'Colton Herta', nationality: 'American', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 19, points: 30, wins: 0, code: 'FIT', name: 'Emerson Fittipaldi Jr.', nationality: 'Brazilian', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
   { pos: 20, points: 18, wins: 0, code: 'VAR', name: 'Nico Varrone', nationality: 'Argentine', team: 'AIX Racing', teamColor: '#0284C7' },
-  { pos: 21, points: 14, wins: 0, code: 'BOY', name: 'Mari Boya', nationality: 'Spanish', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 21, points: 15, wins: 0, code: 'BOY', name: 'Mari Boya', nationality: 'Spanish', team: 'PREMA Racing', teamColor: '#DC0000' },
   { pos: 22, points: 8, wins: 0, code: 'SHI', name: 'Cian Shields', nationality: 'British', team: 'AIX Racing', teamColor: '#0284C7' },
 ];
 
 const F2_FALLBACK_CONSTRUCTORS: JolpicaConstructorStanding[] = [
-  { pos: 1, points: 266, wins: 4, name: 'Invicta Racing', teamColor: '#FFE000' },
-  { pos: 2, points: 215, wins: 4, name: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 3, points: 172, wins: 1, name: 'Van Amersfoort Racing', teamColor: '#EA580C' },
-  { pos: 4, points: 165, wins: 2, name: 'Rodin Motorsport', teamColor: '#9333EA' },
-  { pos: 5, points: 161, wins: 2, name: 'PREMA Racing', teamColor: '#DC0000' },
-  { pos: 6, points: 155, wins: 0, name: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 7, points: 133, wins: 1, name: 'Trident', teamColor: '#2563EB' },
-  { pos: 8, points: 129, wins: 1, name: 'DAMS Lucas Oil', teamColor: '#0099FF' },
-  { pos: 9, points: 98, wins: 0, name: 'MP Motorsport', teamColor: '#FF8800' },
-  { pos: 10, points: 96, wins: 0, name: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 1, points: 300, wins: 4, name: 'Invicta Racing', teamColor: '#FFE000' },
+  { pos: 2, points: 225, wins: 4, name: 'Campos Racing', teamColor: '#FF7700' },
+  { pos: 3, points: 193, wins: 2, name: 'Rodin Motorsport', teamColor: '#9333EA' },
+  { pos: 4, points: 181, wins: 1, name: 'Van Amersfoort Racing', teamColor: '#EA580C' },
+  { pos: 5, points: 167, wins: 0, name: 'ART Grand Prix', teamColor: '#0059B3' },
+  { pos: 6, points: 164, wins: 2, name: 'DAMS Lucas Oil', teamColor: '#0099FF' },
+  { pos: 7, points: 162, wins: 2, name: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 8, points: 149, wins: 1, name: 'Trident', teamColor: '#2563EB' },
+  { pos: 9, points: 108, wins: 0, name: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 10, points: 98, wins: 0, name: 'MP Motorsport', teamColor: '#FF8800' },
   { pos: 11, points: 26, wins: 0, name: 'AIX Racing', teamColor: '#0284C7' },
 ];
 
 const F3_FALLBACK_DRIVERS: JolpicaDriverStanding[] = [
-  { pos: 1, points: 141, wins: 3, code: 'SLA', name: 'Freddie Slater', nationality: 'British', team: 'Trident', teamColor: '#2563EB' },
-  { pos: 2, points: 129, wins: 2, code: 'UGO', name: 'Ugo Ugochukwu', nationality: 'American', team: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 3, points: 118, wins: 2, code: 'NAE', name: 'Théophile Naël', nationality: 'French', team: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 4, points: 98, wins: 1, code: 'RIV', name: 'Ernesto Rivera', nationality: 'Mexican', team: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 5, points: 88, wins: 1, code: 'KAT', name: 'Taito Kato', nationality: 'Japanese', team: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 6, points: 82, wins: 1, code: 'BAD', name: 'Brando Badoer', nationality: 'Italian', team: 'PREMA Racing', teamColor: '#DC0000' },
-  { pos: 7, points: 76, wins: 1, code: 'YAM', name: 'Hiyu Yamakoshi', nationality: 'Japanese', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
-  { pos: 8, points: 72, wins: 1, code: 'TAP', name: 'Tuukka Taponen', nationality: 'Finnish', team: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 9, points: 68, wins: 0, code: 'STR', name: 'Noah Strømsted', nationality: 'Danish', team: 'Trident', teamColor: '#2563EB' },
-  { pos: 10, points: 62, wins: 0, code: 'PIN', name: 'Bruno del Pino', nationality: 'Spanish', team: 'MP Motorsport', teamColor: '#FF8800' },
-  { pos: 11, points: 54, wins: 0, code: 'GLA', name: 'Maciej Gładysz', nationality: 'Polish', team: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 12, points: 48, wins: 0, code: 'CLE', name: 'Pedro Clerot', nationality: 'Brazilian', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
-  { pos: 13, points: 44, wins: 0, code: 'COL', name: 'Mattia Colnaghi', nationality: 'Argentine', team: 'MP Motorsport', teamColor: '#FF8800' },
-  { pos: 14, points: 38, wins: 0, code: 'NAK', name: 'Jin Nakamura', nationality: 'Japanese', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
-  { pos: 15, points: 35, wins: 0, code: 'WHA', name: 'James Wharton', nationality: 'Australian', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
-  { pos: 16, points: 28, wins: 0, code: 'DAV', name: 'Yevan David', nationality: 'Sri Lankan', team: 'AIX Racing', teamColor: '#0284C7' },
-  { pos: 17, points: 25, wins: 0, code: 'DEL', name: 'Enzo Deligny', nationality: 'French', team: 'PREMA Racing', teamColor: '#DC0000' },
-  { pos: 18, points: 20, wins: 0, code: 'LAC', name: 'Nicola Lacorte', nationality: 'Italian', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
-  { pos: 19, points: 16, wins: 0, code: 'LE', name: 'Kanato Le', nationality: 'Japanese', team: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 20, points: 14, wins: 0, code: 'GIU', name: 'Alessandro Giusti', nationality: 'French', team: 'MP Motorsport', teamColor: '#FF8800' },
-  { pos: 21, points: 12, wins: 0, code: 'POW', name: 'Alex Powell', nationality: 'Jamaican-American', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 1, points: 182, wins: 3, code: 'SLA', name: 'Freddie Slater', nationality: 'British', team: 'Trident', teamColor: '#2563EB' },
+  { pos: 2, points: 154, wins: 3, code: 'NAE', name: 'Théophile Naël', nationality: 'French', team: 'Campos Racing', teamColor: '#FF7700' },
+  { pos: 3, points: 139, wins: 2, code: 'UGO', name: 'Ugo Ugochukwu', nationality: 'American', team: 'Campos Racing', teamColor: '#FF7700' },
+  { pos: 4, points: 118, wins: 1, code: 'KAT', name: 'Taito Kato', nationality: 'Japanese', team: 'ART Grand Prix', teamColor: '#0059B3' },
+  { pos: 5, points: 112, wins: 1, code: 'GIU', name: 'Alessandro Giusti', nationality: 'French', team: 'MP Motorsport', teamColor: '#FF8800' },
+  { pos: 6, points: 106, wins: 1, code: 'RIV', name: 'Ernesto Rivera', nationality: 'Mexican', team: 'Campos Racing', teamColor: '#FF7700' },
+  { pos: 7, points: 104, wins: 1, code: 'CLE', name: 'Pedro Clerot', nationality: 'Brazilian', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
+  { pos: 8, points: 98, wins: 1, code: 'TAP', name: 'Tuukka Taponen', nationality: 'Finnish', team: 'ART Grand Prix', teamColor: '#0059B3' },
+  { pos: 9, points: 82, wins: 1, code: 'BAD', name: 'Brando Badoer', nationality: 'Italian', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 10, points: 76, wins: 1, code: 'YAM', name: 'Hiyu Yamakoshi', nationality: 'Japanese', team: 'Van Amersfoort Racing', teamColor: '#EA580C' },
+  { pos: 11, points: 70, wins: 0, code: 'STR', name: 'Noah Strømsted', nationality: 'Danish', team: 'Trident', teamColor: '#2563EB' },
+  { pos: 12, points: 68, wins: 0, code: 'PIN', name: 'Bruno del Pino', nationality: 'Spanish', team: 'MP Motorsport', teamColor: '#FF8800' },
+  { pos: 13, points: 54, wins: 0, code: 'GLA', name: 'Maciej Gładysz', nationality: 'Polish', team: 'ART Grand Prix', teamColor: '#0059B3' },
+  { pos: 14, points: 48, wins: 0, code: 'COL', name: 'Mattia Colnaghi', nationality: 'Argentine', team: 'MP Motorsport', teamColor: '#FF8800' },
+  { pos: 15, points: 45, wins: 0, code: 'WHA', name: 'James Wharton', nationality: 'Australian', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 16, points: 44, wins: 0, code: 'NAK', name: 'Jin Nakamura', nationality: 'Japanese', team: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 17, points: 28, wins: 0, code: 'DAV', name: 'Yevan David', nationality: 'Sri Lankan', team: 'AIX Racing', teamColor: '#0284C7' },
+  { pos: 18, points: 25, wins: 0, code: 'DEL', name: 'Enzo Deligny', nationality: 'French', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 19, points: 20, wins: 0, code: 'LAC', name: 'Nicola Lacorte', nationality: 'Italian', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
+  { pos: 20, points: 19, wins: 0, code: 'POW', name: 'Alex Powell', nationality: 'Jamaican-American', team: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 21, points: 16, wins: 0, code: 'LE', name: 'Kanato Le', nationality: 'Japanese', team: 'ART Grand Prix', teamColor: '#0059B3' },
   { pos: 22, points: 10, wins: 0, code: 'XIE', name: 'Gerrard Xie', nationality: 'Chinese', team: 'DAMS Lucas Oil', teamColor: '#0099FF' },
   { pos: 23, points: 8, wins: 0, code: 'DEP', name: 'Matteo De Palo', nationality: 'Italian', team: 'Trident', teamColor: '#2563EB' },
 ];
 
 const F3_FALLBACK_CONSTRUCTORS: JolpicaConstructorStanding[] = [
-  { pos: 1, points: 345, wins: 5, name: 'Campos Racing', teamColor: '#FF7700' },
-  { pos: 2, points: 245, wins: 3, name: 'Trident', teamColor: '#2563EB' },
-  { pos: 3, points: 192, wins: 2, name: 'ART Grand Prix', teamColor: '#0059B3' },
-  { pos: 4, points: 147, wins: 1, name: 'PREMA Racing', teamColor: '#DC0000' },
-  { pos: 5, points: 124, wins: 1, name: 'Van Amersfoort Racing', teamColor: '#EA580C' },
-  { pos: 6, points: 120, wins: 0, name: 'MP Motorsport', teamColor: '#FF8800' },
-  { pos: 7, points: 73, wins: 0, name: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
+  { pos: 1, points: 399, wins: 6, name: 'Campos Racing', teamColor: '#FF7700' },
+  { pos: 2, points: 260, wins: 3, name: 'Trident', teamColor: '#2563EB' },
+  { pos: 3, points: 228, wins: 2, name: 'ART Grand Prix', teamColor: '#0059B3' },
+  { pos: 4, points: 228, wins: 1, name: 'MP Motorsport', teamColor: '#FF8800' },
+  { pos: 5, points: 180, wins: 2, name: 'Van Amersfoort Racing', teamColor: '#EA580C' },
+  { pos: 6, points: 126, wins: 1, name: 'PREMA Racing', teamColor: '#DC0000' },
+  { pos: 7, points: 89, wins: 0, name: 'Hitech Pulse-Eight', teamColor: '#D4D4D8' },
   { pos: 8, points: 45, wins: 0, name: 'Rodin Motorsport', teamColor: '#9333EA' },
-  { pos: 9, points: 28, wins: 0, name: 'AIX Racing', teamColor: '#0284C7' },
-  { pos: 10, points: 20, wins: 0, name: 'Jenzer Motorsport', teamColor: '#16A34A' },
+  { pos: 9, points: 30, wins: 0, name: 'DAMS Lucas Oil', teamColor: '#0099FF' },
+  { pos: 10, points: 28, wins: 0, name: 'AIX Racing', teamColor: '#0284C7' },
+  { pos: 11, points: 20, wins: 0, name: 'Jenzer Motorsport', teamColor: '#16A34A' },
 ];
 
 export class JuniorSeriesClient {
@@ -649,8 +650,8 @@ export class JuniorSeriesClient {
 
     const updated = races.map((race) => {
       const raceTime = new Date(race.raceDateTime).getTime();
-      // A race event is completed only once the weekend finishes (~28 hours after Sunday race start)
-      const isPast = !isNaN(raceTime) && raceTime + 28 * 3600 * 1000 < nowMs;
+      // A race event is completed once the Sunday race window ends (~3 hours after race start)
+      const isPast = !isNaN(raceTime) && raceTime + 3 * 3600 * 1000 < nowMs;
       let isNext = false;
 
       if (!nextFound && !isPast) {
@@ -663,10 +664,6 @@ export class JuniorSeriesClient {
         isNext,
       };
     });
-
-    if (!nextFound && updated.length > 0) {
-      updated[updated.length - 1].isNext = true;
-    }
 
     return updated;
   }

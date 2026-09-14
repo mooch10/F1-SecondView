@@ -45,6 +45,8 @@ export const ScheduleView: React.FC = () => {
       const next = data.find((r) => r.isNext);
       if (next) {
         setExpandedRound(next.round);
+      } else if (data.length > 0) {
+        setExpandedRound(data[data.length - 1].round);
       }
     });
   }, [series]);
@@ -157,16 +159,24 @@ export const ScheduleView: React.FC = () => {
           style={{ borderTop: `3px solid ${theme.primary}` }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
-            <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border"
-              style={{
-                backgroundColor: `${theme.primary}20`,
-                color: theme.primary,
-                borderColor: `${theme.primary}40`,
-              }}
-            >
-              {series.toUpperCase()} • {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border"
+                style={{
+                  backgroundColor: `${theme.primary}20`,
+                  color: theme.primary,
+                  borderColor: `${theme.primary}40`,
+                }}
+              >
+                {series.toUpperCase()} • {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
+              </span>
+              {(series !== 'f1' || nextRace.sessions?.some((s) => s.name.toLowerCase().includes('sprint'))) && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  <Zap className="w-2.5 h-2.5" />
+                  <span>{t.schedule.doubleRaceFormat}</span>
+                </span>
+              )}
+            </div>
             <span className="text-[11px] text-zinc-400 font-mono">
               {t.schedule.localTime} (Argentina)
             </span>
@@ -227,6 +237,56 @@ export const ScheduleView: React.FC = () => {
         </div>
       )}
 
+      {/* Season Completed Hero Card (when all rounds have completed, e.g. F3) */}
+      {!nextRace && races.length > 0 && (
+        <div
+          className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm overflow-hidden"
+          style={{ borderTop: `3px solid ${theme.primary}` }}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border"
+              style={{
+                backgroundColor: `${theme.primary}20`,
+                color: theme.primary,
+                borderColor: `${theme.primary}40`,
+              }}
+            >
+              <Trophy className="w-3 h-3 text-amber-400" />
+              {series.toUpperCase()} • {t.schedule.seasonCompletedTitle}
+            </span>
+            <span className="text-[11px] text-zinc-400 font-mono">
+              {races.length} {t.schedule.rounds} • {lang === 'es' ? 'CAMPEONATO CONCLUIDO' : 'SEASON FINISHED'}
+            </span>
+          </div>
+
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+            {series === 'f3'
+              ? (lang === 'es' ? 'Freddie Slater • Campeón Mundial FIA F3 2026' : 'Freddie Slater • 2026 FIA F3 Champion')
+              : `${series.toUpperCase()} • ${t.schedule.seasonCompletedTitle}`}
+          </h2>
+          <p className="text-xs text-zinc-400 mt-1 font-mono">
+            {series === 'f3'
+              ? (lang === 'es'
+                  ? 'Trident Racing (182 pts) · Subcampeón: Théophile Naël (Campos Racing, 154 pts) · Campeón Constructores: Campos Racing (399 pts)'
+                  : 'Trident Racing (182 pts) · Runner-up: Théophile Naël (Campos Racing, 154 pts) · Constructors Champion: Campos Racing (399 pts)')
+              : t.schedule.seasonCompletedSubtitle}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/[0.06] text-xs font-mono">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-amber-500/30 text-amber-300 font-bold">
+              🥇 {t.schedule.driverChampion}: {series === 'f3' ? 'Freddie Slater (182 pts)' : '---'}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300">
+              🥈 {t.schedule.runnerUp}: {series === 'f3' ? 'Théophile Naël (154 pts)' : '---'}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300">
+              🏆 {t.schedule.constructorsChampion}: {series === 'f3' ? 'Campos Racing (399 pts)' : '---'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Season Races List */}
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-2.5 bg-[#131722] border-b border-white/[0.08] flex items-center justify-between text-xs font-mono font-bold text-zinc-400">
@@ -243,6 +303,7 @@ export const ScheduleView: React.FC = () => {
           {races.map((r) => {
             const isExpanded = expandedRound === r.round;
             const isPast = r.status ? r.status === 'COMPLETED' : new Date(r.raceDateTime).getTime() + 3 * 3600 * 1000 < now;
+            const isDoubleRace = series !== 'f1' || r.sessions?.some((s) => s.name.toLowerCase().includes('sprint'));
             const currentTab = activeSubTab[r.round] || (isPast ? 'results' : 'schedule');
             const detail = roundResults[r.round];
             const isLoadingDetail = loadingResultRound === r.round;
@@ -265,6 +326,16 @@ export const ScheduleView: React.FC = () => {
                         <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate min-w-0 shrink">
                           {r.raceName}
                         </span>
+                        {isDoubleRace && (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0 whitespace-nowrap"
+                            title={lang === 'es' ? 'Formato de fin de semana con Carrera Sprint y Carrera Principal' : 'Double race format weekend'}
+                          >
+                            <Zap className="w-2.5 h-2.5" />
+                            <span className="hidden sm:inline">{t.schedule.doubleRaceFormat}</span>
+                            <span className="sm:hidden">Sprint + Feature</span>
+                          </span>
+                        )}
                         {r.isNext && (
                           <span
                             className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border shrink-0 whitespace-nowrap"
@@ -549,41 +620,67 @@ export const ScheduleView: React.FC = () => {
                     {/* Schedule Tab View */}
                     {(!isPast || currentTab === 'schedule') && (
                       <div>
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
-                          <Clock className="w-3 h-3" style={{ color: theme.primary }} /> {t.schedule.sessionScheduleTitle}
-                        </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" style={{ color: theme.primary }} /> {t.schedule.sessionScheduleTitle}
+                          </span>
+                          {isDoubleRace && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                              <Zap className="w-2.5 h-2.5" />
+                              <span>{t.schedule.doubleRaceFormat}</span>
+                            </span>
+                          )}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                          {r.sessions?.map((s, idx) => (
-                            <div
-                              key={idx}
-                              className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
-                                s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')
-                                  ? 'bg-[#1C2230] border-t border-b border-r border-white/[0.08] text-white font-bold'
-                                  : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
-                              }`}
-                              style={
-                                s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')
-                                  ? { borderLeft: `3px solid ${theme.primary}` }
-                                  : undefined
-                              }
-                            >
-                              <span className="font-semibold uppercase">{translateSession(s.name)}</span>
-                              <div className="flex items-center gap-2 tabular-nums">
-                                <span className="text-zinc-400 text-[11px]">
-                                  {formatLocalDate(s.dateTime)}
-                                </span>
-                                {formatLocalTime(s.dateTime) ? (
-                                  <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
-                                    {formatLocalTime(s.dateTime)} HS
+                          {r.sessions?.map((s, idx) => {
+                            const isSprint = s.name.toLowerCase().includes('sprint');
+                            const isFeatureOrMain =
+                              s.name.toLowerCase().includes('feature') ||
+                              (!isSprint && (s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')));
+                            return (
+                              <div
+                                key={idx}
+                                className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
+                                  isFeatureOrMain || isSprint
+                                    ? 'bg-[#1C2230] border-t border-b border-r border-white/[0.08] text-white font-bold'
+                                    : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
+                                }`}
+                                style={
+                                  isFeatureOrMain || isSprint
+                                    ? { borderLeft: `3px solid ${isSprint ? '#F59E0B' : theme.primary}` }
+                                    : undefined
+                                }
+                              >
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="font-semibold uppercase truncate">{translateSession(s.name)}</span>
+                                  {isSprint && (
+                                    <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+                                      {lang === 'es' ? 'CARRERA 1' : 'RACE 1'}
+                                    </span>
+                                  )}
+                                  {isFeatureOrMain && series !== 'f1' && (
+                                    <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 shrink-0">
+                                      {lang === 'es' ? 'CARRERA 2' : 'RACE 2'}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 tabular-nums shrink-0">
+                                  <span className="text-zinc-400 text-[11px]">
+                                    {formatLocalDate(s.dateTime)}
                                   </span>
-                                ) : (
-                                  <span className="text-zinc-500 bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md text-[10px]">
-                                    {t.schedule.toConfirm}
-                                  </span>
-                                )}
+                                  {formatLocalTime(s.dateTime) ? (
+                                    <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
+                                      {formatLocalTime(s.dateTime)} HS
+                                    </span>
+                                  ) : (
+                                    <span className="text-zinc-500 bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md text-[10px]">
+                                      {t.schedule.toConfirm}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
