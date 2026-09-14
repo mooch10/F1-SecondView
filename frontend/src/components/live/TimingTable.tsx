@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Gauge, Star, X } from 'lucide-react';
 import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -7,6 +7,7 @@ import { SectorPill } from '../qualy/SectorPill';
 import { HeadToHeadModal } from './HeadToHeadModal';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
+import { computeBestSessionSectors, resolveSectorStatus } from '../../utils/sectorUtils';
 
 interface TimingTableProps {
   drivers: DriverLive[];
@@ -201,6 +202,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     }, []);
 
   const pinnedDriver = drivers.find((d) => d.driverNumber === pinnedDriverNumber) || null;
+
+  // Dynamic computation of fastest overall sector times in this session
+  const bestSectors = useMemo(() => {
+    return computeBestSessionSectors(activeDrivers);
+  }, [activeDrivers]);
 
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
@@ -564,19 +570,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
-                          status={d.sectors?.s1Status}
+                          status={resolveSectorStatus(1, d.sectors?.s1, d.sectors?.s1Status, bestSectors)}
                           compact
                         />
                         <SectorPill
                           sectorNumber={2}
                           time={d.sectors?.s2}
-                          status={d.sectors?.s2Status}
+                          status={resolveSectorStatus(2, d.sectors?.s2, d.sectors?.s2Status, bestSectors)}
                           compact
                         />
                         <SectorPill
                           sectorNumber={3}
                           time={d.sectors?.s3}
-                          status={d.sectors?.s3Status}
+                          status={resolveSectorStatus(3, d.sectors?.s3, d.sectors?.s3Status, bestSectors)}
                           compact
                         />
                       </div>
@@ -844,17 +850,17 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     <SectorPill
                       sectorNumber={1}
                       time={d.sectors?.s1}
-                      status={d.sectors?.s1Status}
+                      status={resolveSectorStatus(1, d.sectors?.s1, d.sectors?.s1Status, bestSectors)}
                     />
                     <SectorPill
                       sectorNumber={2}
                       time={d.sectors?.s2}
-                      status={d.sectors?.s2Status}
+                      status={resolveSectorStatus(2, d.sectors?.s2, d.sectors?.s2Status, bestSectors)}
                     />
                     <SectorPill
                       sectorNumber={3}
                       time={d.sectors?.s3}
-                      status={d.sectors?.s3Status}
+                      status={resolveSectorStatus(3, d.sectors?.s3, d.sectors?.s3Status, bestSectors)}
                     />
                   </div>
 

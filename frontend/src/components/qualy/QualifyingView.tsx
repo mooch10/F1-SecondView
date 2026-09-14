@@ -23,6 +23,7 @@ import { SectorPill } from './SectorPill';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 import { translateSessionName } from '../../utils/sessionTranslation';
+import { computeBestSessionSectors, resolveSectorStatus } from '../../utils/sectorUtils';
 
 function parseLapDuration(lapStr?: string): number | null {
   if (!lapStr || lapStr === '-' || lapStr.includes('NO') || lapStr.includes('---')) return null;
@@ -209,6 +210,11 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
       };
     });
   }, [liveDrivers, phaseFilter]);
+
+  // Dynamic computation of fastest overall sector times in this session
+  const bestSectors = useMemo(() => {
+    return computeBestSessionSectors(displayedLiveDrivers.map((item) => item.driver));
+  }, [displayedLiveDrivers]);
 
   // Official F1 Qualifying Classification for Historical Jolpica Results
   const displayedResults = useMemo(() => {
@@ -589,19 +595,19 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
-                          status={d.sectors?.s1Status}
+                          status={resolveSectorStatus(1, d.sectors?.s1, d.sectors?.s1Status, bestSectors)}
                           compact
                         />
                         <SectorPill
                           sectorNumber={2}
                           time={d.sectors?.s2}
-                          status={d.sectors?.s2Status}
+                          status={resolveSectorStatus(2, d.sectors?.s2, d.sectors?.s2Status, bestSectors)}
                           compact
                         />
                         <SectorPill
                           sectorNumber={3}
                           time={d.sectors?.s3}
-                          status={d.sectors?.s3Status}
+                          status={resolveSectorStatus(3, d.sectors?.s3, d.sectors?.s3Status, bestSectors)}
                           compact
                         />
                       </div>
@@ -673,17 +679,17 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
-                          status={d.sectors?.s1Status}
+                          status={resolveSectorStatus(1, d.sectors?.s1, d.sectors?.s1Status, bestSectors)}
                         />
                         <SectorPill
                           sectorNumber={2}
                           time={d.sectors?.s2}
-                          status={d.sectors?.s2Status}
+                          status={resolveSectorStatus(2, d.sectors?.s2, d.sectors?.s2Status, bestSectors)}
                         />
                         <SectorPill
                           sectorNumber={3}
                           time={d.sectors?.s3}
-                          status={d.sectors?.s3Status}
+                          status={resolveSectorStatus(3, d.sectors?.s3, d.sectors?.s3Status, bestSectors)}
                         />
                       </div>
 

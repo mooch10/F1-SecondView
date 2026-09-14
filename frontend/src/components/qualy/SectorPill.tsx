@@ -27,9 +27,9 @@ export const SectorPill: React.FC<SectorPillProps> = ({
     switch (st) {
       case 'purple':
         return {
-          container: 'bg-purple-500/20 border-purple-500/50 text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.3)]',
-          dot: 'bg-[#A855F7] shadow-[0_0_6px_rgba(168,85,247,0.8)]',
-          label: 'text-purple-300',
+          container: 'bg-purple-500/25 border-purple-400/60 text-purple-100 shadow-[0_0_10px_rgba(168,85,247,0.45)] ring-1 ring-purple-400/30',
+          dot: 'bg-[#D8B4FE] shadow-[0_0_8px_rgba(216,180,254,1)] animate-pulse',
+          label: 'text-purple-200 font-black',
         };
       case 'green':
         return {

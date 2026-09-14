@@ -301,9 +301,27 @@ export function generateUniversalLiveSnapshot(
       calculatedCurrentLap >= circuit.totalLaps ||
       activeSession.progressPercentage >= 100);
 
+  // Precompute realistic sectors breakdown with authentic car traits
+  // Leader (idx 0) excels in S1/S2, P2/P3 trade S1/S3 records
+  const precomputedSectors = sourceDrivers.map((d, idx) => {
+    const driverLapDuration = benchmarkLap + d.performanceBias;
+    const s1Bias = idx === 1 ? -0.040 : idx === 0 ? -0.020 : idx * 0.015;
+    const s2Bias = idx === 0 ? -0.050 : idx === 2 ? -0.020 : idx * 0.020;
+    const baseS1 = driverLapDuration * 0.307;
+    const baseS2 = driverLapDuration * 0.375;
+    const s1 = Number((baseS1 + s1Bias).toFixed(3));
+    const s2 = Number((baseS2 + s2Bias).toFixed(3));
+    const s3 = Number((driverLapDuration - s1 - s2).toFixed(3));
+    return { driverLapDuration, s1, s2, s3 };
+  });
+
+  const bestEngineS1 = Math.min(...precomputedSectors.map((s) => s.s1));
+  const bestEngineS2 = Math.min(...precomputedSectors.map((s) => s.s2));
+  const bestEngineS3 = Math.min(...precomputedSectors.map((s) => s.s3));
+
   const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
-    const driverLapDuration = benchmarkLap + d.performanceBias;
+    const { driverLapDuration, s1, s2, s3 } = precomputedSectors[idx];
     const diffSec = d.performanceBias;
     const gap = isNotStarted
       ? (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `P${d.order}`)
@@ -315,14 +333,9 @@ export function generateUniversalLiveSnapshot(
       ? '- - -'
       : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`);
 
-    // Sectors breakdown calibrated for circuit
-    const s1 = Number((driverLapDuration * 0.307).toFixed(3));
-    const s2 = Number((driverLapDuration * 0.375).toFixed(3));
-    const s3 = Number((driverLapDuration - s1 - s2).toFixed(3));
-
-    const s1Status: SectorStatus = idx === 0 ? 'purple' : idx < 6 ? 'green' : 'yellow';
-    const s2Status: SectorStatus = idx === 0 ? 'purple' : idx < 7 ? 'green' : 'yellow';
-    const s3Status: SectorStatus = idx === 1 ? 'purple' : idx < 8 ? 'green' : 'yellow';
+    const s1Status: SectorStatus = Math.abs(s1 - bestEngineS1) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
+    const s2Status: SectorStatus = Math.abs(s2 - bestEngineS2) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
+    const s3Status: SectorStatus = Math.abs(s3 - bestEngineS3) <= 0.001 ? 'purple' : idx < 8 ? 'green' : 'yellow';
 
     // Position car along track outline with Leader at the front and followers behind
     const outlineLen = circuit.outline.length;
