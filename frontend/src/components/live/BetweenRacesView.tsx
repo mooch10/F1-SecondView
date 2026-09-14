@@ -121,11 +121,11 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       {/* Next GP Countdown Hero Card */}
       {nextRace && (
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit whitespace-nowrap shrink-0">
               {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 shrink-0">
               <TrackTimeToggle />
             </div>
           </div>
@@ -223,14 +223,15 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       {/* Last Race Podium Summary Card */}
       {lastRace && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-400">
-              <Trophy className="w-4 h-4 text-[#FFD60A]" />
-              <span className="tracking-wider uppercase">
-                {t.betweenRaces.lastPodium} • {lastRace.raceName}
+          <div className="flex items-center justify-between gap-2 mb-3 min-w-0">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-400 min-w-0">
+              <Trophy className="w-4 h-4 text-[#FFD60A] shrink-0" />
+              <span className="tracking-wider uppercase truncate">
+                <span className="sm:hidden">{lastRace.raceName}</span>
+                <span className="hidden sm:inline">{t.betweenRaces.lastPodium} • {lastRace.raceName}</span>
               </span>
             </div>
-            <span className="text-[10px] text-zinc-400 font-mono">
+            <span className="text-[10px] text-zinc-400 font-mono shrink-0 whitespace-nowrap">
               {t.betweenRaces.round} {lastRace.round}
             </span>
           </div>

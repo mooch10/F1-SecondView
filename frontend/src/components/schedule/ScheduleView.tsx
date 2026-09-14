@@ -153,10 +153,10 @@ export const ScheduleView: React.FC = () => {
           className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm"
           style={{ borderTop: `3px solid ${theme.primary}` }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border whitespace-nowrap shrink-0"
                 style={{
                   backgroundColor: `${theme.primary}20`,
                   color: theme.primary,
@@ -166,7 +166,7 @@ export const ScheduleView: React.FC = () => {
                 {series.toUpperCase()} • {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
               </span>
               {(series !== 'f1' || nextRace.sessions?.some((s) => s.name.toLowerCase().includes('sprint'))) && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap shrink-0">
                   <Zap className="w-2.5 h-2.5" />
                   <span>{t.schedule.doubleRaceFormat}</span>
                 </span>
@@ -174,7 +174,7 @@ export const ScheduleView: React.FC = () => {
             </div>
 
             {/* Dual Clock Track Time Switcher in Next GP Hero Card */}
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 shrink-0">
               <TrackTimeToggle />
             </div>
           </div>
@@ -278,14 +278,17 @@ export const ScheduleView: React.FC = () => {
           </p>
 
           <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/[0.06] text-xs font-mono">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-amber-500/30 text-amber-300 font-bold">
-              🥇 {t.schedule.driverChampion}: {series === 'f3' ? 'Freddie Slater (182 pts)' : '---'}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-amber-500/30 text-amber-300 font-bold whitespace-nowrap">
+              🥇 <span className="sm:hidden">{series === 'f3' ? 'Slater (182 pts)' : '---'}</span>
+              <span className="hidden sm:inline">{t.schedule.driverChampion}: {series === 'f3' ? 'Freddie Slater (182 pts)' : '---'}</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300">
-              🥈 {t.schedule.runnerUp}: {series === 'f3' ? 'Théophile Naël (154 pts)' : '---'}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300 whitespace-nowrap">
+              🥈 <span className="sm:hidden">{series === 'f3' ? 'Naël (154 pts)' : '---'}</span>
+              <span className="hidden sm:inline">{t.schedule.runnerUp}: {series === 'f3' ? 'Théophile Naël (154 pts)' : '---'}</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300">
-              🏆 {t.schedule.constructorsChampion}: {series === 'f3' ? 'Campos Racing (399 pts)' : '---'}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300 whitespace-nowrap">
+              🏆 <span className="sm:hidden">{series === 'f3' ? 'Campos (399 pts)' : '---'}</span>
+              <span className="hidden sm:inline">{t.schedule.constructorsChampion}: {series === 'f3' ? 'Campos Racing (399 pts)' : '---'}</span>
             </span>
           </div>
         </div>
@@ -326,39 +329,43 @@ export const ScheduleView: React.FC = () => {
                       R{String(r.round).padStart(2, '0')}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0">
-                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate min-w-0 shrink">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0">
+                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase">
                           {r.raceName}
                         </span>
-                        {isDoubleRace && (
-                          <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0 whitespace-nowrap"
-                            title={lang === 'es' ? 'Formato de fin de semana con Carrera Sprint y Carrera Principal' : 'Double race format weekend'}
-                          >
-                            <Zap className="w-2.5 h-2.5" />
-                            <span className="hidden sm:inline">{t.schedule.doubleRaceFormat}</span>
-                            <span className="sm:hidden">Sprint + Feature</span>
-                          </span>
-                        )}
-                        {r.isNext && (
-                          <span
-                            className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border shrink-0 whitespace-nowrap"
-                            style={{
-                              backgroundColor: `${theme.primary}25`,
-                              color: theme.primary,
-                              borderColor: `${theme.primary}45`,
-                            }}
-                          >
-                            {t.schedule.nextBadge}
-                          </span>
-                        )}
-                        {isPast && (
-                          <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
-                            <CheckCircle2 className="w-3 h-3 shrink-0" /> {t.schedule.resultsAvailable}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
+                          {isDoubleRace && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0 whitespace-nowrap"
+                              title={lang === 'es' ? 'Formato de fin de semana con Carrera Sprint y Carrera Principal' : 'Double race format weekend'}
+                            >
+                              <Zap className="w-2.5 h-2.5" />
+                              <span className="hidden sm:inline">{t.schedule.doubleRaceFormat}</span>
+                              <span className="sm:hidden">{lang === 'es' ? 'DOBLE' : '2-RACE'}</span>
+                            </span>
+                          )}
+                          {r.isNext && (
+                            <span
+                              className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border shrink-0 whitespace-nowrap"
+                              style={{
+                                backgroundColor: `${theme.primary}25`,
+                                color: theme.primary,
+                                borderColor: `${theme.primary}45`,
+                              }}
+                            >
+                              {t.schedule.nextBadge}
+                            </span>
+                          )}
+                          {isPast && (
+                            <span className="inline-flex items-center gap-1 text-[9px] text-[#39B54A] font-mono font-bold bg-[#39B54A]/10 border border-[#39B54A]/30 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
+                              <CheckCircle2 className="w-3 h-3 shrink-0" />
+                              <span className="hidden sm:inline">{t.schedule.resultsAvailable}</span>
+                              <span className="sm:hidden">{lang === 'es' ? 'RESULTADO' : 'RESULTS'}</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-[11px] text-zinc-400 font-mono truncate block">
+                      <span className="text-[11px] text-zinc-400 font-mono truncate block mt-0.5">
                         {r.circuitName} • {r.country}
                       </span>
                     </div>

@@ -361,22 +361,22 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       {/* Table Header (Polymorphic: Qualy vs Race) */}
       {isQualy ? (
         <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
-          <div className="col-span-1 text-center">{t.live.table.pos}</div>
-          <div className="col-span-4 sm:col-span-3">{t.live.table.driver}</div>
-          <div className="col-span-3 sm:col-span-5 text-center">
+          <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
+          <div className="col-span-4 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
+          <div className="col-span-3 sm:col-span-5 text-center whitespace-nowrap">
             <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
             <span className="sm:hidden">SECTORES</span>
           </div>
-          <div className="col-span-4 sm:col-span-3 text-right">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
+          <div className="col-span-4 sm:col-span-3 text-right whitespace-nowrap">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-          <div className="col-span-1 text-center">{t.live.table.pos}</div>
-          <div className="col-span-3 sm:col-span-3">{t.live.table.driver}</div>
-          <div className="col-span-2 sm:col-span-2 text-center">{t.live.table.tyre}</div>
-          <div className="hidden sm:block sm:col-span-1 text-center">{t.live.table.pit}</div>
-          <div className="col-span-3 sm:col-span-3 text-right pr-2">GAP / INT</div>
-          <div className="col-span-3 sm:col-span-2 text-right">{t.live.table.lastLap}</div>
+          <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
+          <div className="col-span-3 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
+          <div className="col-span-2 sm:col-span-2 text-center whitespace-nowrap">{t.live.table.tyre}</div>
+          <div className="hidden sm:block sm:col-span-1 text-center whitespace-nowrap">{t.live.table.pit}</div>
+          <div className="col-span-3 sm:col-span-3 text-right pr-2 whitespace-nowrap">GAP / INT</div>
+          <div className="col-span-3 sm:col-span-2 text-right whitespace-nowrap">{t.live.table.lastLap}</div>
         </div>
       )}
 

@@ -59,7 +59,7 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer select-none text-left"
+          className="flex items-center gap-1.5 sm:gap-2 hover:opacity-90 transition-opacity cursor-pointer select-none text-left min-w-0"
         >
           <div
             className="w-5 h-5 rounded-md flex items-center justify-center text-white shrink-0"
@@ -67,11 +67,12 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
           >
             <UserCheck className="w-3.5 h-3.5" />
           </div>
-          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-200">
-            {t.driverChanges.title}
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-200 whitespace-nowrap">
+            <span className="sm:hidden">{lang === 'es' ? 'CAMBIOS PILOTOS' : 'DRIVER CHANGES'}</span>
+            <span className="hidden sm:inline">{t.driverChanges.title}</span>
           </span>
           <span
-            className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full"
+            className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0"
             style={{
               backgroundColor: `${theme.primary}20`,
               color: theme.primary,

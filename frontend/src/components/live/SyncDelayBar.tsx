@@ -20,22 +20,23 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-[#E10600]" />
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
-            {t.live.delay.title}
+      <div className="flex items-center justify-between gap-2 mb-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#E10600] shrink-0" />
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 whitespace-nowrap">
+            <span className="sm:hidden">{lang === 'es' ? 'ANTI-SPOILER (TV)' : 'TV SYNC (DELAY)'}</span>
+            <span className="hidden sm:inline">{t.live.delay.title}</span>
           </span>
         </div>
 
         {/* Current Delay Status Badge */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {delaySeconds === 0 ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest uppercase">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest uppercase whitespace-nowrap">
               {t.live.delay.live}
             </span>
           ) : (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider font-tabular">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider font-tabular whitespace-nowrap">
               -{delaySeconds}s {lang === 'es' ? 'RETRASO' : 'DELAY'}
             </span>
           )}

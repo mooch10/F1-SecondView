@@ -88,33 +88,35 @@ export const StandingsView: React.FC = () => {
   return (
     <div className="flex flex-col gap-3">
       {/* Broadcast Style Sub-Tabs */}
-      <div className="flex gap-6 border-b border-white/[0.08] px-1">
+      <div className="flex gap-4 sm:gap-6 border-b border-white/[0.08] px-1 overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setSubTab('drivers')}
-          className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
             subTab === 'drivers'
               ? 'text-white'
               : 'text-zinc-400 hover:text-white border-transparent'
           }`}
           style={subTab === 'drivers' ? { borderColor: theme.primary } : undefined}
         >
-          <Award className="w-3.5 h-3.5 text-[#FFD60A]" />
-          <span>{t.standings.driversTab}</span>
+          <Award className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
+          <span className="sm:hidden">{lang === 'es' ? 'PILOTOS' : 'DRIVERS'}</span>
+          <span className="hidden sm:inline">{t.standings.driversTab}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setSubTab('constructors')}
-          className={`flex items-center gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
             subTab === 'constructors'
               ? 'text-white'
               : 'text-zinc-400 hover:text-white border-transparent'
           }`}
           style={subTab === 'constructors' ? { borderColor: theme.primary } : undefined}
         >
-          <Users className="w-3.5 h-3.5 text-[#27F4D2]" />
-          <span>{t.standings.constructorsTab}</span>
+          <Users className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
+          <span className="sm:hidden">{lang === 'es' ? 'CONSTRUCTORES' : 'CONSTRUCTORS'}</span>
+          <span className="hidden sm:inline">{t.standings.constructorsTab}</span>
         </button>
       </div>
 

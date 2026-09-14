@@ -33,7 +33,10 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, driv
         <div className="flex items-center gap-2 overflow-hidden flex-1">
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
           <Radio className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex-shrink-0">
+          <span className="sm:hidden text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex-shrink-0">
+            FIA:
+          </span>
+          <span className="hidden sm:inline text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex-shrink-0">
             {t.live.raceControl.title}:
           </span>
           <span className="text-xs text-zinc-200 font-mono truncate">

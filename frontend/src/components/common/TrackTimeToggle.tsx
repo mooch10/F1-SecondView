@@ -14,7 +14,7 @@ export const TrackTimeToggle: React.FC<TrackTimeToggleProps> = ({
 
   return (
     <div
-      className={`inline-flex flex-col justify-center bg-[#0B0E14] px-2.5 py-1 rounded-lg select-none text-[10px] sm:text-[11px] font-mono leading-tight tracking-tight ${
+      className={`inline-flex flex-col justify-center bg-[#0B0E14] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg select-none text-[9px] sm:text-[11px] font-mono leading-tight tracking-tight whitespace-nowrap shrink-0 ${
         showBorder ? 'border border-white/[0.08] shadow-xs' : ''
       } ${className}`}
       title="Alternar referencia horaria: Mi Hora (local) vs Hora del Circuito (Track)"
@@ -23,7 +23,7 @@ export const TrackTimeToggle: React.FC<TrackTimeToggleProps> = ({
       <button
         type="button"
         onClick={() => setMode('my')}
-        className="flex items-center justify-between gap-3 group cursor-pointer transition-colors py-0.5 text-left focus:outline-none"
+        className="flex items-center justify-between gap-2 sm:gap-3 group cursor-pointer transition-colors py-0.5 text-left focus:outline-none"
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <span
@@ -58,7 +58,7 @@ export const TrackTimeToggle: React.FC<TrackTimeToggleProps> = ({
       <button
         type="button"
         onClick={() => setMode('track')}
-        className="flex items-center justify-between gap-3 group cursor-pointer transition-colors py-0.5 text-left focus:outline-none"
+        className="flex items-center justify-between gap-2 sm:gap-3 group cursor-pointer transition-colors py-0.5 text-left focus:outline-none"
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <span

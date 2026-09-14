@@ -302,12 +302,14 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
 
       {/* Track Flag Strip */}
       <div
-        className={`flex items-center justify-between px-3 py-2 bg-[#131722] border-y border-r border-white/[0.08] ${flagConfig.border} rounded-xl text-xs font-mono font-semibold tracking-wider ${flagConfig.text} shadow-sm`}
+        className={`flex items-center justify-between px-3 py-2 bg-[#131722] border-y border-r border-white/[0.08] ${flagConfig.border} rounded-xl text-xs font-mono font-semibold tracking-wider ${flagConfig.text} shadow-sm min-w-0`}
       >
-        <div className="flex items-center gap-2.5">
-          <span className={`w-2 h-2 rounded-full ${flagConfig.indicator}`} />
-          {flagConfig.icon}
-          <span>{flagConfig.label}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`w-2 h-2 rounded-full ${flagConfig.indicator} shrink-0`} />
+          <span className="shrink-0">{flagConfig.icon}</span>
+          <span className="whitespace-nowrap text-[11px] sm:text-xs tracking-wide truncate">
+            {flagConfig.label}
+          </span>
         </div>
       </div>
     </div>

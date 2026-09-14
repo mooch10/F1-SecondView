@@ -767,11 +767,11 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#FFD60A] rounded-xl p-4 sm:p-5 relative shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30 tracking-widest">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#FFD60A]/15 text-[#FFD60A] border border-[#FFD60A]/30 tracking-widest whitespace-nowrap shrink-0">
                   {t.qualy.round} {session.round} • {t.qualy.qualyTitle}
                 </span>
-                <span className="text-[11px] text-zinc-400 font-mono">
+                <span className="text-[11px] text-zinc-400 font-mono whitespace-nowrap">
                   {session.date}
                 </span>
               </div>
@@ -879,16 +879,16 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         {/* Historical Qualifying Table */}
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
-            <div className="col-span-1 text-center">{t.qualy.headers.pos}</div>
-            <div className="col-span-5 sm:col-span-3">{t.qualy.headers.driver}</div>
+            <div className="col-span-1 text-center whitespace-nowrap">{t.qualy.headers.pos}</div>
+            <div className="col-span-5 sm:col-span-3 whitespace-nowrap">{t.qualy.headers.driver}</div>
 
-            <div className="col-span-3 text-right sm:hidden">{t.qualy.headers.time}</div>
-            <div className="col-span-3 text-right sm:hidden">{t.qualy.headers.gap}</div>
+            <div className="col-span-3 text-right sm:hidden whitespace-nowrap">{t.qualy.headers.time}</div>
+            <div className="col-span-3 text-right sm:hidden whitespace-nowrap">{t.qualy.headers.gap}</div>
 
-            <div className="hidden sm:block sm:col-span-2 text-center">{t.qualy.headers.q1}</div>
-            <div className="hidden sm:block sm:col-span-2 text-center">{t.qualy.headers.q2}</div>
-            <div className="hidden sm:block sm:col-span-2 text-center">{t.qualy.headers.q3}</div>
-            <div className="hidden sm:block sm:col-span-2 text-right">{t.qualy.headers.gap}</div>
+            <div className="hidden sm:block sm:col-span-2 text-center whitespace-nowrap">{t.qualy.headers.q1}</div>
+            <div className="hidden sm:block sm:col-span-2 text-center whitespace-nowrap">{t.qualy.headers.q2}</div>
+            <div className="hidden sm:block sm:col-span-2 text-center whitespace-nowrap">{t.qualy.headers.q3}</div>
+            <div className="hidden sm:block sm:col-span-2 text-right whitespace-nowrap">{t.qualy.headers.gap}</div>
           </div>
 
           <div className="divide-y divide-white/[0.04]">
@@ -933,28 +933,28 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
                       <div className="flex flex-col leading-tight truncate">
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-nowrap">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               openDriverProfile(undefined, d.code, d.fullName);
                             }}
-                            className="font-mono text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
+                            className="font-mono text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer whitespace-nowrap shrink-0"
                             title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
                           >
                             {d.code}
                           </button>
-                          <span className="text-[10px] text-zinc-500 font-mono">
+                          <span className="text-[10px] text-zinc-500 font-mono whitespace-nowrap shrink-0">
                             #{d.driverNumber}
                           </span>
                           {item.isPhaseLeader && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight whitespace-nowrap shrink-0">
                               {phaseFilter === 'ALL' || phaseFilter === 'Q3' ? 'POLE 🥇' : (lang === 'es' ? 'LÍDER' : 'LEADER')}
                             </span>
                           )}
                           {d.eliminatedPhase && phaseFilter === 'ALL' && (
-                            <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                            <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 whitespace-nowrap shrink-0">
                               {d.eliminatedPhase}
                             </span>
                           )}
