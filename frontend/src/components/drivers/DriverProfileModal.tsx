@@ -342,7 +342,11 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-[#FFD60A]" />
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-200">
-                  {t.driverProfile.statsTitle}
+                  {activeProfile.series === 'f2'
+                    ? (lang === 'en' ? 'Formula 2 Career Stats' : 'Estadísticas en Fórmula 2')
+                    : activeProfile.series === 'f3'
+                    ? (lang === 'en' ? 'Formula 3 Career Stats' : 'Estadísticas en Fórmula 3')
+                    : t.driverProfile.statsTitle}
                 </span>
               </div>
               <span className="text-[10px] font-mono text-zinc-400">
