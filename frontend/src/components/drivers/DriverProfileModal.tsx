@@ -64,6 +64,18 @@ function getLocalizedNationality(nat: string, lang: 'es' | 'en'): string {
     'Brasil': 'Brazilian',
     'Italia': 'Italian',
     'Dinamarca': 'Danish',
+    'Bulgaria': 'Bulgarian',
+    'Irlanda': 'Irish',
+    'Suecia': 'Swedish',
+    'Noruega': 'Norwegian',
+    'India': 'Indian',
+    'Paraguay': 'Paraguayan',
+    'Colombia': 'Colombian',
+    'Polonia': 'Polish',
+    'Estados Unidos': 'American',
+    'Sri Lanka': 'Sri Lankan',
+    'Jamaica': 'Jamaican',
+    'China': 'Chinese',
   };
   return map[nat] || nat;
 }
@@ -112,12 +124,13 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
   const [standings, setStandings] = useState<StandingsData | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchStandings('f1').then((res) => {
+    if (isOpen && profile) {
+      const targetSeries = profile.series || 'f1';
+      fetchStandings(targetSeries).then((res) => {
         if (res) setStandings(res);
       });
     }
-  }, [isOpen]);
+  }, [isOpen, profile]);
 
   // Close on Escape
   useEffect(() => {
@@ -142,9 +155,10 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
   const age = calculateAge(activeProfile.birthDate);
   const localizedNat = getLocalizedNationality(activeProfile.nationality, lang);
   const localizedPlace = getLocalizedBirthPlace(activeProfile.birthPlace, lang);
-  const localizedBio = lang === 'en' && F1_BIOS_EN[activeProfile.code]
-    ? F1_BIOS_EN[activeProfile.code]
-    : activeProfile.biography;
+  const localizedBio =
+    lang === 'en'
+      ? activeProfile.biographyEn || F1_BIOS_EN[activeProfile.code] || activeProfile.biography
+      : activeProfile.biography;
   const localizedFinish = getLocalizedHighestFinish(activeProfile.careerStats.highestFinish, lang);
 
   return (
@@ -188,8 +202,12 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             >
               {activeProfile.team}
             </span>
-            <span className="text-xs font-mono text-zinc-400 font-bold">
-              {t.driverProfile.formula1}
+            <span className="text-xs font-mono text-zinc-400 font-bold uppercase">
+              {activeProfile.series === 'f2'
+                ? 'FIA FÓRMULA 2'
+                : activeProfile.series === 'f3'
+                ? 'FIA FÓRMULA 3'
+                : t.driverProfile.formula1}
             </span>
           </div>
 

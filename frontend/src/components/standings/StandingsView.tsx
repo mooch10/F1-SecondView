@@ -6,7 +6,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { DriverChangesAlert } from './DriverChangesAlert';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
-import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
+import { getDriverProfile, enrichDriverProfileWithSeason, type F1DriverProfile } from '../../data/f1DriversData';
 
 export const StandingsView: React.FC = () => {
   const { t, lang } = useLanguage();
@@ -44,11 +44,25 @@ export const StandingsView: React.FC = () => {
     });
   };
 
-  const handleDriverClick = (d: { code?: string; name?: string }) => {
-    if (series !== 'f1') return;
-    const profile = getF1DriverProfile(d.code) || getF1DriverProfile(d.name);
-    if (profile) {
-      setSelectedProfile(profile);
+  const handleDriverClick = (d: {
+    code?: string;
+    name?: string;
+    pos?: number;
+    points?: number;
+    wins?: number;
+    team?: string;
+    teamColor?: string;
+  }) => {
+    const rawProfile = getDriverProfile(d.code, series) || getDriverProfile(d.name, series);
+    if (rawProfile) {
+      const enriched = enrichDriverProfileWithSeason(rawProfile, {
+        pos: d.pos || 1,
+        points: d.points || 0,
+        wins: d.wins || 0,
+        team: d.team,
+        teamColor: d.teamColor,
+      });
+      setSelectedProfile(enriched);
       setIsProfileOpen(true);
     }
   };
@@ -122,7 +136,11 @@ export const StandingsView: React.FC = () => {
 
       {/* Driver Lineup Changes Notification for F2 / F3 */}
       {driverChanges.length > 0 && (
-        <DriverChangesAlert changes={driverChanges} series={series} />
+        <DriverChangesAlert
+          changes={driverChanges}
+          series={series}
+          onSelectDriver={(name) => handleDriverClick({ name })}
+        />
       )}
 
       {/* DRIVERS TABLE */}
@@ -165,23 +183,17 @@ export const StandingsView: React.FC = () => {
                   />
                   <div className="truncate">
                     <div className="flex items-center gap-1.5">
-                      {series === 'f1' ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDriverClick(d);
-                          }}
-                          className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
-                          title={lang === 'es' ? 'Ver ficha de piloto' : 'View driver profile'}
-                        >
-                          {d.code}
-                        </button>
-                      ) : (
-                        <span className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase">
-                          {d.code}
-                        </span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDriverClick(d);
+                        }}
+                        className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                        title={lang === 'es' ? 'Ver ficha técnica del piloto' : 'View driver profile'}
+                      >
+                        {d.code}
+                      </button>
                       <span className="text-xs text-zinc-400 font-medium truncate hidden sm:inline">
                         {d.name}
                       </span>

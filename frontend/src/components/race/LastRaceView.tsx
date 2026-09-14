@@ -13,7 +13,7 @@ import type { JolpicaRaceDetail, JolpicaRaceResult } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
-import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
+import { getDriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 
 export const LastRaceView: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -51,11 +51,11 @@ export const LastRaceView: React.FC = () => {
     });
   };
 
-  const openDriverProfile = (_driverNumber?: number | string, code?: string, fullName?: string) => {
-    if (series !== 'f1') return;
+  const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
     const profile =
-      (code ? getF1DriverProfile(code) : undefined) ||
-      (fullName ? getF1DriverProfile(fullName) : undefined);
+      (code ? getDriverProfile(code, series) : undefined) ||
+      (fullName ? getDriverProfile(fullName, series) : undefined) ||
+      (driverNumber ? getDriverProfile(driverNumber, series) : undefined);
     if (profile) {
       setSelectedProfile(profile);
       setIsProfileOpen(true);
@@ -261,7 +261,7 @@ export const LastRaceView: React.FC = () => {
                   </span>
                   <div className="flex flex-col leading-tight truncate">
                     <div className="flex items-center gap-1">
-                      {series === 'f1' && p.code ? (
+                      {p.code ? (
                         <button
                           type="button"
                           onClick={(e) => {
@@ -384,7 +384,7 @@ export const LastRaceView: React.FC = () => {
                     />
                     <div className="flex flex-col leading-tight truncate">
                       <div className="flex items-center gap-1.5 flex-nowrap">
-                        {series === 'f1' && d.code ? (
+                        {d.code ? (
                           <button
                             type="button"
                             onClick={(e) => {

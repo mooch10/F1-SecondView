@@ -7,6 +7,7 @@ import { useSeries } from '../../hooks/useSeries';
 interface DriverChangesAlertProps {
   changes: DriverChangeAlert[];
   series: SeriesCategory;
+  onSelectDriver?: (driverName: string) => void;
 }
 
 const DRIVER_CHANGE_REASONS_EN: Record<string, string> = {
@@ -37,6 +38,7 @@ const DRIVER_CHANGE_REASONS_EN: Record<string, string> = {
 export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
   changes,
   series,
+  onSelectDriver,
 }) => {
   const { lang, t } = useLanguage();
   const { theme } = useSeries();
@@ -156,7 +158,18 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
                       <ArrowRight className="w-3.5 h-3.5 text-zinc-500 shrink-0 mx-1" />
                       <div className="flex flex-col">
                         <span className="text-[9px] uppercase" style={{ color: theme.primary }}>{t.driverChanges.newDriver}</span>
-                        <span className="text-white font-black">{change.newDriver}</span>
+                        {onSelectDriver ? (
+                          <button
+                            type="button"
+                            onClick={() => onSelectDriver(change.newDriver)}
+                            className="text-white font-black hover:text-[#FFD60A] hover:underline cursor-pointer text-left"
+                            title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                          >
+                            {change.newDriver}
+                          </button>
+                        ) : (
+                          <span className="text-white font-black">{change.newDriver}</span>
+                        )}
                       </div>
                     </div>
 
@@ -195,9 +208,21 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
                       <div className="flex items-center gap-1.5 text-zinc-300 font-semibold shrink-0">
                         <span className="line-through text-zinc-500">{change.originalDriver}</span>
                         <ArrowRight className="w-3 h-3 text-zinc-400" />
-                        <span className="text-white font-bold" style={{ color: theme.primary }}>
-                          {change.newDriver}
-                        </span>
+                        {onSelectDriver ? (
+                          <button
+                            type="button"
+                            onClick={() => onSelectDriver(change.newDriver)}
+                            className="font-bold hover:text-[#FFD60A] hover:underline cursor-pointer text-left"
+                            style={{ color: theme.primary }}
+                            title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                          >
+                            {change.newDriver}
+                          </button>
+                        ) : (
+                          <span className="text-white font-bold" style={{ color: theme.primary }}>
+                            {change.newDriver}
+                          </span>
+                        )}
                       </div>
 
                       {/* Explanation Reason - Fully visible, wraps cleanly without truncation */}

@@ -153,7 +153,7 @@ export const ScheduleView: React.FC = () => {
           className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm"
           style={{ borderTop: `3px solid ${theme.primary}` }}
         >
-          <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
             <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <span
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border whitespace-nowrap shrink-0"
@@ -174,7 +174,7 @@ export const ScheduleView: React.FC = () => {
             </div>
 
             {/* Dual Clock Track Time Switcher in Next GP Hero Card */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center self-end sm:self-auto gap-2 shrink-0">
               <TrackTimeToggle />
             </div>
           </div>
@@ -633,18 +633,18 @@ export const ScheduleView: React.FC = () => {
                       const roundTz = getCircuitTimezone(r.circuitName, r.locality, r.country);
                       return (
                         <div>
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
                               <Clock className="w-3 h-3" style={{ color: theme.primary }} /> {t.schedule.sessionScheduleTitle}
                             </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {isDoubleRace && (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
                                   <Zap className="w-2.5 h-2.5" />
                                   <span>{t.schedule.doubleRaceFormat}</span>
                                 </span>
                               )}
-                              <TrackTimeToggle className="scale-90 origin-right" />
+                              <TrackTimeToggle className="scale-90 origin-right shrink-0" />
                             </div>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
