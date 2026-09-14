@@ -493,14 +493,14 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         {/* Live Qualy Table */}
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
+          <div className="grid grid-cols-12 gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-2.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
             <div className="col-span-1 text-center">{t.qualy.headers.pos}</div>
-            <div className="col-span-3 sm:col-span-3">{t.qualy.headers.driver}</div>
+            <div className="col-span-4 sm:col-span-3">{t.qualy.headers.driver}</div>
             <div className="col-span-4 sm:col-span-5 text-center">
               <span className="hidden sm:inline">{t.qualy.headers.sectorsAndMini}</span>
               <span className="sm:hidden">{t.qualy.headers.sectors}</span>
             </div>
-            <div className="col-span-4 sm:col-span-3 text-right">{t.qualy.headers.timeGap}</div>
+            <div className="col-span-3 sm:col-span-3 text-right">{t.qualy.headers.timeGap}</div>
           </div>
 
           {/* Rows */}
@@ -520,14 +520,14 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleExpand(d.driverNumber)}
-                    className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none ${
+                    className={`w-full text-left grid grid-cols-12 gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-3 sm:py-3 items-center transition-colors select-none ${
                       isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                     } ${item.isPhaseLeader ? 'bg-[#FFD60A]/[0.03]' : ''}`}
                   >
                     {/* Position */}
                     <div className="col-span-1 flex items-center justify-center">
                       <span
-                        className={`font-mono text-sm sm:text-base font-black font-tabular text-center ${
+                        className={`font-mono text-xs sm:text-base font-black font-tabular text-center ${
                           item.isPhaseLeader
                             ? 'text-[#FFD60A]'
                             : item.displayPos <= 3
@@ -543,35 +543,35 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
                     {/* Driver & Team */}
                     <div
-                      className="col-span-3 sm:col-span-3 flex items-center gap-1.5 sm:gap-2.5 overflow-hidden"
+                      className="col-span-4 sm:col-span-3 flex items-center gap-1 sm:gap-2.5 min-w-0"
                     >
                       <span
-                        className="w-1.5 h-7 rounded-full flex-shrink-0"
+                        className="w-1 sm:w-1.5 h-6 sm:h-7 rounded-full flex-shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
-                      <div className="flex flex-col leading-snug truncate">
-                        <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
+                      <div className="flex flex-col leading-tight min-w-0">
+                        <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               openDriverProfile(undefined, d.code, d.fullName);
                             }}
-                            className="font-mono text-sm sm:text-base font-black text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
+                            className="font-mono text-xs sm:text-base font-black text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer shrink-0"
                             title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
                           >
                             {d.code}
                           </button>
-                          <span className="text-[10px] sm:text-xs text-zinc-500 font-mono">
+                          <span className="text-[9px] sm:text-xs text-zinc-500 font-mono shrink-0">
                             #{d.driverNumber}
                           </span>
                           {item.isPhaseLeader && (
-                            <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+                            <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 whitespace-nowrap">
                               POLE
                             </span>
                           )}
                           {d.inPit && (
-                            <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
+                            <span className="px-1 py-0.5 rounded text-[7px] sm:text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0 whitespace-nowrap">
                               PIT
                             </span>
                           )}
@@ -585,7 +585,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                     {/* Sectors & Mini-Sectors Center Column */}
                     <div className="col-span-4 sm:col-span-5 flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-0.5 sm:px-2 min-w-0">
                       {/* 3 Sector Badges (Mobile & Desktop) */}
-                      <div className="flex items-center justify-center gap-1 sm:gap-2 w-full flex-nowrap">
+                      <div className="flex items-center justify-center gap-0.5 sm:gap-2 w-full flex-nowrap">
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
@@ -613,10 +613,10 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                     </div>
 
                     {/* Best Lap Time & Gap */}
-                    <div className="col-span-4 sm:col-span-3 text-right flex items-center justify-end gap-1.5 sm:gap-2 shrink-0">
-                      <div className="flex flex-col leading-snug">
+                    <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-1 sm:gap-2 shrink-0">
+                      <div className="flex flex-col leading-tight">
                         <span
-                          className={`font-mono text-xs sm:text-sm font-tabular whitespace-nowrap ${
+                          className={`font-mono text-[11px] sm:text-sm font-tabular whitespace-nowrap ${
                             item.isPhaseLeader
                               ? 'text-[#FFD60A] font-black'
                               : 'text-zinc-100 font-bold'
@@ -625,7 +625,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                           {item.displayTime}
                         </span>
                         <span
-                          className={`font-mono text-[10px] sm:text-xs font-tabular whitespace-nowrap ${
+                          className={`font-mono text-[9px] sm:text-xs font-tabular whitespace-nowrap ${
                             item.isPhaseLeader ? 'text-[#FFD60A] font-bold' : 'text-zinc-400'
                           }`}
                         >
@@ -634,9 +634,9 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                       </div>
                       <div className="text-zinc-500 shrink-0">
                         {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
+                          <ChevronUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         ) : (
-                          <ChevronDown className="w-4 h-4" />
+                          <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         )}
                       </div>
                     </div>
