@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { DriverLive, TrackOutline } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useTrackAnimation } from '../../hooks/useTrackAnimation';
 
 interface CircuitMapProps {
   circuitTrack?: TrackOutline | null;
@@ -205,6 +206,9 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       startFinish,
       s1SplitPt,
       s2SplitPt,
+      pts,
+      cumDists,
+      totalLength,
       overtakeZones: [
         { start: ot1Start, end: ot1End, label: 'OVERTAKE 1' },
         { start: ot2Start, end: ot2End, label: 'OVERTAKE 2' },
@@ -232,7 +236,14 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     return sortedDrivers.find((d) => d.driverNumber === selectedDriverNumber) || null;
   }, [sortedDrivers, selectedDriverNumber]);
 
-  // Render car coordinates with anti-overlap decluttering based on real GPS
+  // Real-time 60 FPS kinematic animation and dead-reckoning along track
+  const animatedPositions = useTrackAnimation({
+    drivers: sortedDrivers,
+    trackGeometry,
+    isGpsClustered,
+  });
+
+  // Render car coordinates with anti-overlap decluttering based on real GPS and 60 FPS spline animation
   const carRenderData = useMemo(() => {
     if (!trackGeometry) return [];
 
@@ -247,15 +258,20 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       sector: number;
     }> = [];
 
-    // Calculate position for each driver strictly using real GPS coordinates
+    // Calculate position for each driver using 60 FPS spline kinematic interpolation
     activeList.forEach((d, idx) => {
       let x = 0;
       let y = 0;
-      const angle = 0;
+      let angle = 0;
       const sector = 1;
 
-      // Real GPS coordinates from session snapshot
-      if (d.location && (d.location.x !== 0 || d.location.y !== 0)) {
+      const anim = animatedPositions.get(d.driverNumber);
+      if (anim) {
+        x = anim.x;
+        y = anim.y;
+        angle = anim.angle;
+      } else if (d.location && (d.location.x !== 0 || d.location.y !== 0)) {
+        // Fallback directly to raw GPS coordinates
         const [gx, gy] = trackGeometry.toSvgPoint(d.location.x, d.location.y);
         x = gx;
         y = gy;
@@ -298,7 +314,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     }
 
     return coords;
-  }, [trackGeometry, filteredDrivers, selectedDriverNumber]);
+  }, [trackGeometry, filteredDrivers, selectedDriverNumber, animatedPositions]);
 
   // Handle Driver Tap
   const handleDriverSelect = useCallback((driverNum: number) => {
@@ -322,9 +338,9 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
               <span className="font-bold text-white text-xs sm:text-sm uppercase tracking-wider font-chakra">
                 {lang === 'es' ? 'Mapa de Pista en Vivo' : 'Live Circuit Map'}
               </span>
-              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 whitespace-nowrap shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {lang === 'es' ? 'GPS EN VIVO' : 'LIVE GPS'}
+                {lang === 'es' ? 'GPS EN VIVO • 60 FPS' : 'LIVE GPS • 60 FPS'}
               </span>
             </div>
             <span className="text-[10px] text-zinc-400 font-mono">
