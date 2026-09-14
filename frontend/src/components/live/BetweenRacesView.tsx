@@ -11,6 +11,8 @@ import { fetchScheduleDetails } from '../../services/api';
 import type { JolpicaRace, LastRacePodium } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { translateSessionName } from '../../utils/sessionTranslation';
+import { useTimezone } from '../../context/TimezoneContext';
+import { TrackTimeToggle } from '../common/TrackTimeToggle';
 
 interface BetweenRacesViewProps {
   onSwitchToLiveTiming?: () => void;
@@ -20,6 +22,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
   onSwitchToLiveTiming,
 }) => {
   const { lang, t } = useLanguage();
+  const { mode, setTrackCircuit, formatSessionDate, formatSessionTime } = useTimezone();
   const [nextRace, setNextRace] = useState<JolpicaRace | null>(null);
   const [lastRace, setLastRace] = useState<LastRacePodium | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +43,12 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (nextRace) {
+      setTrackCircuit(nextRace.circuitName, nextRace.locality, nextRace.country);
+    }
+  }, [nextRace, setTrackCircuit]);
 
   useEffect(() => {
     if (!nextRace?.raceDateTime) return;
@@ -66,27 +75,14 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
   const formatLocalDate = (dateStr: string) => {
     if (!dateStr) return t.betweenRaces.toConfirm;
     try {
-      const d = new Date(dateStr);
-      if (Number.isNaN(d.getTime())) return t.betweenRaces.toConfirm;
-      return d.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
-        weekday: 'short',
-        day: '2-digit',
-        month: 'short',
-      });
+      return formatSessionDate(dateStr, lang);
     } catch {
-      return t.betweenRaces.toConfirm;
+      return dateStr.split('T')[0] || t.betweenRaces.toConfirm;
     }
   };
 
   const formatLocalTime = (dateStr: string) => {
-    if (!dateStr) return null;
-    try {
-      const d = new Date(dateStr);
-      if (Number.isNaN(d.getTime())) return null;
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return null;
-    }
+    return formatSessionTime(dateStr);
   };
 
   const translateSession = (name: string) => translateSessionName(name, lang);
@@ -125,24 +121,31 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       {/* Next GP Countdown Hero Card */}
       {nextRace && (
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit">
               {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
-            <span className="text-[10px] text-zinc-400 font-mono">
-              {t.betweenRaces.localTime} (Argentina)
-            </span>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <TrackTimeToggle />
+            </div>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
             {nextRace.raceName}
           </h2>
-          <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1 font-mono">
-            <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
-            <span>{nextRace.circuitName.toUpperCase()}</span>
-            <span>•</span>
-            <span>
-              {nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}
+          <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+              <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
+              <span>{nextRace.circuitName.toUpperCase()}</span>
+              <span>•</span>
+              <span>
+                {nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}
+              </span>
+            </div>
+            <span className="text-[11px] text-zinc-400 font-mono">
+              {mode === 'track'
+                ? `⚡ ${lang === 'es' ? 'Horario circuito' : 'Track time'}: ${nextRace.locality}`
+                : `📍 ${lang === 'es' ? 'Horario dispositivo' : 'Device time'}`}
             </span>
           </div>
 

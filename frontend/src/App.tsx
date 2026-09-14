@@ -18,6 +18,7 @@ import { useLiveTelemetry } from './hooks/useLiveTelemetry';
 import { useSeries } from './hooks/useSeries';
 import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
+import { useTimezone } from './context/TimezoneContext';
 import type { ActiveTab } from './types/f1';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { t } = useLanguage();
   const { setSeries } = useSeries();
+  const { setTrackCircuit } = useTimezone();
 
   const handleEnter = () => {
     setSeries('f1');
@@ -43,6 +45,17 @@ function App() {
     isLoading,
     isLiveConnected,
   } = useLiveTelemetry();
+
+  // Sync active track timezone from live snapshot session
+  useEffect(() => {
+    if (snapshot?.session?.circuit || snapshot?.session?.country) {
+      setTrackCircuit(
+        snapshot.session.circuit,
+        snapshot.session.location,
+        snapshot.session.country
+      );
+    }
+  }, [snapshot?.session?.circuit, snapshot?.session?.location, snapshot?.session?.country, setTrackCircuit]);
 
   const { requestLock } = useWakeLock();
 

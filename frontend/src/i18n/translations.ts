@@ -205,6 +205,10 @@ export const translations = {
     schedule: {
       nextGp: 'PRÓXIMO GP',
       localTime: 'HORA LOCAL',
+      myTime: 'MI HORA',
+      trackTime: 'HORA PISTA',
+      deviceTimeHint: 'Horario según tu dispositivo',
+      trackTimeHint: 'Horario local del circuito',
       countdown: {
         days: 'DÍAS',
         hours: 'HS',
@@ -492,6 +496,10 @@ export const translations = {
     schedule: {
       nextGp: 'NEXT GP',
       localTime: 'LOCAL TIME',
+      myTime: 'MY TIME',
+      trackTime: 'TRACK TIME',
+      deviceTimeHint: 'Timezone based on your device',
+      trackTimeHint: 'Track local timezone',
       countdown: {
         days: 'DAYS',
         hours: 'HRS',

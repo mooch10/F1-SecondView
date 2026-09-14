@@ -14,10 +14,14 @@ import type { JolpicaRace, JolpicaRaceDetail } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { translateSessionName } from '../../utils/sessionTranslation';
+import { useTimezone } from '../../context/TimezoneContext';
+import { TrackTimeToggle } from '../common/TrackTimeToggle';
+import { getCircuitTimezone } from '../../utils/circuitTimezones';
 
 export const ScheduleView: React.FC = () => {
   const { lang, t } = useLanguage();
   const { series, theme } = useSeries();
+  const { mode, setTrackCircuit, formatSessionDate, formatSessionTime } = useTimezone();
   const [races, setRaces] = useState<JolpicaRace[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedRound, setExpandedRound] = useState<number | null>(null);
@@ -53,6 +57,12 @@ export const ScheduleView: React.FC = () => {
 
 
   const nextRace = races.find((r) => r.isNext);
+
+  useEffect(() => {
+    if (nextRace) {
+      setTrackCircuit(nextRace.circuitName, nextRace.locality, nextRace.country);
+    }
+  }, [nextRace, setTrackCircuit]);
 
   useEffect(() => {
     if (!nextRace?.raceDateTime) return;
@@ -111,32 +121,17 @@ export const ScheduleView: React.FC = () => {
     }
   };
 
-  const formatLocalDate = (dateStr: string) => {
+  const formatLocalDate = (dateStr: string, roundTz?: string) => {
     if (!dateStr) return t.betweenRaces.toConfirm;
     try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr.split('T')[0] || t.betweenRaces.toConfirm;
-      return d.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
-        weekday: 'short',
-        day: '2-digit',
-        month: 'short',
-      });
+      return formatSessionDate(dateStr, lang, roundTz);
     } catch {
       return dateStr.split('T')[0] || t.betweenRaces.toConfirm;
     }
   };
 
-  const formatLocalTime = (dateStr: string): string | null => {
-    if (!dateStr || !dateStr.includes('T')) return null;
-    if (dateStr.includes('T00:00:00')) return null;
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return null;
-      if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0) return null;
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return null;
-    }
+  const formatLocalTime = (dateStr: string, roundTz?: string): string | null => {
+    return formatSessionTime(dateStr, roundTz);
   };
 
   const translateSession = (name: string) => translateSessionName(name, lang);
@@ -158,7 +153,7 @@ export const ScheduleView: React.FC = () => {
           className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm"
           style={{ borderTop: `3px solid ${theme.primary}` }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border"
@@ -177,20 +172,29 @@ export const ScheduleView: React.FC = () => {
                 </span>
               )}
             </div>
-            <span className="text-[11px] text-zinc-400 font-mono">
-              {t.schedule.localTime} (Argentina)
-            </span>
+
+            {/* Dual Clock Track Time Switcher in Next GP Hero Card */}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <TrackTimeToggle />
+            </div>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
             {nextRace.raceName}
           </h2>
-          <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1 font-mono">
-            <MapPin className="w-3.5 h-3.5" style={{ color: theme.primary }} />
-            <span>{nextRace.circuitName.toUpperCase()}</span>
-            <span>•</span>
-            <span>
-              {nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}
+          <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+              <MapPin className="w-3.5 h-3.5" style={{ color: theme.primary }} />
+              <span>{nextRace.circuitName.toUpperCase()}</span>
+              <span>•</span>
+              <span>
+                {nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}
+              </span>
+            </div>
+            <span className="text-[11px] text-zinc-400 font-mono">
+              {mode === 'track'
+                ? `⚡ ${t.schedule.trackTimeHint}: ${nextRace.locality}`
+                : `📍 ${t.schedule.deviceTimeHint}`}
             </span>
           </div>
 
@@ -618,72 +622,78 @@ export const ScheduleView: React.FC = () => {
                     )}
 
                     {/* Schedule Tab View */}
-                    {(!isPast || currentTab === 'schedule') && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                            <Clock className="w-3 h-3" style={{ color: theme.primary }} /> {t.schedule.sessionScheduleTitle}
-                          </span>
-                          {isDoubleRace && (
-                            <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
-                              <Zap className="w-2.5 h-2.5" />
-                              <span>{t.schedule.doubleRaceFormat}</span>
+                    {(!isPast || currentTab === 'schedule') && (() => {
+                      const roundTz = getCircuitTimezone(r.circuitName, r.locality, r.country);
+                      return (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                              <Clock className="w-3 h-3" style={{ color: theme.primary }} /> {t.schedule.sessionScheduleTitle}
                             </span>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                          {r.sessions?.map((s, idx) => {
-                            const isSprint = s.name.toLowerCase().includes('sprint');
-                            const isFeatureOrMain =
-                              s.name.toLowerCase().includes('feature') ||
-                              (!isSprint && (s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')));
-                            return (
-                              <div
-                                key={idx}
-                                className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
-                                  isFeatureOrMain || isSprint
-                                    ? 'bg-[#1C2230] border-t border-b border-r border-white/[0.08] text-white font-bold'
-                                    : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
-                                }`}
-                                style={
-                                  isFeatureOrMain || isSprint
-                                    ? { borderLeft: `3px solid ${isSprint ? '#F59E0B' : theme.primary}` }
-                                    : undefined
-                                }
-                              >
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="font-semibold uppercase truncate">{translateSession(s.name)}</span>
-                                  {isSprint && (
-                                    <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
-                                      {lang === 'es' ? 'CARRERA 1' : 'RACE 1'}
+                            <div className="flex items-center gap-2">
+                              {isDoubleRace && (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-amber-400 uppercase bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                                  <Zap className="w-2.5 h-2.5" />
+                                  <span>{t.schedule.doubleRaceFormat}</span>
+                                </span>
+                              )}
+                              <TrackTimeToggle className="scale-90 origin-right" />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {r.sessions?.map((s, idx) => {
+                              const isSprint = s.name.toLowerCase().includes('sprint');
+                              const isFeatureOrMain =
+                                s.name.toLowerCase().includes('feature') ||
+                                (!isSprint && (s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')));
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono ${
+                                    isFeatureOrMain || isSprint
+                                      ? 'bg-[#1C2230] border-t border-b border-r border-white/[0.08] text-white font-bold'
+                                      : 'bg-[#131722] border border-white/[0.08] text-zinc-400'
+                                  }`}
+                                  style={
+                                    isFeatureOrMain || isSprint
+                                      ? { borderLeft: `3px solid ${isSprint ? '#F59E0B' : theme.primary}` }
+                                      : undefined
+                                  }
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="font-semibold uppercase truncate">{translateSession(s.name)}</span>
+                                    {isSprint && (
+                                      <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+                                        {lang === 'es' ? 'CARRERA 1' : 'RACE 1'}
+                                      </span>
+                                    )}
+                                    {isFeatureOrMain && series !== 'f1' && (
+                                      <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 shrink-0">
+                                        {lang === 'es' ? 'CARRERA 2' : 'RACE 2'}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 tabular-nums shrink-0">
+                                    <span className="text-zinc-400 text-[11px]">
+                                      {formatLocalDate(s.dateTime, roundTz)}
                                     </span>
-                                  )}
-                                  {isFeatureOrMain && series !== 'f1' && (
-                                    <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 shrink-0">
-                                      {lang === 'es' ? 'CARRERA 2' : 'RACE 2'}
-                                    </span>
-                                  )}
+                                    {formatLocalTime(s.dateTime, roundTz) ? (
+                                      <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
+                                        {formatLocalTime(s.dateTime, roundTz)} HS
+                                      </span>
+                                    ) : (
+                                      <span className="text-zinc-500 bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md text-[10px]">
+                                        {t.schedule.toConfirm}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2 tabular-nums shrink-0">
-                                  <span className="text-zinc-400 text-[11px]">
-                                    {formatLocalDate(s.dateTime)}
-                                  </span>
-                                  {formatLocalTime(s.dateTime) ? (
-                                    <span className="font-bold text-white bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md">
-                                      {formatLocalTime(s.dateTime)} HS
-                                    </span>
-                                  ) : (
-                                    <span className="text-zinc-500 bg-[#0B0E14] border border-white/[0.08] px-1.5 py-0.5 rounded-md text-[10px]">
-                                      {t.schedule.toConfirm}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 )}
               </div>

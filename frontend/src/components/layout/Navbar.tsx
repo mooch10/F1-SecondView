@@ -3,6 +3,7 @@ import { Moon, Sun } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries, SERIES_THEMES } from '../../hooks/useSeries';
+import { TrackTimeToggle } from '../common/TrackTimeToggle';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -87,6 +88,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Status Controls (Constant width & position across F1, F2, F3) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Dual Clock Track Time Widget (My Time vs Track Time) */}
+            <TrackTimeToggle className="hidden sm:inline-flex" />
+
             {/* Language Switcher Button: [ ES | EN ] */}
             <button
               type="button"
