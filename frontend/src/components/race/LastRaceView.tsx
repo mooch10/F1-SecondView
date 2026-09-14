@@ -51,11 +51,11 @@ export const LastRaceView: React.FC = () => {
     });
   };
 
-  const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
+  const openDriverProfile = (_driverNumber?: number | string, code?: string, fullName?: string) => {
+    if (series !== 'f1') return;
     const profile =
       (code ? getF1DriverProfile(code) : undefined) ||
-      (fullName ? getF1DriverProfile(fullName) : undefined) ||
-      (driverNumber !== undefined ? getF1DriverProfile(driverNumber) : undefined);
+      (fullName ? getF1DriverProfile(fullName) : undefined);
     if (profile) {
       setSelectedProfile(profile);
       setIsProfileOpen(true);
@@ -190,9 +190,7 @@ export const LastRaceView: React.FC = () => {
           {/* Winner Showcase Card */}
           {winner && (
             <div
-              onClick={() => openDriverProfile(winner.driverNumber, winner.code, winner.fullName)}
-              className="bg-[#0B0E14] border border-[#FFD60A]/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3 cursor-pointer hover:border-[#FFD60A]/70 hover:bg-[#FFD60A]/[0.02] transition-colors"
-              title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+              className="bg-[#0B0E14] border border-[#FFD60A]/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3"
             >
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg text-black font-mono shadow-sm shrink-0"
@@ -204,9 +202,24 @@ export const LastRaceView: React.FC = () => {
                 <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
                   <Trophy className="w-2.5 h-2.5" /> {t.lastRace.winnerBadge}
                 </span>
-                <span className="text-sm font-bold text-white truncate font-sans hover:text-[#FFD60A] transition-colors">
-                  {winner.fullName}
-                </span>
+                <div className="flex items-center gap-1.5 truncate">
+                  {series === 'f1' && winner.code ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDriverProfile(undefined, winner.code, winner.fullName);
+                      }}
+                      className="font-mono font-black text-xs px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#FFD60A] text-white hover:text-black transition-colors cursor-pointer"
+                      title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                    >
+                      {winner.code}
+                    </button>
+                  ) : null}
+                  <span className="text-sm font-bold text-white truncate font-sans">
+                    {winner.fullName}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2 text-[11px] font-mono mt-0.5">
                   <span className="text-zinc-400 truncate">{winner.teamName}</span>
                   <span className="text-[#FFD60A] font-bold bg-white/[0.08] px-1.5 py-0.2 rounded">
@@ -238,9 +251,7 @@ export const LastRaceView: React.FC = () => {
             return (
               <div
                 key={p.driverNumber}
-                onClick={() => openDriverProfile(p.driverNumber, p.code, p.fullName)}
-                className={`p-2.5 rounded-lg border flex items-center justify-between font-mono text-xs cursor-pointer hover:opacity-90 hover:border-white/30 transition-all ${medalBorder}`}
-                title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                className={`p-2.5 rounded-lg border flex items-center justify-between font-mono text-xs ${medalBorder}`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span
@@ -249,9 +260,26 @@ export const LastRaceView: React.FC = () => {
                     {p.pos}
                   </span>
                   <div className="flex flex-col leading-tight truncate">
-                    <span className="font-bold text-white text-xs truncate hover:text-[#FFD60A] transition-colors">
-                      {p.code} • {p.familyName}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {series === 'f1' && p.code ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDriverProfile(undefined, p.code, p.fullName);
+                          }}
+                          className="font-bold text-white text-xs hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                          title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                        >
+                          {p.code}
+                        </button>
+                      ) : (
+                        <span className="font-bold text-white text-xs">{p.code}</span>
+                      )}
+                      <span className="text-xs text-zinc-300 truncate">
+                        • {p.familyName}
+                      </span>
+                    </div>
                     <span className="text-[10px] text-zinc-400 truncate">
                       {p.teamName}
                     </span>
@@ -344,22 +372,31 @@ export const LastRaceView: React.FC = () => {
 
                   {/* Driver & Team */}
                   <div
-                    className="col-span-5 sm:col-span-4 flex items-center gap-2 overflow-hidden cursor-pointer group"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openDriverProfile(d.driverNumber, d.code, d.fullName);
-                    }}
-                    title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                    className="col-span-5 sm:col-span-4 flex items-center gap-2 overflow-hidden"
                   >
                     <span
-                      className="w-1 h-6 rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
+                      className="w-1 h-6 rounded-full flex-shrink-0"
                       style={{ backgroundColor: d.teamColor || '#71717A' }}
                     />
                     <div className="flex flex-col leading-tight truncate">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono text-sm font-bold text-white tracking-tight group-hover:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover:decoration-[#FFD60A]/60">
-                          {d.code}
-                        </span>
+                        {series === 'f1' && d.code ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDriverProfile(undefined, d.code, d.fullName);
+                            }}
+                            className="font-mono text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                            title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                          >
+                            {d.code}
+                          </button>
+                        ) : (
+                          <span className="font-mono text-sm font-bold text-white tracking-tight">
+                            {d.code}
+                          </span>
+                        )}
                         <span className="text-[10px] text-zinc-500 font-mono">
                           #{d.driverNumber}
                         </span>
@@ -511,14 +548,16 @@ export const LastRaceView: React.FC = () => {
                     </div>
 
                     {/* View Driver Profile Button */}
-                    <button
-                      type="button"
-                      onClick={() => openDriverProfile(d.driverNumber, d.code, d.fullName)}
-                      className="mt-3 w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <span>👤</span>
-                      <span>{lang === 'es' ? 'Ver Ficha Oficial de Piloto' : 'View Official Driver Profile'}</span>
-                    </button>
+                    {series === 'f1' && (
+                      <button
+                        type="button"
+                        onClick={() => openDriverProfile(undefined, d.code, d.fullName)}
+                        className="mt-3 w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <span>👤</span>
+                        <span>{lang === 'es' ? 'Ver Ficha Oficial de Piloto' : 'View Official Driver Profile'}</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

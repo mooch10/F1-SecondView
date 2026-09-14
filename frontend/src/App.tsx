@@ -15,6 +15,7 @@ import { StandingsView } from './components/standings/StandingsView';
 import { HeroView } from './components/hero/HeroView';
 import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
+import { useSeries } from './hooks/useSeries';
 import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
 import type { ActiveTab } from './types/f1';
@@ -25,6 +26,13 @@ function App() {
   const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const { t } = useLanguage();
+  const { setSeries } = useSeries();
+
+  const handleEnter = () => {
+    setSeries('f1');
+    setActiveTab('live');
+    setShowHero(false);
+  };
 
   const {
     snapshot,
@@ -60,7 +68,7 @@ function App() {
   return (
     <div className="min-h-screen bg-[#0B0E14] text-zinc-100 flex flex-col font-chakra antialiased">
       {/* Hero Welcome Screen with Franco Colapinto */}
-      {showHero && <HeroView onEnter={() => setShowHero(false)} />}
+      {showHero && <HeroView onEnter={handleEnter} />}
 
       {/* Top Navigation Bar */}
       <Navbar

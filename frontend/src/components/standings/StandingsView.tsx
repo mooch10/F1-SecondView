@@ -9,7 +9,7 @@ import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 
 export const StandingsView: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { series, theme } = useSeries();
   const [data, setData] = useState<StandingsData | null>(null);
   const [driverChanges, setDriverChanges] = useState<DriverChangeAlert[]>([]);
@@ -45,6 +45,7 @@ export const StandingsView: React.FC = () => {
   };
 
   const handleDriverClick = (d: { code?: string; name?: string }) => {
+    if (series !== 'f1') return;
     const profile = getF1DriverProfile(d.code) || getF1DriverProfile(d.name);
     if (profile) {
       setSelectedProfile(profile);
@@ -137,9 +138,7 @@ export const StandingsView: React.FC = () => {
             {data.drivers.map((d) => (
               <div
                 key={`${d.code}-${d.pos}`}
-                onClick={() => handleDriverClick(d)}
-                className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.04] active:bg-white/[0.06] transition-colors cursor-pointer group"
-                title="Ver ficha de piloto"
+                className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.02] transition-colors"
               >
                 {/* Pos */}
                 <div className="col-span-1 text-center font-mono text-xs sm:text-sm font-black tabular-nums">
@@ -164,10 +163,24 @@ export const StandingsView: React.FC = () => {
                   />
                   <div className="truncate">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase group-hover:underline decoration-zinc-400">
-                        {d.code}
-                      </span>
-                      <span className="text-xs text-zinc-400 group-hover:text-zinc-200 font-medium truncate hidden sm:inline">
+                      {series === 'f1' ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDriverClick(d);
+                          }}
+                          className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                          title={lang === 'es' ? 'Ver ficha de piloto' : 'View driver profile'}
+                        >
+                          {d.code}
+                        </button>
+                      ) : (
+                        <span className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase">
+                          {d.code}
+                        </span>
+                      )}
+                      <span className="text-xs text-zinc-400 font-medium truncate hidden sm:inline">
                         {d.name}
                       </span>
                     </div>

@@ -78,11 +78,10 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
     });
   };
 
-  const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
+  const openDriverProfile = (_driverNumber?: number | string, code?: string, fullName?: string) => {
     const profile =
       (code ? getF1DriverProfile(code) : undefined) ||
-      (fullName ? getF1DriverProfile(fullName) : undefined) ||
-      (driverNumber !== undefined ? getF1DriverProfile(driverNumber) : undefined);
+      (fullName ? getF1DriverProfile(fullName) : undefined);
     if (profile) {
       setSelectedProfile(profile);
       setIsProfileOpen(true);
@@ -535,22 +534,25 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
                     {/* Driver & Team */}
                     <div
-                      className="col-span-3 sm:col-span-3 flex items-center gap-1.5 sm:gap-2.5 overflow-hidden cursor-pointer group"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDriverProfile(d.driverNumber, d.code, d.fullName);
-                      }}
-                      title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                      className="col-span-3 sm:col-span-3 flex items-center gap-1.5 sm:gap-2.5 overflow-hidden"
                     >
                       <span
-                        className="w-1.5 h-7 rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
+                        className="w-1.5 h-7 rounded-full flex-shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
                       <div className="flex flex-col leading-snug truncate">
                         <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
-                          <span className="font-mono text-sm sm:text-base font-black text-white tracking-tight group-hover:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover:decoration-[#FFD60A]/60">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDriverProfile(undefined, d.code, d.fullName);
+                            }}
+                            className="font-mono text-sm sm:text-base font-black text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
+                            title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                          >
                             {d.code}
-                          </span>
+                          </button>
                           <span className="text-[10px] sm:text-xs text-zinc-500 font-mono">
                             #{d.driverNumber}
                           </span>
@@ -709,7 +711,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                       {/* View Driver Profile Button */}
                       <button
                         type="button"
-                        onClick={() => openDriverProfile(d.driverNumber, d.code, d.fullName)}
+                        onClick={() => openDriverProfile(undefined, d.code, d.fullName)}
                         className="w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
                         <span>👤</span>
@@ -775,9 +777,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
             {poleDriver && (
               <div
-                onClick={() => openDriverProfile(poleDriver.driverNumber, poleDriver.code, poleDriver.fullName)}
-                className="bg-[#0B0E14] border border-amber-500/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3 cursor-pointer hover:border-amber-500/70 hover:bg-amber-500/[0.02] transition-colors"
-                title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                className="bg-[#0B0E14] border border-amber-500/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3"
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg text-black font-mono shadow-sm shrink-0"
@@ -789,9 +789,24 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
                     <Sparkles className="w-2.5 h-2.5" /> {t.qualy.poleBadge}
                   </span>
-                  <span className="text-sm font-bold text-white truncate font-sans">
-                    {poleDriver.fullName}
-                  </span>
+                  <div className="flex items-center gap-1.5 truncate">
+                    {poleDriver.code ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDriverProfile(undefined, poleDriver.code, poleDriver.fullName);
+                        }}
+                        className="font-mono font-black text-xs px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#FFD60A] text-white hover:text-black transition-colors cursor-pointer"
+                        title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
+                      >
+                        {poleDriver.code}
+                      </button>
+                    ) : null}
+                    <span className="text-sm font-bold text-white truncate font-sans">
+                      {poleDriver.fullName}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2 text-[11px] font-mono mt-0.5">
                     <span className="text-zinc-400 truncate">{poleDriver.teamName}</span>
                     <span className="text-white font-bold bg-white/[0.08] px-1.5 py-0.2 rounded font-tabular">
@@ -902,22 +917,25 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                     </div>
 
                     <div
-                      className="col-span-5 sm:col-span-3 flex items-center gap-2 overflow-hidden cursor-pointer group"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDriverProfile(d.driverNumber, d.code, d.fullName);
-                      }}
-                      title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                      className="col-span-5 sm:col-span-3 flex items-center gap-2 overflow-hidden"
                     >
                       <span
-                        className="w-1 h-6 rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
+                        className="w-1 h-6 rounded-full flex-shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
                       <div className="flex flex-col leading-tight truncate">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-mono text-sm font-bold text-white tracking-tight group-hover:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover:decoration-[#FFD60A]/60">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDriverProfile(undefined, d.code, d.fullName);
+                            }}
+                            className="font-mono text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
+                            title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                          >
                             {d.code}
-                          </span>
+                          </button>
                           <span className="text-[10px] text-zinc-500 font-mono">
                             #{d.driverNumber}
                           </span>
@@ -1068,7 +1086,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                       {/* View Driver Profile Button */}
                       <button
                         type="button"
-                        onClick={() => openDriverProfile(d.driverNumber, d.code, d.fullName)}
+                        onClick={() => openDriverProfile(undefined, d.code, d.fullName)}
                         className="mt-3 w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
                         <span>👤</span>

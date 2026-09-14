@@ -37,11 +37,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const openDriverProfile = (driverNumber?: number | string, code?: string, fullName?: string) => {
+  const openDriverProfile = (_driverNumber?: number | string, code?: string, fullName?: string) => {
     const profile =
       (code ? getF1DriverProfile(code) : undefined) ||
-      (fullName ? getF1DriverProfile(fullName) : undefined) ||
-      (driverNumber !== undefined ? getF1DriverProfile(driverNumber) : undefined);
+      (fullName ? getF1DriverProfile(fullName) : undefined);
     if (profile) {
       setSelectedProfile(profile);
       setIsProfileOpen(true);
@@ -284,19 +283,25 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
             {/* Code, Number & Name */}
             <div
-              className="col-span-4 sm:col-span-3 flex items-center gap-1.5 overflow-hidden cursor-pointer group"
-              onClick={() => openDriverProfile(pinnedDriver.driverNumber, pinnedDriver.code, pinnedDriver.fullName)}
-              title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+              className="col-span-4 sm:col-span-3 flex items-center gap-1.5 overflow-hidden"
             >
               <span
-                className="w-1.5 h-6 sm:h-7 rounded-full shrink-0 group-hover:scale-y-110 transition-transform"
+                className="w-1.5 h-6 sm:h-7 rounded-full shrink-0"
                 style={{ backgroundColor: pinnedDriver.teamColor || '#E10600' }}
               />
               <div className="flex flex-col leading-tight truncate">
                 <div className="flex items-center gap-1">
-                  <span className="font-mono text-sm font-black text-white group-hover:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover:decoration-[#FFD60A]/60">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDriverProfile(undefined, pinnedDriver.code, pinnedDriver.fullName);
+                    }}
+                    className="font-mono text-sm font-black text-white hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
+                    title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                  >
                     {pinnedDriver.code}
-                  </span>
+                  </button>
                   <span className="text-[10px] text-zinc-400 font-mono">
                     #{pinnedDriver.driverNumber}
                   </span>
@@ -493,17 +498,20 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </button>
 
                   <div
-                    className="flex flex-col leading-tight truncate cursor-pointer group/driver min-w-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openDriverProfile(d.driverNumber, d.code, d.fullName);
-                    }}
-                    title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                    className="flex flex-col leading-tight truncate min-w-0"
                   >
                     <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap min-w-0">
-                      <span className="font-mono text-xs sm:text-sm font-bold text-white tracking-tight group-hover/driver:text-[#FFD60A] transition-colors underline decoration-white/20 group-hover/driver:decoration-[#FFD60A]/60 shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDriverProfile(undefined, d.code, d.fullName);
+                        }}
+                        className="font-mono text-xs sm:text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 shrink-0 cursor-pointer"
+                        title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
+                      >
                         {d.code}
-                      </span>
+                      </button>
                       <span className="text-[10px] text-zinc-500 font-mono shrink-0 hidden xs:inline">
                         #{d.driverNumber}
                       </span>
