@@ -363,9 +363,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           const isPinned = pinnedDriverNumber === d.driverNumber;
           const prevDriver = index > 0 ? activeDrivers[index - 1] : null;
           const isPointsZone = isRace && d.pos <= 10;
-          const basePoints = isRace ? F1_POINTS[d.pos] || 0 : 0;
-          const hasFastestLapBonus = isRace && d.isFastestLap && d.pos <= 10;
-          const totalPoints = basePoints + (hasFastestLapBonus ? 1 : 0);
+          const totalPoints = isRace ? F1_POINTS[d.pos] || 0 : 0;
           const showPointsCutoff = isRace && d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
           const showQ2Cutoff = isQualy && d.pos > 10 && (!prevDriver || prevDriver.pos <= 10);
           const showQ1Cutoff = isQualy && d.pos > 15 && (!prevDriver || prevDriver.pos <= 15);
@@ -492,19 +490,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {/* Official Championship Points Badge in Race (Desktop) */}
                       {isRace && totalPoints > 0 && (
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black border tracking-tight shrink-0 select-none shadow-xs hidden sm:inline-block ${
-                            hasFastestLapBonus
-                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                              : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                          }`}
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black border tracking-tight shrink-0 select-none shadow-xs hidden sm:inline-block bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                           title={
-                            hasFastestLapBonus
-                              ? lang === 'es'
-                                ? `Zona de puntos: +${basePoints} pts (P${d.pos}) + 1 pt (Vuelta Rápida) = +${totalPoints} pts`
-                                : `Points zone: +${basePoints} pts (P${d.pos}) + 1 pt (Fastest Lap) = +${totalPoints} pts`
-                              : lang === 'es'
-                              ? `Zona de puntos: +${basePoints} pts para el Campeonato Mundial`
-                                : `Points zone: +${basePoints} pts for World Championship`
+                            lang === 'es'
+                              ? `Zona de puntos: +${totalPoints} pts para el Campeonato Mundial`
+                              : `Points zone: +${totalPoints} pts for World Championship`
                           }
                         >
                           +{totalPoints} PTS
@@ -736,20 +726,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
                             totalPoints > 0
-                              ? hasFastestLapBonus
-                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
-                                : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                               : 'bg-white/[0.04] text-zinc-500 border border-white/[0.06]'
                           }`}
                         >
                           {totalPoints > 0
-                            ? hasFastestLapBonus
-                              ? `+${basePoints} PTS (P${d.pos}) + 1 PT (${lang === 'es' ? 'V. RÁPIDA' : 'FASTEST LAP'}) = ${totalPoints} PTS`
-                              : `+${totalPoints} ${t.live.table.pointsChampionship}`
-                            : d.isFastestLap
-                            ? lang === 'es'
-                              ? 'V. RÁPIDA (0 PTS · FUERA DEL TOP 10)'
-                              : 'FASTEST LAP (0 PTS · OUT OF TOP 10)'
+                            ? `+${totalPoints} ${t.live.table.pointsChampionship}`
                             : t.live.table.outOfPoints}
                         </span>
                       )}

@@ -7,6 +7,13 @@ export interface CareerStats {
   highestGrid: string;
 }
 
+export interface SeasonStats2026 {
+  position?: number;
+  points?: number;
+  wins?: number;
+  teamName?: string;
+}
+
 export interface F1DriverProfile {
   number: number;
   code: string;
@@ -23,6 +30,7 @@ export interface F1DriverProfile {
   headshotUrl: string;
   biography: string;
   careerStats: CareerStats;
+  season2026?: SeasonStats2026;
 }
 
 export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
@@ -37,19 +45,19 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇦🇷',
     birthDate: '2003-05-27',
     birthPlace: 'Pilar, Buenos Aires, Argentina',
-    team: 'Williams / Alpine',
+    team: 'Alpine F1 Team',
     teamColor: '#00A1E8',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FRACOL01_Franco_Colapinto/fracol01.png.transform/1col/image.png',
     biography:
-      'Joven prodigio argentino que revolucionó la Fórmula 1 en 2024 tras debutar con Williams en Monza. Sumó puntos históricos en Bakú (P8) y Austin (P10) con maniobras memorables, devolviendo a la Argentina al mapa grande del automovilismo mundial tras más de dos décadas.',
+      'Joven prodigio argentino que revolucionó la Fórmula 1 y se consagró como piloto titular oficial de Alpine F1 Team en 2026. Protagonista de memorables batallas rueda a rueda, consolidando a la Argentina en la élite del automovilismo mundial con ritmo implacable.',
     careerStats: {
-      grandsPrix: 9,
+      grandsPrix: 23,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'P8 (Azerbaiyán 2024)',
-      highestGrid: 'P8 (Azerbaiyán 2024)',
+      highestFinish: 'P6 (Canadá 2026)',
+      highestGrid: 'P7 (Canadá 2026)',
     },
   },
   1: {
@@ -70,8 +78,8 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     biography:
       'Tetracampeón del mundo con Red Bull Racing. Poseedor de los récords de victorias consecutivas (10) y puntos en una sola temporada. Famoso por su agresividad implacable en los adelantamientos, consistencia de máquina y ritmo demoledor bajo cualquier condición meteorológica.',
     careerStats: {
-      grandsPrix: 209,
-      podiums: 111,
+      grandsPrix: 223,
+      podiums: 112,
       victories: 63,
       worldChampionships: 4,
       highestFinish: 'P1 (x63)',
@@ -94,14 +102,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png.transform/1col/image.png',
     biography:
-      'Líder natural de McLaren y subcampeón del mundo. Con su primera victoria en Miami 2024 y triunfos categóricos en Zandvoort y Singapur, se consagró como uno de los pilotos más rápidos a una vuelta de la grilla moderna.',
+      'Líder natural de McLaren y subcampeón del mundo. Con múltiples triunfos en Miami, Zandvoort, Singapur y victorias estelares en 2026, se consagró como uno de los pilotos más rápidos y consistentes de la grilla de Fórmula 1.',
     careerStats: {
-      grandsPrix: 128,
-      podiums: 26,
-      victories: 3,
+      grandsPrix: 142,
+      podiums: 30,
+      victories: 5,
       worldChampionships: 0,
-      highestFinish: 'P1 (Miami 2024)',
-      highestGrid: 'P1 (x8)',
+      highestFinish: 'P1 (x5)',
+      highestGrid: 'P1 (x10)',
     },
   },
   16: {
@@ -116,18 +124,18 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     birthDate: '1997-10-16',
     birthPlace: 'Montecarlo, Mónaco',
     team: 'Scuderia Ferrari',
-    teamColor: '#E80020',
+    teamColor: '#E8002D',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png.transform/1col/image.png',
     biography:
-      'El "Predestinado" de Ferrari. Maestro indiscutido de las sesiones de clasificación con más de 25 poles. Cumplió el sueño de su vida ganando el Gran Premio de Mónaco en casa y desató la fiesta tifosi venciendo en Monza en 2024.',
+      'El "Predestinado" de Ferrari. Maestro indiscutido de las sesiones de clasificación con más de 25 poles. Cumplió el sueño de su vida ganando en Mónaco y Monza, y encabeza a la Scuderia Ferrari en 2026 en una dupla histórica junto a Lewis Hamilton.',
     careerStats: {
-      grandsPrix: 146,
-      podiums: 42,
-      victories: 8,
+      grandsPrix: 160,
+      podiums: 46,
+      victories: 9,
       worldChampionships: 0,
-      highestFinish: 'P1 (x8)',
-      highestGrid: 'P1 (x26)',
+      highestFinish: 'P1 (x9)',
+      highestGrid: 'P1 (x27)',
     },
   },
   81: {
@@ -146,14 +154,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png.transform/1col/image.png',
     biography:
-      'Una de las irrupciones más impactantes de las últimas décadas. Tras ganar Fórmula Renault, F3 y F2 en años consecutivos como debutante, logró sus primeras victorias en F1 en Hungría y con una defensa colosal ante Leclerc en Bakú 2024.',
+      'Una de las irrupciones más impactantes de las últimas décadas. Tras ganar Fórmula Renault, F3 y F2 en años consecutivos como debutante, consolidó su posición en la cima de McLaren con múltiples victorias y podios en la Fórmula 1 moderna.',
     careerStats: {
-      grandsPrix: 46,
-      podiums: 9,
+      grandsPrix: 60,
+      podiums: 13,
       victories: 2,
       worldChampionships: 0,
-      highestFinish: 'P1 (Hungría 2024)',
-      highestGrid: 'P2 (x5)',
+      highestFinish: 'P1 (x2)',
+      highestGrid: 'P2 (x6)',
     },
   },
   55: {
@@ -167,14 +175,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇪🇸',
     birthDate: '1994-09-01',
     birthPlace: 'Madrid, España',
-    team: 'Williams / Ferrari',
+    team: 'Williams Racing',
     teamColor: '#64C4FF',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png.transform/1col/image.png',
     biography:
-      'Apodado "Smooth Operator". Conocido por su inteligencia estratégica desde el habitáculo y precisión quirúrgica. Único piloto no-Red Bull en ganar una carrera en 2023 (Singapur) y vencedor épico en Australia y México 2024.',
+      'Apodado "Smooth Operator". Conocido por su inteligencia estratégica desde el habitáculo y precisión quirúrgica. Ganador de Grandes Premios con Ferrari, lidera en 2026 el nuevo y ambicioso proyecto de Williams Racing junto a Alex Albon.',
     careerStats: {
-      grandsPrix: 206,
+      grandsPrix: 220,
       podiums: 25,
       victories: 4,
       worldChampionships: 0,
@@ -194,17 +202,17 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     birthDate: '1985-01-07',
     birthPlace: 'Stevenage, Reino Unido',
     team: 'Scuderia Ferrari',
-    teamColor: '#E80020',
+    teamColor: '#E8002D',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png.transform/1col/image.png',
     biography:
-      'Leyenda absoluta del deporte y heptacampeón del mundo. Máximo ganador histórico con 105 victorias y 104 poles. Emocionó al mundo entero con su victoria récord en Silverstone 2024 antes de su traspaso estelar a la Scuderia Ferrari.',
+      'Leyenda absoluta del automovilismo y heptacampeón del mundo. Máximo ganador histórico con más de 105 victorias y 104 poles. Viste el legendario rojo de la Scuderia Ferrari en 2026 en busca de su octava corona mundial.',
     careerStats: {
-      grandsPrix: 356,
-      podiums: 201,
-      victories: 105,
+      grandsPrix: 370,
+      podiums: 204,
+      victories: 106,
       worldChampionships: 7,
-      highestFinish: 'P1 (x105)',
+      highestFinish: 'P1 (x106)',
       highestGrid: 'P1 (x104)',
     },
   },
@@ -224,14 +232,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png.transform/1col/image.png',
     biography:
-      '"Mr. Saturday". Campeón de GP3 y F2, líder de la escudería de las flechas plateadas. Vencedor en Brasil 2022, Austria y Las Vegas 2024, destaca por su velocidad pura en clasificación y temperamento competitivo.',
+      '"Mr. Saturday". Campeón de GP3 y F2, líder experimentado de las flechas plateadas. Con victorias en Brasil, Austria, Las Vegas y triunfos en 2026, comanda a Mercedes-AMG Petronas en una dupla estelar con Kimi Antonelli.',
     careerStats: {
-      grandsPrix: 128,
-      podiums: 15,
-      victories: 3,
+      grandsPrix: 142,
+      podiums: 20,
+      victories: 5,
       worldChampionships: 0,
-      highestFinish: 'P1 (x3)',
-      highestGrid: 'P1 (x4)',
+      highestFinish: 'P1 (x5)',
+      highestGrid: 'P1 (x6)',
     },
   },
   11: {
@@ -245,14 +253,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇲🇽',
     birthDate: '1990-01-26',
     birthPlace: 'Guadalajara, México',
-    team: 'Red Bull Racing',
-    teamColor: '#3671C6',
+    team: 'Cadillac F1 Team',
+    teamColor: '#D4D4D8',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png.transform/1col/image.png',
     biography:
-      '"Checo", el "Ministro de Defensa" mexicano y rey de los circuitos callejeros (Mónaco, Bakú, Singapur, Jeddah). Subcampeón del mundo en 2023 y pilar clave en los títulos de constructores de Red Bull Racing.',
+      '"Checo", el "Ministro de Defensa" mexicano y rey de los circuitos callejeros (Mónaco, Bakú, Singapur, Jeddah). Seis veces ganador de Grandes Premios, comanda en 2026 la histórica entrada de Cadillac F1 Team a la Fórmula 1.',
     careerStats: {
-      grandsPrix: 281,
+      grandsPrix: 295,
       podiums: 39,
       victories: 6,
       worldChampionships: 0,
@@ -271,14 +279,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇪🇸',
     birthDate: '1981-07-29',
     birthPlace: 'Oviedo, Asturias, España',
-    team: 'Aston Martin F1 Team',
+    team: 'Aston Martin Aramco',
     teamColor: '#229971',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png.transform/1col/image.png',
     biography:
-      '"El Nano", bicampeón del mundo (2005, 2006) y el piloto con más carreras disputadas en la historia de la F1 (+400 GPs). Su lectura de carrera, gestión de neumáticos y garra competitiva siguen asombrando a generaciones de aficionados.',
+      '"El Nano", bicampeón del mundo (2005, 2006) y el piloto con más carreras disputadas en la historia de la F1 (+415 GPs). Su lectura de carrera, gestión de neumáticos y garra competitiva siguen asombrando a generaciones de aficionados.',
     careerStats: {
-      grandsPrix: 401,
+      grandsPrix: 418,
       podiums: 106,
       victories: 32,
       worldChampionships: 2,
@@ -298,18 +306,18 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     birthDate: '1996-02-07',
     birthPlace: 'Ruan, Francia',
     team: 'Alpine F1 Team',
-    teamColor: '#0093CC',
+    teamColor: '#00A1E8',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png.transform/1col/image.png',
     biography:
-      'Vencedor de Monza 2020 con AlphaTauri en una de las victorias más emotivas de la era híbrida. Líder de Alpine, logró un podio doble histórico en el diluvio de Interlagos 2024 junto a Ocon.',
+      'Vencedor de Monza 2020 y pilar fundamental de Alpine F1 Team. Líder consistente del equipo francés en 2026, formando una combativa dupla con Franco Colapinto.',
     careerStats: {
-      grandsPrix: 153,
+      grandsPrix: 164,
       podiums: 5,
       victories: 1,
       worldChampionships: 0,
-      highestFinish: 'P1 (Italia 2020)',
-      highestGrid: 'P2 (x2)',
+      highestFinish: 'P1 (Monza 2020)',
+      highestGrid: 'P2',
     },
   },
   31: {
@@ -328,14 +336,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png.transform/1col/image.png',
     biography:
-      'Ganador del Gran Premio de Hungría 2021. Piloto aguerrido y tenaz en el combate rueda a rueda. Tras su paso por Alpine con podio en São Paulo 2024, comanda el nuevo proyecto de Haas F1 Team.',
+      'Ganador del Gran Premio de Hungría 2021. Piloto aguerrido y tenaz en el combate rueda a rueda. Tras su paso por Force India y Alpine, comanda el proyecto de Haas F1 Team en 2026.',
     careerStats: {
-      grandsPrix: 156,
+      grandsPrix: 168,
       podiums: 4,
       victories: 1,
       worldChampionships: 0,
       highestFinish: 'P1 (Hungría 2021)',
-      highestGrid: 'P3 (x2)',
+      highestGrid: 'P3',
     },
   },
   18: {
@@ -349,14 +357,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇨🇦',
     birthDate: '1998-10-29',
     birthPlace: 'Montreal, Canadá',
-    team: 'Aston Martin F1 Team',
+    team: 'Aston Martin Aramco',
     teamColor: '#229971',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png.transform/1col/image.png',
     biography:
-      'Piloto canadiense que logró podio en su temporada debut en Bakú 2017 con 18 años. Especialista en condiciones de lluvia extrema, con una pole position magistral en el Gran Premio de Turquía 2020.',
+      'Piloto canadiense con podios históricos desde su debut en 2017 (Bakú, Monza, Sakhir) y pole position en Turquía. Piloto de Aston Martin Aramco junto a Fernando Alonso.',
     careerStats: {
-      grandsPrix: 166,
+      grandsPrix: 180,
       podiums: 3,
       victories: 0,
       worldChampionships: 0,
@@ -375,14 +383,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇩🇪',
     birthDate: '1987-08-19',
     birthPlace: 'Emmerich am Rhein, Alemania',
-    team: 'Kick Sauber / Audi',
+    team: 'Audi F1 Team',
     teamColor: '#52E252',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png.transform/1col/image.png',
     biography:
-      '"Hulk". Campeón de GP2 y ganador de las 24 Horas de Le Mans en su debut. Famoso por su velocidad estelar los sábados y regularidad implacable en zona de puntos, liderando el camino de transición hacia Audi.',
+      '"Hulk". Campeón de GP2 y ganador absoluto de las 24 Horas de Le Mans. Veterano respetadísimo de la parrilla que encabeza el desembarco de Audi en la Fórmula 1 en 2026 junto a Gabriel Bortoleto.',
     careerStats: {
-      grandsPrix: 227,
+      grandsPrix: 241,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
@@ -401,19 +409,19 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇯🇵',
     birthDate: '2000-05-11',
     birthPlace: 'Sagamihara, Kanagawa, Japón',
-    team: 'Visa Cash App RB',
+    team: 'Racing Bulls',
     teamColor: '#6692FF',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png.transform/1col/image.png',
     biography:
-      'El piloto japonés más veloz de su generación. Formado en el programa junior de Honda y Red Bull, ha madurado hasta convertirse en el referente de Racing Bulls con adelantamientos osados y gran velocidad.',
+      'Piloto japonés impulsado por Honda y Red Bull. Conocido por su agresividad combativa y velocidad pura en clasificación, referente de Racing Bulls.',
     careerStats: {
-      grandsPrix: 87,
+      grandsPrix: 101,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
       highestFinish: 'P4 (Abu Dhabi 2021)',
-      highestGrid: 'P3 (Brasil 2024)',
+      highestGrid: 'P6',
     },
   },
   23: {
@@ -428,18 +436,18 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     birthDate: '1996-03-23',
     birthPlace: 'Londres, Reino Unido',
     team: 'Williams Racing',
-    teamColor: '#00A0DE',
+    teamColor: '#64C4FF',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alexander_Albon/alealb01.png.transform/1col/image.png',
     biography:
-      'Líder del resurgimiento de Williams Racing. Consiguió podios con Red Bull en Mugello y Baréin, y desde 2022 ha exprimido al máximo el monoplaza de Grove, defendiendo posiciones con uñas y dientes.',
+      'Piloto tailandés con podios en Mugello y Bahréin. Pilar fundamental de la reestructuración de Williams Racing, donde forma una temible dupla con Carlos Sainz en 2026.',
     careerStats: {
-      grandsPrix: 104,
+      grandsPrix: 118,
       podiums: 2,
       victories: 0,
       worldChampionships: 0,
       highestFinish: 'P3 (x2)',
-      highestGrid: 'P4 (x3)',
+      highestGrid: 'P2',
     },
   },
   30: {
@@ -453,19 +461,19 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇳🇿',
     birthDate: '2002-02-11',
     birthPlace: 'Hastings, Nueva Zelanda',
-    team: 'Red Bull Racing / RB',
-    teamColor: '#3671C6',
+    team: 'Racing Bulls',
+    teamColor: '#6692FF',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LIALAW01_Liam_Lawson/lialaw01.png.transform/1col/image.png',
     biography:
-      'Joven neozelandés que impresionó al sustituir a Ricciardo en 2023 sumando puntos en Singapur. Con su estilo combativo sin miedo a los consagrados, ascendió a la estructura mayor de Red Bull.',
+      'Joven neozelandés forjado en el Red Bull Junior Team y subcampeón de Super Fórmula. Consagrado como titular de Racing Bulls en 2026 sumando puntos valiosos con gran temple.',
     careerStats: {
-      grandsPrix: 11,
+      grandsPrix: 25,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'P9 (x2)',
-      highestGrid: 'P10',
+      highestFinish: 'P7 (Melbourne 2026)',
+      highestGrid: 'P7',
     },
   },
   87: {
@@ -484,14 +492,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OLIBEA01_Oliver_Bearman/olibea01.png.transform/1col/image.png',
     biography:
-      '"Ollie". Protagonizó uno de los debuts más estelares de la historia al subirse a Ferrari con 18 años en Jeddah 2024 y finalizar P7. También sumó puntos con Haas en Bakú, sellando su contrato titular.',
+      '"Ollie". Protagonizó uno de los debuts más estelares de la historia sumando con Ferrari en Jeddah y con Haas en Bakú. Titular a tiempo completo en Haas F1 Team en 2026 puntuando de forma constante.',
     careerStats: {
-      grandsPrix: 3,
+      grandsPrix: 17,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'P7 (Arabia Saudita 2024)',
-      highestGrid: 'P11',
+      highestFinish: 'P5 (Miami 2026)',
+      highestGrid: 'P6',
     },
   },
   77: {
@@ -505,123 +513,19 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇫🇮',
     birthDate: '1989-08-28',
     birthPlace: 'Nastola, Finlandia',
-    team: 'Kick Sauber / Cadillac',
-    teamColor: '#52E252',
+    team: 'Cadillac F1 Team',
+    teamColor: '#D4D4D8',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png.transform/1col/image.png',
     biography:
-      'Subcampeón del mundo en 2019 y 2020 con Mercedes-AMG. Ganador de 10 Grandes Premios y autor de 67 podios. Uno de los pilotos más veloces y experimentados de la era moderna.',
+      'Subcampeón del mundo y 10 veces ganador de Grandes Premios con Mercedes. Aporta su vasta jerarquía para encabezar la llegada de Cadillac F1 Team a la Fórmula 1 en 2026.',
     careerStats: {
-      grandsPrix: 246,
+      grandsPrix: 260,
       podiums: 67,
       victories: 10,
       worldChampionships: 0,
       highestFinish: 'P1 (x10)',
       highestGrid: 'P1 (x20)',
-    },
-  },
-  24: {
-    number: 24,
-    code: 'ZHO',
-    firstName: 'Guanyu',
-    lastName: 'Zhou',
-    fullName: 'Guanyu Zhou',
-    nationality: 'China',
-    countryCode: 'CN',
-    flag: '🇨🇳',
-    birthDate: '1999-05-30',
-    birthPlace: 'Shanghái, China',
-    team: 'Kick Sauber',
-    teamColor: '#52E252',
-    headshotUrl:
-      'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GUAZHO01_Guanyu_Zhou/guazho01.png.transform/1col/image.png',
-    biography:
-      'Primer piloto de la República Popular China en competir en la Fórmula 1, sumando puntos en su carrera debut en Baréin 2022. Respetado por su solidez al volante y técnica limpia.',
-    careerStats: {
-      grandsPrix: 68,
-      podiums: 0,
-      victories: 0,
-      worldChampionships: 0,
-      highestFinish: 'P8 (Canadá 2022)',
-      highestGrid: 'P5 (Hungría 2023)',
-    },
-  },
-  20: {
-    number: 20,
-    code: 'MAG',
-    firstName: 'Kevin',
-    lastName: 'Magnussen',
-    fullName: 'Kevin Magnussen',
-    nationality: 'Dinamarca',
-    countryCode: 'DK',
-    flag: '🇩🇰',
-    birthDate: '1992-10-05',
-    birthPlace: 'Roskilde, Dinamarca',
-    team: 'Haas F1 Team',
-    teamColor: '#B6BABD',
-    headshotUrl:
-      'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png.transform/1col/image.png',
-    biography:
-      '"K-Mag". Logró podio en su primera carrera en F1 (Australia 2014) y una inolvidable pole position bajo la lluvia en Interlagos 2022 con Haas. Célebre por su defensa férrea y valentía.',
-    careerStats: {
-      grandsPrix: 185,
-      podiums: 1,
-      victories: 0,
-      worldChampionships: 0,
-      highestFinish: 'P2 (Australia 2014)',
-      highestGrid: 'P1 (Brasil 2022)',
-    },
-  },
-  3: {
-    number: 3,
-    code: 'RIC',
-    firstName: 'Daniel',
-    lastName: 'Ricciardo',
-    fullName: 'Daniel Ricciardo',
-    nationality: 'Australia',
-    countryCode: 'AU',
-    flag: '🇦🇺',
-    birthDate: '1989-07-01',
-    birthPlace: 'Perth, Australia',
-    team: 'Visa Cash App RB',
-    teamColor: '#6692FF',
-    headshotUrl:
-      'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png.transform/1col/image.png',
-    biography:
-      '"The Honey Badger". Dueño de una de las sonrisas más famosas del paddock y de los adelantamientos más espectaculares en frenada profunda. Ganador de 8 Grandes Premios, incluyendo Mónaco 2018 y Monza 2021.',
-    careerStats: {
-      grandsPrix: 257,
-      podiums: 32,
-      victories: 8,
-      worldChampionships: 0,
-      highestFinish: 'P1 (x8)',
-      highestGrid: 'P1 (x3)',
-    },
-  },
-  2: {
-    number: 2,
-    code: 'SAR',
-    firstName: 'Logan',
-    lastName: 'Sargeant',
-    fullName: 'Logan Sargeant',
-    nationality: 'Estados Unidos',
-    countryCode: 'US',
-    flag: '🇺🇸',
-    birthDate: '2000-12-31',
-    birthPlace: 'Fort Lauderdale, Florida, EE.UU.',
-    team: 'Williams Racing',
-    teamColor: '#00A0DE',
-    headshotUrl:
-      'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LOGSAR01_Logan_Sargeant/logsar01.png.transform/1col/image.png',
-    biography:
-      'Primer piloto estadounidense en sumar puntos en la Fórmula 1 en 30 años al terminar décimo en el Gran Premio de los Estados Unidos en Austin 2023 con Williams Racing.',
-    careerStats: {
-      grandsPrix: 36,
-      podiums: 0,
-      victories: 0,
-      worldChampionships: 0,
-      highestFinish: 'P10 (EE.UU. 2023)',
-      highestGrid: 'P6',
     },
   },
   12: {
@@ -640,40 +544,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/mercedes/andant01/2026mercedesandant01right.webp',
     biography:
-      'La gran promesa italiana y joya de la academia Mercedes. Con solo 18 años, el protegido de Toto Wolff fue elegido para suceder a Lewis Hamilton en las flechas plateadas tras una brillante trayectoria.',
+      'La gran sensación italiana de la Fórmula 1 y prodigio de Mercedes-AMG Petronas. Con solo 19 años debutó como sucesor de Lewis Hamilton y conmocionó al mundo del deporte liderando el Campeonato Mundial 2026 con 8 victorias categóricas.',
     careerStats: {
-      grandsPrix: 0,
-      podiums: 0,
-      victories: 0,
+      grandsPrix: 14,
+      podiums: 10,
+      victories: 8,
       worldChampionships: 0,
-      highestFinish: 'Debut 2025/2026',
-      highestGrid: 'Debut 2025/2026',
-    },
-  },
-  7: {
-    number: 7,
-    code: 'DOO',
-    firstName: 'Jack',
-    lastName: 'Doohan',
-    fullName: 'Jack Doohan',
-    nationality: 'Australia',
-    countryCode: 'AU',
-    flag: '🇦🇺',
-    birthDate: '2003-01-20',
-    birthPlace: 'Gold Coast, Australia',
-    team: 'Alpine F1 Team',
-    teamColor: '#0093CC',
-    headshotUrl:
-      'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/J/JACDOO01_Jack_Doohan/jacdoo01.png.transform/1col/image.png',
-    biography:
-      'Hijo del legendario pentacampeón mundial de motociclismo Mick Doohan. Subcampeón de F3 y ganador múltiple de carreras en F2, ascendido a piloto titular de Alpine.',
-    careerStats: {
-      grandsPrix: 1,
-      podiums: 0,
-      victories: 0,
-      worldChampionships: 0,
-      highestFinish: 'P15',
-      highestGrid: 'P17',
+      highestFinish: 'P1 (x8)',
+      highestGrid: 'P1 (x6)',
     },
   },
   5: {
@@ -687,19 +565,19 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇧🇷',
     birthDate: '2004-10-14',
     birthPlace: 'São Paulo, Brasil',
-    team: 'Kick Sauber / Audi',
+    team: 'Audi F1 Team',
     teamColor: '#52E252',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GABBOR01_Gabriel_Bortoleto/gabbor01.png.transform/1col/image.png',
     biography:
-      'Campeón dominante de Fórmula 3 en 2023 y estrella de F2, respaldado por Fernando Alonso. Elegido por Audi/Sauber para encabezar su nueva era en la Fórmula 1.',
+      'Campeón dominante de Fórmula 3 en 2023 y campeón de Fórmula 2, respaldado por Fernando Alonso. Elegido por Audi para encabezar su nueva era oficial en la Fórmula 1 en 2026.',
     careerStats: {
-      grandsPrix: 0,
+      grandsPrix: 14,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'Debut 2025',
-      highestGrid: 'Debut 2025',
+      highestFinish: 'P9 (Miami 2026)',
+      highestGrid: 'P9',
     },
   },
   6: {
@@ -713,19 +591,19 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     flag: '🇫🇷',
     birthDate: '2004-09-28',
     birthPlace: 'París, Francia',
-    team: 'Racing Bulls',
-    teamColor: '#6692FF',
+    team: 'Red Bull Racing',
+    teamColor: '#3671C6',
     headshotUrl:
       'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/I/ISAHAD01_Isack_Hadjar/isahad01.png.transform/1col/image.png',
     biography:
-      'Apodado por Helmut Marko como el "pequeño Prost". Subcampeón de F2 en 2024 con cuatro victorias soberbias, ascendiendo al programa oficial de Fórmula 1 de Red Bull.',
+      'Apodado por Helmut Marko como el "pequeño Prost". Subcampeón de F2 y ascendido directamente como piloto oficial de Red Bull Racing en la Fórmula 1 en 2026, destacándose por su combatividad rueda a rueda.',
     careerStats: {
-      grandsPrix: 0,
-      podiums: 0,
+      grandsPrix: 14,
+      podiums: 1,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'Debut 2025',
-      highestGrid: 'Debut 2025',
+      highestFinish: 'P4 (Imola 2026)',
+      highestGrid: 'P3',
     },
   },
   41: {
@@ -744,14 +622,14 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
     headshotUrl:
       'https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/racingbulls/arvlin01/2026racingbullsarvlin01right.webp',
     biography:
-      'Joven maravilla británico-sueco formado en el Red Bull Junior Team. Con apenas 18 años ascendió directamente a la Fórmula 1 como piloto titular de Racing Bulls en 2026 tras deslumbrar en las categorías formativas con múltiples victorias épicas en F3 y F2.',
+      'Joven maravilla británico-sueco formado en el Red Bull Junior Team. Con apenas 18 años ascendió directamente a la Fórmula 1 como piloto titular de Racing Bulls en 2026 tras deslumbrar en F3 y F2.',
     careerStats: {
-      grandsPrix: 0,
+      grandsPrix: 14,
       podiums: 0,
       victories: 0,
       worldChampionships: 0,
-      highestFinish: 'Debut 2026',
-      highestGrid: 'Debut 2026',
+      highestFinish: 'P8 (Suzuka 2026)',
+      highestGrid: 'P8',
     },
   },
 };
@@ -789,7 +667,6 @@ export function getF1DriverProfile(
     .replace(/[\u0300-\u036f]/g, '');
 
   // 2. Exact 3-letter code match (VER, NOR, ANT, LIN, COL, etc.)
-  // Crucial: 3-letter codes in F1 are 100% unique. Never substring match them!
   if (normalized.length === 3) {
     const byCode = allDrivers.find((d) => d.code.toLowerCase() === normalized);
     if (byCode) return byCode;
@@ -813,7 +690,6 @@ export function getF1DriverProfile(
   }
 
   // 5. Smart Substring / Name Match (Only for strings of length >= 4)
-  // Prevents short strings (like "ant") from erroneously matching inside "sargeant"
   if (normalized.length >= 4) {
     const matchContained = allDrivers.find((d) => {
       const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -824,6 +700,42 @@ export function getF1DriverProfile(
   }
 
   return undefined;
+}
+
+/**
+ * Enriches a static driver profile with live/season data from current championship standings
+ * so the driver card stays dynamically synchronized with the latest disputed Grand Prix.
+ */
+export function enrichDriverProfileWithSeason(
+  profile: F1DriverProfile,
+  standing?: { pos: number; points: number; wins: number; team?: string; teamColor?: string },
+  totalCompletedRounds = 14,
+): F1DriverProfile {
+  if (!standing) return profile;
+
+  const currentWins = standing.wins || 0;
+  const victories = Math.max(profile.careerStats.victories, currentWins);
+  const grandsPrix = Math.max(profile.careerStats.grandsPrix, totalCompletedRounds);
+
+  return {
+    ...profile,
+    team: standing.team || profile.team,
+    teamColor: standing.teamColor || profile.teamColor,
+    careerStats: {
+      ...profile.careerStats,
+      grandsPrix,
+      victories,
+      highestFinish: currentWins > 0 && !profile.careerStats.highestFinish.startsWith('P1')
+        ? `P1 (x${victories})`
+        : profile.careerStats.highestFinish,
+    },
+    season2026: {
+      position: standing.pos,
+      points: standing.points,
+      wins: standing.wins,
+      teamName: standing.team || profile.team,
+    },
+  };
 }
 
 /**

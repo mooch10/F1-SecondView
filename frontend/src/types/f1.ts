@@ -140,6 +140,7 @@ export interface JolpicaRace {
     dateTime: string;
   }[];
   isNext: boolean;
+  status?: 'COMPLETED' | 'IN_PROGRESS' | 'UPCOMING';
 }
 
 export interface LastRacePodium {

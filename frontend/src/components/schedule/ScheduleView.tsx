@@ -96,7 +96,7 @@ export const ScheduleView: React.FC = () => {
         setLoadingResultRound(round);
         try {
           const detail = await fetchRaceResultsByRound(round, series);
-          if (detail) {
+          if (detail && detail.results && detail.results.length > 0) {
             setRoundResults((prev) => ({ ...prev, [round]: detail }));
           }
         } finally {
@@ -253,7 +253,7 @@ export const ScheduleView: React.FC = () => {
         <div className="divide-y divide-white/[0.08]">
           {races.map((r) => {
             const isExpanded = expandedRound === r.round;
-            const isPast = new Date(r.raceDateTime).getTime() < now;
+            const isPast = r.status ? r.status === 'COMPLETED' : new Date(r.raceDateTime).getTime() + 3 * 3600 * 1000 < now;
             const currentTab = activeSubTab[r.round] || (isPast ? 'results' : 'schedule');
             const detail = roundResults[r.round];
             const isLoadingDetail = loadingResultRound === r.round;

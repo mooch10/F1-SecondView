@@ -17,6 +17,7 @@ export interface JolpicaRace {
     dateTime: string;
   }[];
   isNext: boolean;
+  status?: 'COMPLETED' | 'IN_PROGRESS' | 'UPCOMING';
 }
 
 export interface JolpicaDriverStanding {
@@ -199,20 +200,35 @@ export class JolpicaClient {
       };
     }
 
-    const raw = await this.fetchRaw<RawScheduleResponse>('/current.json');
+    let raw = await this.fetchRaw<RawScheduleResponse>('/2026.json');
+    if (!raw?.MRData?.RaceTable?.Races || raw.MRData.RaceTable.Races.length === 0) {
+      raw = await this.fetchRaw<RawScheduleResponse>('/current.json');
+    }
     if (!raw?.MRData?.RaceTable?.Races) {
       return this.scheduleCache?.data || [];
     }
 
-    const now = new Date().toISOString();
+    const nowMs = Date.now();
     let foundNext = false;
 
     const races: JolpicaRace[] = raw.MRData.RaceTable.Races.map((r) => {
       const raceDateTime = formatSessionDateTime(r.date, r.time, '12:00:00Z');
-      const isPast = raceDateTime < now;
-      let isNext = false;
+      const raceTimeMs = new Date(raceDateTime).getTime();
+      const raceEndMs = raceTimeMs + 3 * 3600 * 1000; // 3 hour race window
 
-      if (!isPast && !foundNext) {
+      let status: 'COMPLETED' | 'IN_PROGRESS' | 'UPCOMING' = 'UPCOMING';
+      if (!Number.isNaN(raceTimeMs)) {
+        if (nowMs >= raceEndMs) {
+          status = 'COMPLETED';
+        } else if (nowMs >= raceTimeMs) {
+          status = 'IN_PROGRESS';
+        } else {
+          status = 'UPCOMING';
+        }
+      }
+
+      let isNext = false;
+      if (status !== 'COMPLETED' && !foundNext) {
         isNext = true;
         foundNext = true;
       }
@@ -270,6 +286,7 @@ export class JolpicaClient {
         raceDateTime,
         sessions,
         isNext,
+        status,
       };
     });
 
@@ -401,11 +418,11 @@ export class JolpicaClient {
       };
     }
 
-    let raw = await this.fetchRaw<RawLastRaceResponse>('/current/last/results.json');
+    let raw = await this.fetchRaw<RawLastRaceResponse>('/2026/last/results.json');
     let race = raw?.MRData?.RaceTable?.Races?.[0];
 
     if (!race || !race.Results || race.Results.length === 0) {
-      raw = await this.fetchRaw<RawLastRaceResponse>('/2024/last/results.json');
+      raw = await this.fetchRaw<RawLastRaceResponse>('/current/last/results.json');
       race = raw?.MRData?.RaceTable?.Races?.[0];
     }
 
@@ -518,7 +535,10 @@ export class JolpicaClient {
         this.qualifyingCache = { timestamp: Date.now(), data };
         return data;
       }
-      const raw = await this.fetchRaw<RawQualifyingResponse>('/2024/last/qualifying.json');
+      let raw = await this.fetchRaw<RawQualifyingResponse>('/2026/last/qualifying.json');
+      if (!raw?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults) {
+        raw = await this.fetchRaw<RawQualifyingResponse>('/current/last/qualifying.json');
+      }
       race = raw?.MRData?.RaceTable?.Races?.[0];
     }
 
@@ -655,14 +675,12 @@ export class JolpicaClient {
       };
     }
 
-    let raw = await this.fetchRaw<RawResultsResponse>(`/current/${roundStr}/results.json`);
+    let raw = await this.fetchRaw<RawResultsResponse>(`/2026/${roundStr}/results.json`);
     let race = raw?.MRData?.RaceTable?.Races?.[0];
 
     if (!race || !race.Results || race.Results.length === 0) {
-      if (roundStr === 'last') {
-        raw = await this.fetchRaw<RawResultsResponse>('/2024/last/results.json');
-        race = raw?.MRData?.RaceTable?.Races?.[0];
-      }
+      raw = await this.fetchRaw<RawResultsResponse>(`/current/${roundStr}/results.json`);
+      race = raw?.MRData?.RaceTable?.Races?.[0];
     }
 
     if (!race || !race.Results) {

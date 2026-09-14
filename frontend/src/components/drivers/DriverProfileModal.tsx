@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Award, Calendar, MapPin, Star, Swords, Trophy, X } from 'lucide-react';
-import { calculateAge, type F1DriverProfile } from '../../data/f1DriversData';
+import { calculateAge, enrichDriverProfileWithSeason, type F1DriverProfile } from '../../data/f1DriversData';
+import { fetchStandings } from '../../services/api';
+import type { StandingsData } from '../../types/f1';
 
 interface DriverProfileModalProps {
   isOpen: boolean;
@@ -20,6 +22,15 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
   onCompare,
 }) => {
   const [failedImageNumber, setFailedImageNumber] = useState<number | null>(null);
+  const [standings, setStandings] = useState<StandingsData | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchStandings('f1').then((res) => {
+        if (res) setStandings(res);
+      });
+    }
+  }, [isOpen]);
 
   // Close on Escape
   useEffect(() => {
@@ -34,7 +45,14 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
 
   if (!isOpen || !profile) return null;
 
-  const age = calculateAge(profile.birthDate);
+  const matchingStanding = standings?.drivers.find(
+    (s) =>
+      s.code.toUpperCase() === profile.code.toUpperCase() ||
+      s.name.toLowerCase().includes(profile.lastName.toLowerCase()),
+  );
+
+  const activeProfile = enrichDriverProfileWithSeason(profile, matchingStanding);
+  const age = calculateAge(activeProfile.birthDate);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 select-none">
@@ -57,13 +75,13 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
         <div
           className="relative px-5 pt-4 pb-6 overflow-hidden flex items-center justify-between"
           style={{
-            background: `linear-gradient(135deg, ${profile.teamColor}25 0%, #0E121A 85%)`,
+            background: `linear-gradient(135deg, ${activeProfile.teamColor}25 0%, #0E121A 85%)`,
           }}
         >
           {/* Background Team Color Glow */}
           <div
             className="absolute -top-10 -left-10 w-40 h-40 rounded-full blur-3xl opacity-30 pointer-events-none"
-            style={{ backgroundColor: profile.teamColor }}
+            style={{ backgroundColor: activeProfile.teamColor }}
           />
 
           {/* Team and Number Tag */}
@@ -71,11 +89,11 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             <span
               className="text-xs font-mono font-black uppercase px-2.5 py-1 rounded-md text-white border shadow-sm"
               style={{
-                backgroundColor: profile.teamColor,
-                borderColor: `${profile.teamColor}80`,
+                backgroundColor: activeProfile.teamColor,
+                borderColor: `${activeProfile.teamColor}80`,
               }}
             >
-              {profile.team}
+              {activeProfile.team}
             </span>
             <span className="text-xs font-mono text-zinc-400 font-bold">FÓRMULA 1</span>
           </div>
@@ -101,28 +119,28 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
               <div
                 className="absolute inset-0 opacity-20 pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle, ${profile.teamColor} 0%, transparent 70%)`,
+                  background: `radial-gradient(circle, ${activeProfile.teamColor} 0%, transparent 70%)`,
                 }}
               />
 
-              {failedImageNumber !== profile.number ? (
+              {failedImageNumber !== activeProfile.number ? (
                 <img
-                  src={profile.headshotUrl}
-                  alt={profile.fullName}
+                  src={activeProfile.headshotUrl}
+                  alt={activeProfile.fullName}
                   loading="lazy"
-                  onError={() => setFailedImageNumber(profile.number)}
+                  onError={() => setFailedImageNumber(activeProfile.number)}
                   className="w-full h-full object-cover object-top scale-110 drop-shadow-md"
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-center p-2">
                   <span
                     className="font-chakra font-black text-3xl italic"
-                    style={{ color: profile.teamColor }}
+                    style={{ color: activeProfile.teamColor }}
                   >
-                    #{profile.number}
+                    #{activeProfile.number}
                   </span>
                   <span className="text-[10px] font-mono text-zinc-400 mt-0.5">
-                    {profile.code}
+                    {activeProfile.code}
                   </span>
                 </div>
               )}
@@ -131,20 +149,20 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             {/* Name, Code & Number */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-2xl" role="img" aria-label={profile.nationality}>
-                  {profile.flag}
+                <span className="text-2xl" role="img" aria-label={activeProfile.nationality}>
+                  {activeProfile.flag}
                 </span>
                 <span className="text-xs font-mono font-bold tracking-widest text-zinc-400 uppercase">
-                  {profile.code} • #{profile.number}
+                  {activeProfile.code} • #{activeProfile.number}
                 </span>
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-white uppercase font-sans truncate mt-0.5">
-                {profile.fullName}
+                {activeProfile.fullName}
               </h2>
 
               <p className="text-xs font-mono text-zinc-400 mt-1 flex items-center gap-1.5">
-                <span className="text-zinc-200">{profile.nationality}</span>
+                <span className="text-zinc-200">{activeProfile.nationality}</span>
                 <span>•</span>
                 <span>{age} años</span>
               </p>
@@ -160,7 +178,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                   Lugar de Nacimiento
                 </span>
                 <span className="text-zinc-200 block font-medium mt-0.5 text-xs line-clamp-2 leading-tight">
-                  {profile.birthPlace}
+                  {activeProfile.birthPlace}
                 </span>
               </div>
             </div>
@@ -173,12 +191,37 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                 </span>
                 <div className="mt-0.5">
                   <span className="text-zinc-200 font-medium text-xs">
-                    {profile.birthDate}
+                    {activeProfile.birthDate}
                   </span>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Live 2026 Championship Status Banner */}
+          {matchingStanding && (
+            <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 flex items-center justify-between font-mono shadow-sm">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded shrink-0">
+                  TEMPORADA 2026
+                </span>
+                <span className="text-xs text-zinc-300 font-bold truncate">
+                  {matchingStanding.team}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold shrink-0">
+                <span className="text-white">P{matchingStanding.pos}</span>
+                <span className="text-zinc-500">•</span>
+                <span className="text-[#FFD60A]">{matchingStanding.points} PTS</span>
+                {matchingStanding.wins > 0 && (
+                  <>
+                    <span className="text-zinc-500">•</span>
+                    <span className="text-emerald-400">{matchingStanding.wins} {matchingStanding.wins === 1 ? 'VICT.' : 'VICT.'}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Career Stats Grid */}
           <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3.5 space-y-2.5">
@@ -195,7 +238,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             <div className="grid grid-cols-3 gap-2 text-center font-mono">
               <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-white block">
-                  {profile.careerStats.grandsPrix}
+                  {activeProfile.careerStats.grandsPrix}
                 </span>
                 <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
                   Grandes Premios
@@ -204,7 +247,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
 
               <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-[#FFD60A] block">
-                  {profile.careerStats.podiums}
+                  {activeProfile.careerStats.podiums}
                 </span>
                 <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
                   Podios
@@ -213,7 +256,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
 
               <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-emerald-400 block">
-                  {profile.careerStats.victories}
+                  {activeProfile.careerStats.victories}
                 </span>
                 <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
                   Victorias
@@ -222,8 +265,8 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
 
               <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-white block">
-                  {profile.careerStats.worldChampionships > 0
-                    ? `${profile.careerStats.worldChampionships} 🏆`
+                  {activeProfile.careerStats.worldChampionships > 0
+                    ? `${activeProfile.careerStats.worldChampionships} 🏆`
                     : '0'}
                 </span>
                 <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
@@ -233,7 +276,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
 
               <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04] col-span-2 flex flex-col justify-center">
                 <span className="text-xs font-bold text-zinc-200 block truncate">
-                  {profile.careerStats.highestFinish}
+                  {activeProfile.careerStats.highestFinish}
                 </span>
                 <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
                   Mejor Resultado
@@ -249,7 +292,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
               <span>Biografía & Trayectoria</span>
             </div>
             <p className="text-xs text-zinc-300 font-sans leading-relaxed text-justify">
-              {profile.biography}
+              {activeProfile.biography}
             </p>
           </div>
 
@@ -258,7 +301,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             {onTogglePin && (
               <button
                 type="button"
-                onClick={() => onTogglePin(profile.number)}
+                onClick={() => onTogglePin(activeProfile.number)}
                 className={`flex-1 py-2.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border transition-all cursor-pointer active:scale-98 ${
                   isPinned
                     ? 'bg-[#FFD60A] text-black border-[#FFD60A] shadow-[0_0_15px_rgba(255,214,10,0.3)]'
@@ -277,7 +320,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             {onCompare && (
               <button
                 type="button"
-                onClick={() => onCompare(profile.number)}
+                onClick={() => onCompare(activeProfile.number)}
                 className="py-2.5 px-4 rounded-xl bg-white/[0.06] hover:bg-white/10 text-white border border-white/15 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer active:scale-98"
               >
                 <Swords className="w-4 h-4 text-zinc-300" />

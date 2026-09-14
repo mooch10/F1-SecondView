@@ -223,7 +223,7 @@ export class OpenF1Client {
     return session;
   }
 
-  async getLatestRaceSession(year = 2024): Promise<OpenF1Session | null> {
+  async getLatestRaceSession(year = 2026): Promise<OpenF1Session | null> {
     const list = await this.fetchJson<OpenF1Session>(`/sessions?year=${year}&session_name=Race`);
     return list[list.length - 1] || null;
   }
