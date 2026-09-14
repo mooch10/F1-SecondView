@@ -110,10 +110,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   };
 
   const getTyreBadge = (tyre: { compound: TyreCompound; laps: number } | null) => {
-    if (!tyre) return null;
+    if (!tyre || !tyre.compound) {
+      return <span className="text-[10px] text-zinc-600 font-mono">-</span>;
+    }
     const compound = tyre.compound.toUpperCase();
-    let letter = 'H';
-    let ringClass = 'border-white text-white bg-white/10';
+    let letter = '-';
+    let ringClass = 'border-zinc-600 text-zinc-400 bg-white/5';
 
     if (compound.includes('SOFT')) {
       letter = 'S';
@@ -179,8 +181,26 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     d.interval === 'RET' ||
     d.pos >= 90;
 
-  const activeDrivers = drivers.filter((d) => !isDriverRetired(d));
-  const retiredDrivers = drivers.filter((d) => isDriverRetired(d));
+  // Deduplicate drivers strictly by driverNumber to prevent duplicate rows when lapped or overtaken
+  const activeDrivers = drivers
+    .filter((d) => !isDriverRetired(d))
+    .reduce<DriverLive[]>((acc, current) => {
+      if (!acc.some((item) => item.driverNumber === current.driverNumber)) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+  const activeDriverNumbers = new Set(activeDrivers.map((d) => d.driverNumber));
+  const retiredDrivers = drivers
+    .filter((d) => isDriverRetired(d))
+    .reduce<DriverLive[]>((acc, current) => {
+      if (!activeDriverNumbers.has(current.driverNumber) && !acc.some((item) => item.driverNumber === current.driverNumber)) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
   const pinnedDriver = drivers.find((d) => d.driverNumber === pinnedDriverNumber) || null;
 
   return (

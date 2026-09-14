@@ -117,6 +117,9 @@ export interface TrackOutline {
 export interface HistorySnapshot {
   timestamp: number;
   drivers: DriverLive[];
+  session?: SessionLive;
+  messages?: RaceControlMessage[];
+  weather?: TrackWeather | null;
 }
 
 export interface LiveSnapshot {

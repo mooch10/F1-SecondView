@@ -112,13 +112,20 @@ function getLapQualifyingPhase(
 }
 
 const CIRCUIT_LAPS: Record<string, number> = {
+  madrid: 66,
+  ifema: 66,
+  valdebebas: 66,
+  spain: 66,
   bahrain: 57,
   sakhir: 57,
   jeddah: 50,
+  saudi: 50,
   melbourne: 58,
   albert_park: 58,
   suzuka: 53,
+  japan: 53,
   shanghai: 56,
+  china: 56,
   miami: 57,
   imola: 63,
   monaco: 78,
@@ -135,7 +142,11 @@ const CIRCUIT_LAPS: Record<string, number> = {
   francorchamps: 44,
   zandvoort: 72,
   monza: 53,
+  italy: 53,
   baku: 51,
+  azerbaijan: 51,
+  sepang: 56,
+  malaysia: 56,
   singapore: 62,
   marina_bay: 62,
   austin: 56,
@@ -152,8 +163,8 @@ const CIRCUIT_LAPS: Record<string, number> = {
   abu_dhabi: 58,
 };
 
-function getCircuitTotalLaps(session: OpenF1Session | null, maxLap: number): number {
-  if (!session) return maxLap || 50;
+function getCircuitTotalLaps(session: OpenF1Session | null, _maxLap?: number): number {
+  if (!session) return 58;
   const terms = [session.circuit_short_name, session.location, session.country_name]
     .filter(Boolean)
     .map((t) =>
@@ -170,7 +181,7 @@ function getCircuitTotalLaps(session: OpenF1Session | null, maxLap: number): num
       }
     }
   }
-  return maxLap || 50;
+  return 58;
 }
 
 function formatLapTime(seconds: number | null | undefined): string {
@@ -191,9 +202,9 @@ function formatGap(gap: number | null | undefined, isLeader: boolean): string {
 function parseCompound(raw: string | null | undefined): TyreCompound {
   if (!raw) return 'UNKNOWN';
   const c = raw.toUpperCase().trim();
-  if (c.includes('SOFT')) return 'SOFT';
-  if (c.includes('MEDIUM')) return 'MEDIUM';
-  if (c.includes('HARD')) return 'HARD';
+  if (c.includes('SOFT') || c === 'C4' || c === 'C5' || c === 'C6') return 'SOFT';
+  if (c.includes('MEDIUM') || c === 'C3') return 'MEDIUM';
+  if (c.includes('HARD') || c === 'C1' || c === 'C2') return 'HARD';
   if (c.includes('INTER')) return 'INTERMEDIATE';
   if (c.includes('WET')) return 'WET';
   return 'UNKNOWN';
@@ -232,7 +243,14 @@ export function buildLiveSnapshot(
   rawLocations: OpenF1Location[] = [],
   trackOutline: TrackOutline | null = null,
 ): LiveSnapshot {
-  const safeDrivers = Array.isArray(rawDrivers) ? rawDrivers : [];
+  const rawSafeDrivers = Array.isArray(rawDrivers) ? rawDrivers : [];
+  const uniqueDriversMap = new Map<number, OpenF1Driver>();
+  for (const d of rawSafeDrivers) {
+    if (d.driver_number) {
+      uniqueDriversMap.set(d.driver_number, d);
+    }
+  }
+  const safeDrivers = Array.from(uniqueDriversMap.values());
   const safePositions = Array.isArray(rawPositions) ? rawPositions : [];
   const safeIntervals = Array.isArray(rawIntervals) ? rawIntervals : [];
   const safeStints = Array.isArray(rawStints) ? rawStints : [];
@@ -406,21 +424,37 @@ export function buildLiveSnapshot(
     const driverMaxLap =
       driverLaps.length > 0 ? Math.max(...driverLaps.map((l) => l.lap_number)) : 0;
 
-    // DNF detection: In race, driver stopped recording laps >= 4 behind leader. In qualy, only if explicitly retired
-    const isDnf =
-      sessionType === 'Race' ? maxLapNumber >= 5 && maxLapNumber - driverMaxLap >= 4 : false;
+    // DNF detection: Only if car is explicitly retired, stopped on track, had incident,
+    // or driver is in pits and stopped recording laps >= 10 laps behind leader while race continues.
+    // Lapped/rezagado cars that are still actively circulating are NEVER marked DNF.
+    const driverRc = safeRaceControl.find((m) => {
+      const msg = m.message.toUpperCase();
+      return (
+        msg.includes(`CAR ${num}`) ||
+        msg.includes(`CARS ${num}`) ||
+        (driver.name_acronym && msg.includes(driver.name_acronym.toUpperCase()))
+      );
+    });
+
+    const isRcRetired = Boolean(
+      driverRc &&
+        (driverRc.message.toUpperCase().includes('STOPPED') ||
+          driverRc.message.toUpperCase().includes('RETIRED') ||
+          driverRc.message.toUpperCase().includes('OUT OF THE RACE') ||
+          driverRc.message.toUpperCase().includes('COLLISION') ||
+          driverRc.message.toUpperCase().includes('ACCIDENT')),
+    );
+
+    const isLongStoppedInPit =
+      sessionType === 'Race' &&
+      maxLapNumber >= 15 &&
+      maxLapNumber - driverMaxLap >= 10 &&
+      latestLap?.is_pit_out_lap === false;
+
+    const isDnf = isRcRetired || isLongStoppedInPit;
 
     let retirementReason: string | undefined;
     if (isDnf) {
-      const driverRc = safeRaceControl.find((m) => {
-        const msg = m.message.toUpperCase();
-        return (
-          msg.includes(`CAR ${num}`) ||
-          msg.includes(`CARS ${num}`) ||
-          (driver.name_acronym && msg.includes(driver.name_acronym.toUpperCase()))
-        );
-      });
-
       if (driverRc) {
         const msg = driverRc.message.toUpperCase();
         if (msg.includes('COLLISION') || msg.includes('INCIDENT')) {
@@ -433,7 +467,7 @@ export function buildLiveSnapshot(
           retirementReason = 'Abandono';
         }
       } else {
-        retirementReason = 'Abandono';
+        retirementReason = 'Abandono en boxes';
       }
     }
 
@@ -723,12 +757,17 @@ export function buildLiveSnapshot(
     }
   }
 
+  const totalCircuitLaps = sessionType === 'Race' ? getCircuitTotalLaps(session, maxLapNumber) : 0;
+  const currentLap =
+    sessionType === 'Race' ? Math.min(maxLapNumber, totalCircuitLaps) : maxLapNumber;
+  const isRaceFinished = sessionType === 'Race' && totalCircuitLaps > 0 && maxLapNumber >= totalCircuitLaps;
+
   // Check if session has passed its scheduled end time
   const isPastEndTime = session?.date_end
     ? Date.now() > new Date(session.date_end).getTime() + 10 * 60 * 1000
     : false;
 
-  if (sessionState === 'FINISHED' || isPastEndTime || drivers.length === 0) {
+  if (sessionState === 'FINISHED' || isPastEndTime || isRaceFinished || drivers.length === 0) {
     sessionState = 'FINISHED';
     flag = 'CHEQUERED';
   }
@@ -743,9 +782,6 @@ export function buildLiveSnapshot(
       flag: m.flag,
     }));
 
-  const totalCircuitLaps = sessionType === 'Race' ? getCircuitTotalLaps(session, maxLapNumber) : 0;
-  const currentLap =
-    sessionType === 'Race' ? Math.min(maxLapNumber, totalCircuitLaps) : maxLapNumber;
   const progressPercentage =
     sessionType === 'Race'
       ? totalCircuitLaps > 0
@@ -782,7 +818,7 @@ export function buildLiveSnapshot(
     flag,
     currentLap,
     totalLaps: totalCircuitLaps,
-    progressPercentage,
+    progressPercentage: isRaceFinished ? 100 : progressPercentage,
     timestamp: Math.floor(Date.now() / 1000),
   };
 
@@ -798,6 +834,9 @@ export function buildLiveSnapshot(
       {
         timestamp: sessionLive.timestamp,
         drivers,
+        session: sessionLive,
+        messages,
+        weather,
       },
     ],
   };

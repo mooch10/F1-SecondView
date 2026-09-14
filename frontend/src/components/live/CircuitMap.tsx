@@ -40,9 +40,16 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
 
-  // Sort active drivers cleanly by position
+  // Sort active drivers cleanly by position, ensuring strict uniqueness
   const sortedDrivers = useMemo(() => {
-    return [...drivers].sort((a, b) => a.pos - b.pos);
+    const seen = new Set<number>();
+    return [...drivers]
+      .filter((d) => {
+        if (!d || seen.has(d.driverNumber)) return false;
+        seen.add(d.driverNumber);
+        return true;
+      })
+      .sort((a, b) => a.pos - b.pos);
   }, [drivers]);
 
   // Check if drivers are clustered in parc fermé / pit lane in real GPS data
@@ -253,8 +260,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
         x = gx;
         y = gy;
       } else {
-        // Cars parked in pit lane or without active track coordinates
-        const pt = trackGeometry.getPointAtProgress(((idx * 0.02) % 0.12) + 0.94);
+        // Cars without active GPS coordinates positioned cleanly along grid behind the leader
+        const pt = trackGeometry.getPointAtProgress(0.98 - ((idx * 0.02) % 0.25));
         x = pt.x;
         y = pt.y;
       }

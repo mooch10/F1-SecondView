@@ -8,6 +8,10 @@ interface FlagBannerProps {
 }
 
 const OFFICIAL_CIRCUIT_LAPS: Record<string, number> = {
+  madrid: 66,
+  ifema: 66,
+  valdebebas: 66,
+  spain: 66,
   bahrain: 57,
   sakhir: 57,
   jeddah: 50,
@@ -28,7 +32,6 @@ const OFFICIAL_CIRCUIT_LAPS: Record<string, number> = {
   villeneuve: 70,
   barcelona: 66,
   catalunya: 66,
-  spain: 66,
   spielberg: 71,
   austria: 71,
   red_bull_ring: 71,
@@ -45,6 +48,8 @@ const OFFICIAL_CIRCUIT_LAPS: Record<string, number> = {
   italy: 53,
   baku: 51,
   azerbaijan: 51,
+  sepang: 56,
+  malaysia: 56,
   singapore: 62,
   marina_bay: 62,
   austin: 56,
@@ -75,7 +80,7 @@ function getCircuitOfficialLaps(circuit?: string, location?: string, country?: s
       }
     }
   }
-  return 53;
+  return 58;
 }
 
 export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
@@ -162,8 +167,12 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
   };
 
   const isNotStarted = session.status === 'NOT_STARTED';
+  const isRaceFinished =
+    session.sessionType === 'Race' &&
+    resolvedTotalLaps > 0 &&
+    session.currentLap >= resolvedTotalLaps;
   const effectiveFlag: FlagStatus =
-    session.status === 'FINISHED' || isNotStarted ? 'CHEQUERED' : session.flag;
+    session.status === 'FINISHED' || isRaceFinished || isNotStarted ? 'CHEQUERED' : session.flag;
 
   const flagConfig = isNotStarted
     ? {
@@ -226,10 +235,12 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
         ) : (
           <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
             <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
-              {t.live.lap}
+              {isRaceFinished || session.status === 'FINISHED'
+                ? (lang === 'es' ? 'RESULTADO' : 'RESULT')
+                : t.live.lap}
             </span>
             <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
-              {session.currentLap}
+              {isRaceFinished ? resolvedTotalLaps : session.currentLap}
               <span className="text-xs sm:text-sm font-normal text-zinc-500 ml-1">
                 / {resolvedTotalLaps}
               </span>

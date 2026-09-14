@@ -93,6 +93,8 @@ export class LiveStreamClient {
       const drivers: LiveStreamDriver[] = [];
       const competitors = [...activeComp.competitors].sort((a: any, b: any) => (a.order || 99) - (b.order || 99));
 
+      const assignedDriverNumbers = new Set<number>();
+
       for (let i = 0; i < competitors.length; i++) {
         const c = competitors[i];
         const order = c.order || i + 1;
@@ -100,8 +102,17 @@ export class LiveStreamClient {
         const nameParts = displayName.trim().split(/\s+/);
         const familyName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : displayName;
 
-        // Match against 2026 driver dictionary
-        const seed = this.matchDriverSeed(displayName, familyName, c.vehicle?.number);
+        // Match against 2026 driver dictionary (excluding already assigned drivers)
+        const seed = this.matchDriverSeed(displayName, familyName, c.vehicle?.number, assignedDriverNumbers);
+        let finalDriverNumber = seed?.driverNumber ?? (c.vehicle?.number ? Number(c.vehicle.number) : i + 1);
+
+        if (assignedDriverNumbers.has(finalDriverNumber)) {
+          const unusedSeed = DRIVERS_GRID_2026.find((d) => !assignedDriverNumbers.has(d.driverNumber));
+          if (unusedSeed) {
+            finalDriverNumber = unusedSeed.driverNumber;
+          }
+        }
+        assignedDriverNumbers.add(finalDriverNumber);
 
         const statusDetail = (c.status?.type?.name || c.status?.displayValue || '').toUpperCase();
         let trackStatus: 'ON_TRACK' | 'PIT' | 'GARAGE' | 'OUT' = 'ON_TRACK';
@@ -129,7 +140,7 @@ export class LiveStreamClient {
 
         drivers.push({
           order,
-          driverNumber: seed?.driverNumber ?? (c.vehicle?.number ? Number(c.vehicle.number) : i + 1),
+          driverNumber: finalDriverNumber,
           code: seed?.code ?? familyName.slice(0, 3).toUpperCase(),
           fullName: seed?.fullName ?? displayName,
           familyName: seed?.familyName ?? familyName,
@@ -167,17 +178,18 @@ export class LiveStreamClient {
     }
   }
 
-  private matchDriverSeed(displayName: string, familyName: string, vehicleNum?: string): DriverGridSeed | undefined {
+  private matchDriverSeed(displayName: string, familyName: string, vehicleNum?: string, assigned?: Set<number>): DriverGridSeed | undefined {
     const dLower = displayName.toLowerCase();
     const fLower = familyName.toLowerCase();
     const num = vehicleNum ? Number(vehicleNum) : null;
 
     if (num) {
-      const byNum = DRIVERS_GRID_2026.find((d) => d.driverNumber === num);
+      const byNum = DRIVERS_GRID_2026.find((d) => d.driverNumber === num && (!assigned || !assigned.has(d.driverNumber)));
       if (byNum) return byNum;
     }
 
     return DRIVERS_GRID_2026.find((d) => {
+      if (assigned && assigned.has(d.driverNumber)) return false;
       const seedFull = d.fullName.toLowerCase();
       const seedFam = d.familyName.toLowerCase();
       return (

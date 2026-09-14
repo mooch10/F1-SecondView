@@ -131,8 +131,8 @@ function App() {
                       drivers={drivers}
                     />
 
-                    {/* Real-time 2D Interactive Circuit Map (Solo durante Qualy o Carrera EN VIVO) */}
-                    {isLiveSessionActive &&
+                    {/* Real-time 2D Interactive Circuit Map (Durante Qualy o Carrera EN VIVO o Replay de telemetría) */}
+                    {(isLiveSessionActive || liveSubView === 'timing') &&
                       (snapshot?.session.sessionType === 'Qualifying' ||
                         snapshot?.session.sessionType === 'Race') && (
                         <CircuitMap

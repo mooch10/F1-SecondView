@@ -261,7 +261,7 @@ export function generateUniversalLiveSnapshot(
   const isQualy = activeSession.sessionType === 'Qualifying';
   const isNotStarted = activeSession.status === 'NOT_STARTED';
 
-  const sourceDrivers = (liveSession && liveSession.drivers.length > 0)
+  const rawSourceDrivers = (liveSession && liveSession.drivers.length > 0)
     ? liveSession.drivers.map((ld) => ({
         driverNumber: ld.driverNumber,
         code: ld.code,
@@ -283,6 +283,20 @@ export function generateUniversalLiveSnapshot(
         lapsCompleted: isNotStarted ? 0 : [19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][i] ?? 18,
       }));
 
+  // Ensure strict uniqueness of driverNumber to avoid duplicates
+  const seenDriverNumbers = new Set<number>();
+  const sourceDrivers = rawSourceDrivers.filter((d) => {
+    if (seenDriverNumbers.has(d.driverNumber)) return false;
+    seenDriverNumbers.add(d.driverNumber);
+    return true;
+  });
+
+  const isRaceSession = activeSession.sessionType === 'Race';
+  const calculatedCurrentLap = isQualy || isNotStarted
+    ? 0
+    : Math.max(1, Math.min(circuit.totalLaps, Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps)));
+  const isRaceFinished = isRaceSession && (calculatedCurrentLap >= circuit.totalLaps || activeSession.progressPercentage >= 100);
+
   const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
     const driverLapDuration = benchmarkLap + d.performanceBias;
@@ -297,7 +311,7 @@ export function generateUniversalLiveSnapshot(
       ? '- - -'
       : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`);
 
-    // Sectors breakdown calibrated for Circuito de Madrid: S1 (~30.7%), S2 (~37.5%), S3 (remainder)
+    // Sectors breakdown calibrated for circuit
     const s1 = Number((driverLapDuration * 0.307).toFixed(3));
     const s2 = Number((driverLapDuration * 0.375).toFixed(3));
     const s3 = Number((driverLapDuration - s1 - s2).toFixed(3));
@@ -306,11 +320,12 @@ export function generateUniversalLiveSnapshot(
     const s2Status: SectorStatus = idx === 0 ? 'purple' : idx < 7 ? 'green' : 'yellow';
     const s3Status: SectorStatus = idx === 1 ? 'purple' : idx < 8 ? 'green' : 'yellow';
 
-    // Position car along track outline (at starting grid positions if not started)
+    // Position car along track outline with Leader at the front and followers behind
     const outlineLen = circuit.outline.length;
+    const lagPoints = Math.round(d.performanceBias * 2.5 + idx * 3.5);
     const stepOffset = isNotStarted
-      ? Math.floor((idx * 3) % outlineLen)
-      : Math.floor((nowSec * 2 + idx * 6) % outlineLen);
+      ? ((((outlineLen - idx * 4) % outlineLen) + outlineLen) % outlineLen)
+      : ((((nowSec * 2 - lagPoints) % outlineLen) + outlineLen) % outlineLen);
     const coord = circuit.outline[stepOffset] || [0, 0];
 
     const eliminatedPhase: 'Q1' | 'Q2' | null = isQualy
@@ -327,6 +342,34 @@ export function generateUniversalLiveSnapshot(
 
     const effectiveBestDur = idx < 10 ? q3Dur! : idx < 15 ? q2Dur! : q1Dur;
     const effectiveBestStr = formatLapSeconds(effectiveBestDur);
+
+    // Realistic dynamic tyre strategy calibrated to current session progress and pit stops
+    const pitStops = isNotStarted || isQualy ? 0 : idx % 4 === 0 ? 2 : 1;
+    let tyreCompound: TyreCompound;
+    let tyreLaps: number;
+
+    if (isNotStarted) {
+      tyreCompound = isQualy ? 'SOFT' : idx % 2 === 0 ? 'MEDIUM' : 'HARD';
+      tyreLaps = 0;
+    } else if (isQualy) {
+      tyreCompound = 'SOFT';
+      tyreLaps = (idx % 3) + 1; // Qualy runs are on fresh soft tyres (1-3 laps)
+    } else {
+      // Race: compute realistic stint wear
+      const firstStopLap = Math.floor(circuit.totalLaps * 0.38);
+      const secondStopLap = Math.floor(circuit.totalLaps * 0.70);
+
+      if (pitStops === 2 && calculatedCurrentLap > secondStopLap) {
+        tyreCompound = idx % 2 === 0 ? 'SOFT' : 'MEDIUM';
+        tyreLaps = Math.max(1, calculatedCurrentLap - secondStopLap);
+      } else if (pitStops >= 1 && calculatedCurrentLap > firstStopLap) {
+        tyreCompound = 'HARD';
+        tyreLaps = Math.max(1, calculatedCurrentLap - firstStopLap);
+      } else {
+        tyreCompound = idx % 3 === 0 ? 'HARD' : 'MEDIUM';
+        tyreLaps = Math.max(1, calculatedCurrentLap);
+      }
+    }
 
     return {
       pos: d.order,
@@ -348,10 +391,10 @@ export function generateUniversalLiveSnapshot(
       isFastestLap: !isNotStarted && isPole,
       eliminatedPhase,
       tyre: {
-        compound: (isQualy ? 'SOFT' : idx % 3 === 0 ? 'HARD' : idx % 2 === 0 ? 'MEDIUM' : 'SOFT') as TyreCompound,
-        laps: isNotStarted ? 0 : isQualy ? (idx % 3) + 1 : 8 + (idx % 14),
+        compound: tyreCompound,
+        laps: tyreLaps,
       },
-      pitStops: isNotStarted || isQualy ? 0 : idx % 4 === 0 ? 2 : 1,
+      pitStops,
       inPit: isNotStarted ? false : (d.status === 'PIT' || d.status === 'GARAGE'),
       status: 'ACTIVE',
       sectors: {
@@ -407,6 +450,21 @@ export function generateUniversalLiveSnapshot(
           flag: null,
         },
       ]
+    : isRaceFinished
+    ? [
+        {
+          id: 1,
+          time: '16:45:00',
+          text: `BANDERA A CUADROS • CARRERA FINALIZADA (${race.circuitName})`,
+          flag: 'CHEQUERED',
+        },
+        {
+          id: 2,
+          time: '16:47:00',
+          text: `GANADOR OFICIAL: AUTO ${drivers[0]?.driverNumber} (${drivers[0]?.code})`,
+          flag: 'CHEQUERED',
+        },
+      ]
     : [
         {
           id: 1,
@@ -439,18 +497,16 @@ export function generateUniversalLiveSnapshot(
     sessionName: activeSession.sessionName,
     sessionType: activeSession.sessionType,
     qualifyingPhase: activeSession.qualifyingPhase,
-    poleDriver: drivers[0].code,
-    poleLapTime: drivers[0].bestLapTime,
+    poleDriver: drivers[0]?.code || 'DRV',
+    poleLapTime: drivers[0]?.bestLapTime || '--:--.---',
     location: race.locality,
     country: race.country,
     circuit: race.circuitName,
-    status: activeSession.status,
-    flag: activeSession.flag,
-    currentLap: isQualy || isNotStarted
-      ? 0
-      : Math.max(1, Math.min(circuit.totalLaps, Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps))),
+    status: isRaceFinished ? 'FINISHED' : activeSession.status,
+    flag: isRaceFinished ? 'CHEQUERED' : activeSession.flag,
+    currentLap: calculatedCurrentLap,
     totalLaps: circuit.totalLaps,
-    progressPercentage: activeSession.progressPercentage,
+    progressPercentage: isRaceFinished ? 100 : activeSession.progressPercentage,
     timestamp: nowSec,
   };
 
@@ -470,6 +526,9 @@ export function generateUniversalLiveSnapshot(
       {
         timestamp: nowSec,
         drivers,
+        session,
+        messages,
+        weather,
       },
     ],
   };

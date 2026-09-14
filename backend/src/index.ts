@@ -102,7 +102,13 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       // Maintain a 45-second sliding history in memory (up to 30 snapshots)
       if (cachedSnapshot?.history) {
         const updatedHistory = [
-          { timestamp: newSnapshot.session.timestamp, drivers: newSnapshot.drivers },
+          {
+            timestamp: newSnapshot.session.timestamp,
+            drivers: newSnapshot.drivers,
+            session: newSnapshot.session,
+            messages: newSnapshot.messages,
+            weather: newSnapshot.weather,
+          },
           ...cachedSnapshot.history,
         ].slice(0, 30);
         newSnapshot.history = updatedHistory;

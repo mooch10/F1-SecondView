@@ -53,11 +53,34 @@ export function useLiveTelemetry() {
     setDelaySeconds((prev) => Math.max(0, Math.min(45, prev + delta)));
   }, []);
 
-  // Compute active drivers considering delay slider
-  const activeDrivers = useMemo<DriverLive[]>(() => {
-    if (!snapshot) return [];
+  // Compute fully synchronized snapshot and active drivers considering delay slider
+  const delayedData = useMemo(() => {
+    if (!snapshot) {
+      return {
+        snapshot: null,
+        drivers: [] as DriverLive[],
+      };
+    }
+
+    // Helper to deduplicate drivers strictly by driverNumber
+    const dedupeDrivers = (list: DriverLive[]): DriverLive[] => {
+      const seen = new Set<number>();
+      return (list || []).filter((d) => {
+        if (!d || seen.has(d.driverNumber)) return false;
+        seen.add(d.driverNumber);
+        return true;
+      });
+    };
+
     if (delaySeconds === 0 || !snapshot.history || snapshot.history.length === 0) {
-      return snapshot.drivers;
+      const cleanDrivers = dedupeDrivers(snapshot.drivers);
+      return {
+        snapshot: {
+          ...snapshot,
+          drivers: cleanDrivers,
+        },
+        drivers: cleanDrivers,
+      };
     }
 
     const currentTimestamp = snapshot.session.timestamp;
@@ -75,12 +98,28 @@ export function useLiveTelemetry() {
       }
     }
 
-    return closest?.drivers || snapshot.drivers;
+    const effectiveDrivers = dedupeDrivers(closest?.drivers || snapshot.drivers);
+    const effectiveSession = closest?.session || snapshot.session;
+    const effectiveWeather = closest?.weather ?? snapshot.weather;
+    const effectiveMessages = closest?.messages ?? snapshot.messages;
+
+    const synchedSnapshot: LiveSnapshot = {
+      ...snapshot,
+      session: effectiveSession,
+      weather: effectiveWeather,
+      messages: effectiveMessages,
+      drivers: effectiveDrivers,
+    };
+
+    return {
+      snapshot: synchedSnapshot,
+      drivers: effectiveDrivers,
+    };
   }, [snapshot, delaySeconds]);
 
   return {
-    snapshot,
-    drivers: activeDrivers,
+    snapshot: delayedData.snapshot,
+    drivers: delayedData.drivers,
     delaySeconds,
     setDelaySeconds,
     nudgeDelay,
