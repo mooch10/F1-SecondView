@@ -37,7 +37,7 @@ const matchConstructorTeam = (liveTeam: string, constrName: string): boolean => 
 
 export const StandingsView: React.FC<StandingsViewProps> = ({
   liveDrivers = [],
-  isLiveActive: _isLiveActive = false,
+  isLiveActive = false,
 }) => {
   const { t, lang } = useLanguage();
   const { series, theme } = useSeries();
@@ -46,6 +46,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
   const [isLiveVirtual, setIsLiveVirtual] = useState<boolean>(false);
+  const isVirtualActive = isLiveActive && isLiveVirtual;
 
   // 👤 Driver Profile Modal
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
@@ -165,7 +166,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   // Virtual points calculation for Drivers
   const processedDrivers = useMemo(() => {
     if (!data?.drivers) return [];
-    if (!isLiveVirtual || !liveDrivers || liveDrivers.length === 0) {
+    if (!isVirtualActive || !liveDrivers || liveDrivers.length === 0) {
       return data.drivers.map((d) => ({
         ...d,
         virtualPos: d.pos,
@@ -220,12 +221,12 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         rankDiff,
       };
     });
-  }, [data, isLiveVirtual, liveDrivers]);
+  }, [data, isVirtualActive, liveDrivers]);
 
   // Virtual points calculation for Constructors
   const processedConstructors = useMemo(() => {
     if (!data?.constructors) return [];
-    if (!isLiveVirtual || !liveDrivers || liveDrivers.length === 0) {
+    if (!isVirtualActive || !liveDrivers || liveDrivers.length === 0) {
       return data.constructors.map((c) => ({
         ...c,
         virtualPos: c.pos,
@@ -277,7 +278,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         rankDiff,
       };
     });
-  }, [data, isLiveVirtual, liveDrivers]);
+  }, [data, isVirtualActive, liveDrivers]);
 
   if (loading) {
     return (
@@ -335,19 +336,19 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           </button>
         </div>
 
-        {liveDrivers && liveDrivers.length > 0 && (
+        {isLiveActive && liveDrivers && liveDrivers.length > 0 && (
           <button
             type="button"
             onClick={() => setIsLiveVirtual((prev) => !prev)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border ${
-              isLiveVirtual
+              isVirtualActive
                 ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.35)]'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border-white/[0.08]'
             }`}
           >
-            <Zap className={`w-3.5 h-3.5 ${isLiveVirtual ? 'fill-black text-black' : 'text-amber-400'}`} />
+            <Zap className={`w-3.5 h-3.5 ${isVirtualActive ? 'fill-black text-black' : 'text-amber-400'}`} />
             <span>{t.standings.liveVirtualToggle}</span>
-            {isLiveVirtual && (
+            {isVirtualActive && (
               <span className="text-[9px] px-1 py-0.5 rounded bg-black/20 text-black font-black">
                 ON
               </span>
@@ -357,7 +358,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
       </div>
 
       {/* Live Virtual Standings Notice Banner */}
-      {isLiveVirtual && (
+      {isVirtualActive && (
         <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-lg bg-amber-400/10 border border-amber-400/25 text-amber-300 font-mono text-xs animate-fadeIn">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 relative">
@@ -409,7 +410,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 {/* Pos */}
                 <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
                   {renderPosBadge(d.virtualPos)}
-                  {isLiveVirtual && renderRankDiff(d.rankDiff)}
+                  {isVirtualActive && renderRankDiff(d.rankDiff)}
                 </div>
 
                 {/* Driver */}
@@ -455,7 +456,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   <span className="text-xs sm:text-sm font-bold text-[#FFD60A]">
                     {d.totalPoints}
                   </span>
-                  {isLiveVirtual && (
+                  {isVirtualActive && (
                     <span className={`text-[10px] font-bold leading-tight ${d.provisionalPoints > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
                       +{d.provisionalPoints} {d.liveTrackPos ? `(P${d.liveTrackPos})` : ''}
                     </span>
@@ -497,7 +498,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 {/* Pos */}
                 <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
                   {renderPosBadge(c.virtualPos)}
-                  {isLiveVirtual && renderRankDiff(c.rankDiff)}
+                  {isVirtualActive && renderRankDiff(c.rankDiff)}
                 </div>
 
                 {/* Team Name with line indicator */}
@@ -516,7 +517,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   <span className="text-xs sm:text-sm font-bold text-[#FFD60A]">
                     {c.totalPoints}
                   </span>
-                  {isLiveVirtual && (
+                  {isVirtualActive && (
                     <span className={`text-[10px] font-bold leading-tight ${c.provisionalPoints > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
                       +{c.provisionalPoints}
                     </span>

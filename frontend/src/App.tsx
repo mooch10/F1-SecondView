@@ -75,6 +75,12 @@ function App() {
         snapshot?.session.flag === 'VSC',
     ) && drivers.length > 0;
 
+  // Only an active Grand Prix Race session awards championship points
+  const isLiveRaceActive =
+    series === 'f1' &&
+    snapshot?.session?.sessionType === 'Race' &&
+    isLiveSessionActive;
+
   // Auto-focus timing when cars are on track, otherwise default to between-races
   const liveSubView = userSubView ?? (isLiveSessionActive ? 'timing' : 'betweenRaces');
 
@@ -221,7 +227,7 @@ function App() {
               <StandingsView
                 key={series}
                 liveDrivers={drivers}
-                isLiveActive={isLiveSessionActive}
+                isLiveActive={isLiveRaceActive}
               />
             )}
           </main>
