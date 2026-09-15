@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useMemo, useContext, type ReactNode } from 'react';
+import { createContext, useState, useEffect, useMemo, useContext, useCallback, type ReactNode } from 'react';
 import {
   getCircuitTimezone,
   getCurrentClock,
@@ -41,23 +41,31 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
   const [myClock, setMyClock] = useState<string>(() => getCurrentClock());
   const [trackClock, setTrackClock] = useState<string>(() => getCurrentClock('Asia/Baku'));
 
-  const setMode = (newMode: TimezoneMode) => {
+  const setMode = useCallback((newMode: TimezoneMode) => {
     setModeState(newMode);
     try {
       localStorage.setItem(STORAGE_KEY, newMode);
     } catch {
       // Ignore
     }
-  };
+  }, []);
 
-  const toggleMode = () => {
-    setMode(mode === 'my' ? 'track' : 'my');
-  };
+  const toggleMode = useCallback(() => {
+    setModeState((prev) => {
+      const next = prev === 'my' ? 'track' : 'my';
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  }, []);
 
-  const setTrackCircuit = (circuit?: string, locality?: string, country?: string) => {
+  const setTrackCircuit = useCallback((circuit?: string, locality?: string, country?: string) => {
     const tz = getCircuitTimezone(circuit, locality, country);
     setTrackTimezone(tz);
-  };
+  }, []);
 
   // Keep clocks ticking live every 5 seconds (smooth and battery efficient)
   useEffect(() => {
@@ -71,19 +79,25 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [trackTimezone]);
 
-  const formatSessionTime = (isoStr: string, overrideTimezone?: string): string | null => {
-    if (mode === 'track') {
-      return formatSessionTimeToZone(isoStr, overrideTimezone || trackTimezone);
-    }
-    return formatSessionTimeToZone(isoStr);
-  };
+  const formatSessionTime = useCallback(
+    (isoStr: string, overrideTimezone?: string): string | null => {
+      if (mode === 'track') {
+        return formatSessionTimeToZone(isoStr, overrideTimezone || trackTimezone);
+      }
+      return formatSessionTimeToZone(isoStr);
+    },
+    [mode, trackTimezone]
+  );
 
-  const formatSessionDate = (isoStr: string, lang: 'es' | 'en' = 'es', overrideTimezone?: string): string => {
-    if (mode === 'track') {
-      return formatSessionDateToZone(isoStr, overrideTimezone || trackTimezone, lang);
-    }
-    return formatSessionDateToZone(isoStr, undefined, lang);
-  };
+  const formatSessionDate = useCallback(
+    (isoStr: string, lang: 'es' | 'en' = 'es', overrideTimezone?: string): string => {
+      if (mode === 'track') {
+        return formatSessionDateToZone(isoStr, overrideTimezone || trackTimezone, lang);
+      }
+      return formatSessionDateToZone(isoStr, undefined, lang);
+    },
+    [mode, trackTimezone]
+  );
 
   const value = useMemo(
     () => ({
@@ -97,7 +111,17 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
       formatSessionTime,
       formatSessionDate,
     }),
-    [mode, trackTimezone, myClock, trackClock]
+    [
+      mode,
+      setMode,
+      toggleMode,
+      trackTimezone,
+      setTrackCircuit,
+      myClock,
+      trackClock,
+      formatSessionTime,
+      formatSessionDate,
+    ]
   );
 
   return <TimezoneContext.Provider value={value}>{children}</TimezoneContext.Provider>;

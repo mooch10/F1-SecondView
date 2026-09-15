@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Gauge, Star, X } from 'lucide-react';
-import type { DriverLive, SessionType, TyreCompound } from '../../types/f1';
+import type { DriverLive, SessionType } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { MiniSectorsBar } from '../qualy/MiniSectorsBar';
 import { SectorPill } from '../qualy/SectorPill';
+import { TyreBadge } from '../common/TyreBadge';
 import { HeadToHeadModal } from './HeadToHeadModal';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
@@ -109,69 +110,11 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
   };
 
-  const getTyreBadge = (tyre: { compound: TyreCompound; laps: number } | null) => {
-    if (!tyre || !tyre.compound) {
-      return <span className="text-[10px] text-zinc-600 font-mono">-</span>;
-    }
-    const compound = tyre.compound.toUpperCase();
-    let letter = '-';
-    let ringClass = 'border-zinc-600 text-zinc-400 bg-white/5';
-
-    if (compound.includes('SOFT')) {
-      letter = 'S';
-      ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
-    } else if (compound.includes('MEDIUM')) {
-      letter = 'M';
-      ringClass = 'border-[#FFD60A] text-[#FFD60A] bg-[#FFD60A]/10';
-    } else if (compound.includes('HARD')) {
-      letter = 'H';
-      ringClass = 'border-white text-white bg-white/10';
-    } else if (compound.includes('INTER')) {
-      letter = 'I';
-      ringClass = 'border-[#34C759] text-[#34C759] bg-[#34C759]/10';
-    } else if (compound.includes('WET')) {
-      letter = 'W';
-      ringClass = 'border-[#007AFF] text-[#007AFF] bg-[#007AFF]/10';
-    }
-
-    return (
-      <div
-        className="inline-flex items-center gap-1.5 select-none"
-        title={
-          lang === 'es'
-            ? `Compuesto Pirelli ${tyre.compound} (${tyre.laps} vueltas)`
-            : `Pirelli compound ${tyre.compound} (${tyre.laps} laps)`
-        }
-      >
-        {/* Círculo oficial Pirelli con la letra S / M / H / I / W */}
-        <span
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center font-mono font-black text-[11px] leading-none shrink-0 ${ringClass}`}
-        >
-          {letter}
-        </span>
-        {/* Vueltas al costado, bien legible (ej: 38v / 38l) */}
-        <span className="font-mono text-xs font-bold text-zinc-300 tabular-nums">
-          {tyre.laps}{lang === 'es' ? 'v' : 'l'}
-        </span>
-      </div>
-    );
-  };
-
   const isCloseInterval = (interval: string) => {
     if (!interval || interval === 'LEADER' || interval.includes('LAP') || interval === 'RET') return false;
     const num = parseFloat(interval.replace('+', '').replace('s', ''));
     return !isNaN(num) && num > 0 && num <= 1.0;
   };
-
-  if (!drivers || drivers.length === 0) {
-    return (
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-500 text-sm">
-        {lang === 'es'
-          ? 'No hay datos de telemetría disponibles en este momento.'
-          : 'No telemetry data available at this moment.'}
-      </div>
-    );
-  }
 
   const isDriverRetired = (d: DriverLive) =>
     d.status === 'DNF' ||
@@ -182,31 +125,51 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     d.pos >= 90;
 
   // Deduplicate drivers strictly by driverNumber to prevent duplicate rows when lapped or overtaken
-  const activeDrivers = drivers
-    .filter((d) => !isDriverRetired(d))
-    .reduce<DriverLive[]>((acc, current) => {
-      if (!acc.some((item) => item.driverNumber === current.driverNumber)) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
+  const activeDrivers = useMemo(() => {
+    if (!drivers || drivers.length === 0) return [];
+    return drivers
+      .filter((d) => !isDriverRetired(d))
+      .reduce<DriverLive[]>((acc, current) => {
+        if (!acc.some((item) => item.driverNumber === current.driverNumber)) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+  }, [drivers]);
 
-  const activeDriverNumbers = new Set(activeDrivers.map((d) => d.driverNumber));
-  const retiredDrivers = drivers
-    .filter((d) => isDriverRetired(d))
-    .reduce<DriverLive[]>((acc, current) => {
-      if (!activeDriverNumbers.has(current.driverNumber) && !acc.some((item) => item.driverNumber === current.driverNumber)) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
+  const activeDriverNumbers = useMemo(
+    () => new Set(activeDrivers.map((d) => d.driverNumber)),
+    [activeDrivers]
+  );
 
-  const pinnedDriver = drivers.find((d) => d.driverNumber === pinnedDriverNumber) || null;
+  const retiredDrivers = useMemo(() => {
+    if (!drivers || drivers.length === 0) return [];
+    return drivers
+      .filter((d) => isDriverRetired(d))
+      .reduce<DriverLive[]>((acc, current) => {
+        if (!activeDriverNumbers.has(current.driverNumber) && !acc.some((item) => item.driverNumber === current.driverNumber)) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+  }, [drivers, activeDriverNumbers]);
+
+  const pinnedDriver = drivers?.find((d) => d.driverNumber === pinnedDriverNumber) || null;
 
   // Dynamic computation of fastest overall sector times in this session
   const bestSectors = useMemo(() => {
     return computeBestSessionSectors(activeDrivers);
   }, [activeDrivers]);
+
+  if (!drivers || drivers.length === 0) {
+    return (
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-500 text-sm">
+        {lang === 'es'
+          ? 'No hay datos de telemetría disponibles en este momento.'
+          : 'No telemetry data available at this moment.'}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
@@ -320,7 +283,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
             {/* Tyres */}
             <div className="col-span-2 sm:col-span-2 text-center flex justify-center">
-              {getTyreBadge(pinnedDriver.tyre)}
+              <TyreBadge tyre={pinnedDriver.tyre} lang={lang} />
             </div>
 
             {/* Pit Stop (Hidden on narrow mobile) */}
@@ -335,7 +298,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
               </span>
               {pinnedDriver.interval && pinnedDriver.interval !== 'LEADER' && (
                 <div className="flex items-center justify-end gap-1">
-                  {!isQualy && (pinnedDriver.isOvertakeZone || pinnedDriver.isDrsZone || isCloseInterval(pinnedDriver.interval)) && (
+                  {!isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval)) && (
                     <span
                       className="px-1 py-0.2 rounded text-[7px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse"
                       title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s)' : 'Overtake Mode (MOM) active (< 1.0s)'}
@@ -390,7 +353,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       <div className="divide-y divide-white/[0.04]">
         {activeDrivers.map((d, index) => {
           const isExpanded = expandedDriver === d.driverNumber;
-          const closeInterval = !isQualy && (d.isOvertakeZone || d.isDrsZone || isCloseInterval(d.interval));
+          const closeInterval = !isQualy && (d.isOvertakeZone || isCloseInterval(d.interval));
           const isPinned = pinnedDriverNumber === d.driverNumber;
           const prevDriver = index > 0 ? activeDrivers[index - 1] : null;
           const isPointsZone = isRace && d.pos <= 10;
@@ -643,9 +606,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   <>
                     {/* Columna GOMA: Círculo Oficial Pirelli (letra S/M/H/I/W) + xxV al costado (+ pit badge en mobile) */}
                     <div className="col-span-2 sm:col-span-2 flex items-center justify-center gap-0.5 sm:gap-1.5">
-                      {getTyreBadge(d.tyre) || (
-                        <span className="text-[10px] text-zinc-600 font-mono">-</span>
-                      )}
+                      <TyreBadge tyre={d.tyre} lang={lang} />
                       {/* En mobile, badge compacto de pit integrado al lado */}
                       <div className="sm:hidden">
                         {d.inPit ? (
@@ -979,9 +940,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
                     {/* Columna GOMA: Círculo Oficial Pirelli + Vueltas */}
                     <div className="col-span-2 sm:col-span-2 flex items-center justify-center">
-                      {getTyreBadge(d.tyre) || (
-                        <span className="text-[10px] text-zinc-600 font-mono">-</span>
-                      )}
+                      <TyreBadge tyre={d.tyre} lang={lang} />
                     </div>
 
                     {/* Columna PIT: Separada, conteo de paradas */}

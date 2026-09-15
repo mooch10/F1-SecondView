@@ -5,9 +5,10 @@ import {
   Gauge,
   ChevronDown,
 } from 'lucide-react';
-import type { DriverLive, TyreCompound } from '../../types/f1';
+import type { DriverLive } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { SectorPill } from '../qualy/SectorPill';
+import { TyreBadge } from '../common/TyreBadge';
 
 interface HeadToHeadModalProps {
   isOpen: boolean;
@@ -63,43 +64,6 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
       if (!isNaN(secs)) return secs;
     }
     return null;
-  };
-
-  const getTyreBadge = (tyre: { compound: TyreCompound; laps: number } | null) => {
-    if (!tyre) return <span className="text-zinc-500 font-mono text-xs">---</span>;
-    const compound = tyre.compound.toUpperCase();
-    let letter = 'H';
-    let ringClass = 'border-white text-white bg-white/10';
-
-    if (compound.includes('SOFT')) {
-      letter = 'S';
-      ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
-    } else if (compound.includes('MEDIUM')) {
-      letter = 'M';
-      ringClass = 'border-[#FFD60A] text-[#FFD60A] bg-[#FFD60A]/10';
-    } else if (compound.includes('HARD')) {
-      letter = 'H';
-      ringClass = 'border-white text-white bg-white/10';
-    } else if (compound.includes('INTER')) {
-      letter = 'I';
-      ringClass = 'border-[#34C759] text-[#34C759] bg-[#34C759]/10';
-    } else if (compound.includes('WET')) {
-      letter = 'W';
-      ringClass = 'border-[#007AFF] text-[#007AFF] bg-[#007AFF]/10';
-    }
-
-    return (
-      <div className="inline-flex items-center gap-1.5 select-none">
-        <span
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center font-mono font-black text-[11px] leading-none shrink-0 ${ringClass}`}
-        >
-          {letter}
-        </span>
-        <span className="font-mono text-xs font-bold text-zinc-300 tabular-nums">
-          {tyre.laps}{lang === 'es' ? 'v' : 'l'}
-        </span>
-      </div>
-    );
   };
 
   // Gap computation
@@ -345,13 +309,13 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
                 <span className="text-[10px] font-mono text-zinc-400 mb-1">
                   {driverA?.code || 'A'}
                 </span>
-                {getTyreBadge(driverA?.tyre ?? null)}
+                <TyreBadge tyre={driverA?.tyre} lang={lang} />
               </div>
               <div className="bg-[#131722] border border-white/[0.04] rounded-lg p-2 flex flex-col items-center">
                 <span className="text-[10px] font-mono text-zinc-400 mb-1">
                   {driverB?.code || 'B'}
                 </span>
-                {getTyreBadge(driverB?.tyre ?? null)}
+                <TyreBadge tyre={driverB?.tyre} lang={lang} />
               </div>
             </div>
 

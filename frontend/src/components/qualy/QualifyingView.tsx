@@ -15,9 +15,9 @@ import type {
   JolpicaQualifyingResult,
   JolpicaQualifyingSession,
   LiveSnapshot,
-  TyreCompound,
 } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { TyreBadge } from '../common/TyreBadge';
 import { MiniSectorsBar } from './MiniSectorsBar';
 import { SectorPill } from './SectorPill';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
@@ -209,7 +209,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         showCutoff,
       };
     });
-  }, [liveDrivers, phaseFilter]);
+  }, [liveDrivers, phaseFilter, lang]);
 
   // Dynamic computation of fastest overall sector times in this session
   const bestSectors = useMemo(() => {
@@ -307,7 +307,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
       isPhaseLeader: idx === 0,
       showCutoff: idx === 15,
     }));
-  }, [session, phaseFilter]);
+  }, [session, phaseFilter, lang]);
 
   useEffect(() => {
     fetchQualifying().then((data) => {
@@ -318,50 +318,6 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
   const toggleExpand = (driverNumber: number) => {
     setExpandedDriver((prev) => (prev === driverNumber ? null : driverNumber));
-  };
-
-  const getTyreBadge = (tyre: { compound: TyreCompound; laps: number } | null) => {
-    if (!tyre) return null;
-    const compound = tyre.compound.toUpperCase();
-    let letter = 'S';
-    let ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
-
-    if (compound.includes('SOFT')) {
-      letter = 'S';
-      ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
-    } else if (compound.includes('MEDIUM')) {
-      letter = 'M';
-      ringClass = 'border-[#FFD60A] text-[#FFD60A] bg-[#FFD60A]/10';
-    } else if (compound.includes('HARD')) {
-      letter = 'H';
-      ringClass = 'border-white text-white bg-white/10';
-    } else if (compound.includes('INTER')) {
-      letter = 'I';
-      ringClass = 'border-[#34C759] text-[#34C759] bg-[#34C759]/10';
-    } else if (compound.includes('WET')) {
-      letter = 'W';
-      ringClass = 'border-[#007AFF] text-[#007AFF] bg-[#007AFF]/10';
-    }
-
-    return (
-      <div
-        className="inline-flex items-center gap-1 font-mono text-[10px] font-bold select-none"
-        title={
-          lang === 'es'
-            ? `Compuesto ${tyre.compound} (${tyre.laps} vueltas)`
-            : `Pirelli ${tyre.compound} Compound (${tyre.laps} laps)`
-        }
-      >
-        <span
-          className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-black shrink-0 ${ringClass}`}
-        >
-          {letter}
-        </span>
-        <span className="text-zinc-400 tabular-nums">
-          {tyre.laps}{lang === 'es' ? 'v' : 'l'}
-        </span>
-      </div>
-    );
   };
 
   // ----------------------------------------------------
@@ -671,7 +627,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                             {d.fullName}
                           </span>
                           <span className="text-zinc-400 text-xs">({d.teamName})</span>
-                          {getTyreBadge(d.tyre)}
+                          <TyreBadge tyre={d.tyre} lang={lang} size="sm" />
                         </div>
                         <span className="text-zinc-400 font-mono text-[10px]">
                           {lang === 'es' ? 'Grilla provisional' : 'Provisional grid'}:{' '}

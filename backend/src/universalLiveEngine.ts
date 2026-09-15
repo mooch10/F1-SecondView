@@ -64,7 +64,7 @@ export interface DriverGridSeed {
 
 // Official 2026 Grid calibrated with the official Madrid Qualifying Results
 export const DRIVERS_GRID_2026: DriverGridSeed[] = [
-  { driverNumber: 4, code: 'NOR', fullName: 'Lando Norris', familyName: 'Norris', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0.000 },
+  { driverNumber: 4, code: 'NOR', fullName: 'Lando Norris', familyName: 'Norris', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0 },
   { driverNumber: 12, code: 'ANT', fullName: 'Kimi Antonelli', familyName: 'Antonelli', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.011 },
   { driverNumber: 1, code: 'VER', fullName: 'Max Verstappen', familyName: 'Verstappen', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 0.140 },
   { driverNumber: 44, code: 'HAM', fullName: 'Lewis Hamilton', familyName: 'Hamilton', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.189 },
