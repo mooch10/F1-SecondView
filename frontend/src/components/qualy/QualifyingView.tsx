@@ -400,9 +400,12 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase font-chakra">
-                {liveSnapshot?.session.sessionName
+                {liveSnapshot?.session.sessionName &&
+                (liveSnapshot.session.sessionName.toLowerCase().includes('qualifying') ||
+                 liveSnapshot.session.sessionName.toLowerCase().includes('clasificaci') ||
+                 liveSnapshot.session.sessionName.toLowerCase().includes('qualy'))
                   ? translateSessionName(liveSnapshot.session.sessionName, lang)
-                  : (lang === 'es' ? 'Sesión de Clasificación' : 'Qualifying Session')}
+                  : (lang === 'es' ? 'CLASIFICACIÓN OFICIAL' : 'OFFICIAL QUALIFYING')}
               </h2>
               <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-mono">
                 <MapPin className="w-3.5 h-3.5 text-[#E10600]" />
@@ -517,9 +520,15 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
               return (
                 <div key={d.driverNumber} className="flex flex-col">
-                  {/* Línea divisoria de corte */}
+                  {/* Línea divisoria de corte (Estilo F1 TV Broadcast) */}
                   {item.showCutoff && (
-                    <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
+                    <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                      <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+                      <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                        {lang === 'es' ? 'ZONA DE ELIMINACIÓN' : 'ELIMINATION ZONE'}
+                      </span>
+                    </div>
                   )}
 
                   {/* Driver Row (Clickable) */}
@@ -904,8 +913,15 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
               return (
                 <div key={d.driverNumber} className="flex flex-col">
+                  {/* Línea divisoria de corte (Estilo F1 TV Broadcast) */}
                   {item.showCutoff && (
-                    <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
+                    <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                      <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+                      <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                        {lang === 'es' ? 'ZONA DE ELIMINACIÓN' : 'ELIMINATION ZONE'}
+                      </span>
+                    </div>
                   )}
 
                   <button

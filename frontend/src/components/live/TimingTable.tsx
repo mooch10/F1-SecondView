@@ -401,19 +401,37 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
           return (
             <div key={d.driverNumber} className="flex flex-col">
-              {/* Reborde verde divisorio que delimita la zona de puntos (Top 10) */}
+              {/* Reborde divisorio que delimita la zona de puntos (Top 10) */}
               {showPointsCutoff && (
-                <div className="h-[2px] bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.5)] my-0" />
+                <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/80 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                  <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    {lang === 'es' ? 'LÍMITE ZONA DE PUNTOS' : 'POINTS CUTOFF'}
+                  </span>
+                </div>
               )}
 
               {/* Línea divisoria de corte Q2 (eliminación P11 a P15) */}
               {showQ2Cutoff && (
-                <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
+                <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+                  <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    {lang === 'es' ? 'ZONA DE ELIMINACIÓN Q2' : 'Q2 ELIMINATION ZONE'}
+                  </span>
+                </div>
               )}
 
               {/* Línea divisoria de corte Q1 (eliminación P16 a P20) */}
               {showQ1Cutoff && (
-                <div className="h-[2px] bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] my-0" />
+                <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                  <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+                  <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    {lang === 'es' ? 'ZONA DE ELIMINACIÓN Q1' : 'Q1 ELIMINATION ZONE'}
+                  </span>
+                </div>
               )}
 
               {/* Level 1: Main Row (Tap to expand) */}

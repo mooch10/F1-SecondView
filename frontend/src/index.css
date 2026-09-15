@@ -90,6 +90,16 @@ html.light .bg-\[\#131722\] {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06) !important;
 }
 
+html.light .bg-\[\#171C28\] {
+  background-color: #F8FAFC !important;
+  border-color: #E5E7EB !important;
+}
+
+html.light .bg-\[\#151A25\] {
+  background-color: #FEF9C3 !important;
+  border-color: #F59E0B !important;
+}
+
 html.light .bg-\[\#1C2230\] {
   background-color: #E5E7EB !important;
   color: #111827 !important;
@@ -107,6 +117,7 @@ html.light .bg-black\/40 {
 /* Borders & Dividers */
 html.light .border-white\/\[0\.08\],
 html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.05\],
 html.light .border-white\/\[0\.04\],
 html.light .border-white\/\[0\.1\],
 html.light .border-white\/\[0\.12\] {
@@ -140,7 +151,7 @@ html.light .text-zinc-400 {
 }
 
 html.light .text-zinc-500 {
-  color: #9CA3AF !important;
+  color: #64748B !important;
 }
 
 html.light .text-zinc-600 {
@@ -176,6 +187,38 @@ html.light .text-\[\#FFD60A\] {
 
 html.light .text-\[\#27F4D2\] {
   color: #0D9488 !important; /* Rich teal */
+}
+
+/* Cutoff & Elimination badges in light mode */
+html.light .bg-rose-950\/90 {
+  background-color: #FEE2E2 !important;
+  color: #991B1B !important;
+  border-color: #F87171 !important;
+}
+
+html.light .bg-emerald-950\/90 {
+  background-color: #DCFCE7 !important;
+  color: #166534 !important;
+  border-color: #4ADE80 !important;
+}
+
+/* Podium badges in light mode */
+html.light .bg-amber-400\/20 {
+  background-color: #FEF3C7 !important;
+  color: #B45309 !important;
+  border-color: #FCD34D !important;
+}
+
+html.light .bg-slate-300\/15 {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light .bg-amber-700\/15 {
+  background-color: #FFEDD5 !important;
+  color: #C2410C !important;
+  border-color: #FDBA74 !important;
 }
 
 /* Scrollbar in Light Mode */

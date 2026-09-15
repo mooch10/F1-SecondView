@@ -67,6 +67,31 @@ export const StandingsView: React.FC = () => {
     }
   };
 
+  const renderPosBadge = (pos: number) => {
+    if (pos === 1) {
+      return (
+        <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-[0_0_8px_rgba(251,191,36,0.25)]">
+          <span className="text-[11px]">🥇</span> <span>{pos}</span>
+        </span>
+      );
+    }
+    if (pos === 2) {
+      return (
+        <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-slate-300/15 text-slate-200 border border-slate-300/30">
+          <span className="text-[11px]">🥈</span> <span>{pos}</span>
+        </span>
+      );
+    }
+    if (pos === 3) {
+      return (
+        <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-amber-700/15 text-amber-500 border border-amber-700/30">
+          <span className="text-[11px]">🥉</span> <span>{pos}</span>
+        </span>
+      );
+    }
+    return <span className="text-zinc-400 font-bold">{pos}</span>;
+  };
+
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -147,8 +172,8 @@ export const StandingsView: React.FC = () => {
       {subTab === 'drivers' && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-400 uppercase select-none">
-            <div className="col-span-1 text-center">{t.standings.headers.pos}</div>
-            <div className="col-span-6 sm:col-span-5">{t.standings.headers.driver}</div>
+            <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
+            <div className="col-span-5 sm:col-span-5">{t.standings.headers.driver}</div>
             <div className="col-span-3 hidden sm:block">{t.standings.headers.team}</div>
             <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
             <div className="col-span-2 sm:col-span-1 text-right">{t.standings.headers.wins}</div>
@@ -158,25 +183,21 @@ export const StandingsView: React.FC = () => {
             {data.drivers.map((d) => (
               <div
                 key={`${d.code}-${d.pos}`}
-                className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.02] transition-colors"
+                className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
+                  d.pos === 1
+                    ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
+                    : d.pos <= 3
+                    ? 'bg-white/[0.015] hover:bg-white/[0.04]'
+                    : 'hover:bg-white/[0.02]'
+                }`}
               >
                 {/* Pos */}
-                <div className="col-span-1 text-center font-mono text-xs sm:text-sm font-black tabular-nums">
-                  <span
-                    className={
-                      d.pos === 1
-                        ? 'text-[#FFD60A]'
-                        : d.pos <= 3
-                        ? 'text-white'
-                        : 'text-zinc-400'
-                    }
-                  >
-                    {d.pos}
-                  </span>
+                <div className="col-span-2 sm:col-span-1 flex items-center justify-center font-mono tabular-nums">
+                  {renderPosBadge(d.pos)}
                 </div>
 
                 {/* Driver */}
-                <div className="col-span-6 sm:col-span-5 flex items-center gap-2 overflow-hidden">
+                <div className="col-span-5 sm:col-span-5 flex items-center gap-2 overflow-hidden">
                   <span
                     className="w-[3px] h-5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#8E929B' }}
@@ -238,21 +259,17 @@ export const StandingsView: React.FC = () => {
             {data.constructors.map((c) => (
               <div
                 key={c.name}
-                className="grid grid-cols-12 gap-1 px-3 py-2.5 items-center hover:bg-white/[0.02] transition-colors"
+                className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
+                  c.pos === 1
+                    ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
+                    : c.pos <= 3
+                    ? 'bg-white/[0.015] hover:bg-white/[0.04]'
+                    : 'hover:bg-white/[0.02]'
+                }`}
               >
                 {/* Pos */}
-                <div className="col-span-2 sm:col-span-1 text-center font-mono text-xs sm:text-sm font-black tabular-nums">
-                  <span
-                    className={
-                      c.pos === 1
-                        ? 'text-[#FFD60A]'
-                        : c.pos <= 3
-                        ? 'text-white'
-                        : 'text-zinc-400'
-                    }
-                  >
-                    {c.pos}
-                  </span>
+                <div className="col-span-2 sm:col-span-1 flex items-center justify-center font-mono tabular-nums">
+                  {renderPosBadge(c.pos)}
                 </div>
 
                 {/* Team Name with line indicator */}
