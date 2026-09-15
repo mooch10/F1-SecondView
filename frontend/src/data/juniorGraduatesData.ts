@@ -50,11 +50,11 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
   },
   sauber: {
     id: 'sauber',
-    name: 'Sauber Academy',
+    name: 'Sauber / Audi Driver Programme',
     shortName: 'SAU',
     color: '#52E252',
     f1Team: 'Kick Sauber / Audi',
-    badge: '🟢 Sauber',
+    badge: '🟢 Sauber / Audi',
   },
   astonmartin: {
     id: 'astonmartin',
@@ -92,42 +92,59 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
 
 // Map driver codes to their academy ID
 export const DRIVER_ACADEMY_MAP: Record<string, string> = {
-  // F2 Drivers
-  TSO: 'redbull',      // Nikola Tsolov
-  CAM: 'ferrari',      // Rafael Câmara
-  FOR: 'mclaren',      // Leonardo Fornaroli
-  DUR: 'independent',  // Joshua Dürksen
-  MIN: 'alpine',       // Gabriele Minì
-  BEG: 'ferrari',      // Dino Beganovic
-  DUN: 'mclaren',      // Alex Dunne
-  MAI: 'alpine',       // Kush Maini
-  HOE: 'independent',  // Christian Ho
-  FIT: 'sauber',       // Emerson Fittipaldi Jr
-  GOE: 'redbull',      // Oliver Goethe
-  BOY: 'astonmartin',  // Mari Boya
+  // F2 Drivers (2026, 2025, 2024)
+  TSO: 'redbull',      // Nikola Tsolov (Red Bull Junior Team)
+  CAM: 'ferrari',      // Rafael Câmara (Ferrari Driver Academy)
+  FOR: 'mclaren',      // Leonardo Fornaroli (McLaren F1 Reserve)
+  DUR: 'independent',  // Joshua Dürksen (Independiente)
+  MIN: 'alpine',       // Gabriele Minì (Alpine Academy)
+  BEG: 'ferrari',      // Dino Beganovic (Ferrari Driver Academy)
+  DUN: 'alpine',       // Alex Dunne (Alpine Academy 2026)
+  MAI: 'alpine',       // Kush Maini (Alpine Academy)
+  HOE: 'independent',  // Laurens van Hoepen / Christian Ho
+  FIT: 'sauber',       // Emerson Fittipaldi Jr (Sauber Academy)
+  GOE: 'redbull',      // Oliver Goethe (Red Bull Junior Team)
+  BOY: 'astonmartin',  // Mari Boya (Aston Martin Aramco Driver Academy)
   INT: 'independent',  // Tasanapol Inthraphuvasak
-  STE: 'mclaren',      // Martinius Stenshorne
-  BEN: 'redbull',      // Enzo Deligny / Bennett
+  STE: 'mclaren',      // Martinius Stenshorne (McLaren Driver Development)
+  BEN: 'independent',  // John Bennett
   MIY: 'independent',  // Ritomo Miyata (Toyota Gazoo)
-  HER: 'cadillac',     // Colton Herta (Cadillac F1 test)
+  HER: 'cadillac',     // Colton Herta (Cadillac F1 Test Program)
   BIL: 'independent',  // Roman Bilinski
-  MON: 'independent',  // Noel León / Montoya
+  MON: 'independent',  // Sebastián Montoya
   LEO: 'independent',  // Noel León
-  VIL: 'independent',  // Santiago Ramos / Villagómez
-  VAR: 'independent',  // Rafael Villagómez
+  VIL: 'independent',  // Rafael Villagómez
+  VAR: 'independent',  // Nico Varrone
   SHI: 'independent',  // Cian Shields
+  LIN: 'redbull',      // Arvid Lindblad (Red Bull Junior Team)
+  BRO: 'williams',     // Luke Browning (Williams Racing Driver Academy)
+  TRA: 'redbull',      // Tim Tramnitz (Red Bull Junior Team)
 
-  // F3 Drivers
-  TRA: 'redbull',      // Tim Tramnitz
-  TAP: 'ferrari',      // Tuukka Taponen
-  BRO: 'williams',     // Luke Browning
-  UGO: 'mclaren',      // Ugo Ugochukwu
-  GIU: 'williams',     // Alessandro Giusti
-  STR: 'mclaren',      // Martinius Stenshorne
-  LAC: 'alpine',       // Nicola Lacorte
-  BED: 'ferrari',      // James Wharton
-  WHA: 'ferrari',      // James Wharton
-  DEL: 'redbull',      // Enzo Deligny
+  // F3 Drivers (2026, 2025, 2024)
+  SLA: 'sauber',       // Freddie Slater (Audi Driver Development / Sauber)
+  NAE: 'independent',  // Théophile Naël
+  UGO: 'mclaren',      // Ugo Ugochukwu (McLaren Driver Development)
+  KAT: 'redbull',      // Taito Kato (Honda Dream Project / Red Bull)
+  GIU: 'williams',     // Alessandro Giusti (Williams Racing Driver Academy)
+  RIV: 'redbull',      // Ernesto Rivera (Red Bull Junior Team)
+  CLE: 'independent',  // Pedro Clerot
+  TAP: 'ferrari',      // Tuukka Taponen (Ferrari Driver Academy)
+  BAD: 'mclaren',      // Brando Badoer (McLaren Driver Development)
+  YAM: 'independent',  // Hiyu Yamakoshi
+  STR: 'independent',  // Noah Strømsted
+  PIN: 'independent',  // Bruno del Pino
+  GLA: 'sauber',       // Maciej Gładysz (Sauber Academy)
+  COL: 'redbull',      // Mattia Colnaghi (Red Bull Junior Team)
+  WHA: 'ferrari',      // James Wharton (Ex-Ferrari Driver Academy)
+  NAK: 'independent',  // Jin Nakamura (TGR)
+  DAV: 'independent',  // Yevan David
+  DEL: 'redbull',      // Enzo Deligny (Red Bull Junior Team)
+  LAC: 'alpine',       // Nicola Lacorte (Alpine Academy)
+  POW: 'mercedes',     // Alex Powell (Mercedes Junior Team)
+  LE: 'independent',   // Kanato Le
+  XIE: 'independent',  // Gerrard Xie
+  DEP: 'independent',  // Matteo De Palo
+  BED: 'ferrari',      // James Wharton fallback
   CRA: 'astonmartin',  // Jak Crawford
 };
 
@@ -750,32 +767,56 @@ export const F3_HISTORICAL_SEASONS: SeasonHistory[] = [
       points: 139,
       flag: '🇺🇸',
     },
-    keyFact: 'Temporada 2026 en curso: el prodigio británico Freddie Slater lidera el asalto de Trident frente a la ofensiva de Campos Racing y las academias de McLaren y Williams.',
-    keyFactEn: '2026 Season currently in progress: British prodigy Freddie Slater spearheads Trident\'s assault against Campos Racing and McLaren/Williams academies.',
+    keyFact: 'Temporada 2026 en curso: Freddie Slater (Audi/Sauber) lidera la F3 frente al asalto de las academias Red Bull (Rivera, Colnaghi, Deligny), Ferrari (Taponen), Mercedes (Powell), Williams (Giusti) y McLaren (Ugochukwu, Badoer).',
+    keyFactEn: '2026 Season in progress: Freddie Slater (Audi/Sauber) leads F3 against top academy talents from Red Bull (Rivera, Colnaghi, Deligny), Ferrari (Taponen), Mercedes (Powell), Williams (Giusti) and McLaren (Ugochukwu, Badoer).',
     graduatesToF1: [
       {
         name: 'Freddie Slater',
         code: 'SLA',
         f2Team: 'Trident',
-        f1Team: 'Candidato F1 (Superlicencia SL 30)',
+        f1Team: 'Audi Driver Development / Sauber',
         yearGraduated: 2026,
         f2Result: 'Líder F3 2026',
-        notes: 'Vencedor en 3 carreras y dominador de la primera mitad del campeonato.',
+        notes: 'Dominador de la primera mitad del certamen con 3 victorias para Trident.',
         notesEn: 'Three-time winner dominating the first half of the 2026 championship.',
-        currentRole: 'Promesa F3',
+        currentRole: 'Audi / Sauber Junior',
         flag: '🇬🇧',
       },
       {
-        name: 'Ugo Ugochukwu',
-        code: 'UGO',
+        name: 'Ernesto Rivera',
+        code: 'RIV',
         f2Team: 'Campos Racing',
-        f1Team: 'McLaren Driver Development',
+        f1Team: 'Red Bull Junior Team',
         yearGraduated: 2026,
-        f2Result: 'Top 3 F3',
-        notes: 'Joven talento estadounidense respaldado firmemente por McLaren.',
-        notesEn: 'American young talent strongly backed by McLaren Driver Development.',
-        currentRole: 'McLaren Junior',
-        flag: '🇺🇸',
+        f2Result: 'Ganador en F3',
+        notes: 'Talento mexicano de Helmut Marko sumando podios y victorias en su año de debut.',
+        notesEn: 'Mexican Red Bull talent claiming podiums and wins in his debut season.',
+        currentRole: 'Red Bull Junior',
+        flag: '🇲🇽',
+      },
+      {
+        name: 'Alex Powell',
+        code: 'POW',
+        f2Team: 'PREMA Racing',
+        f1Team: 'Mercedes Junior Team',
+        yearGraduated: 2026,
+        f2Result: 'Top 10 F3',
+        notes: 'Protegido de Mercedes-AMG F1 desplegando gran ritmo de carrera con PREMA.',
+        notesEn: 'Mercedes-AMG F1 protégé showing strong race craft with PREMA.',
+        currentRole: 'Mercedes Junior',
+        flag: '🇯🇲',
+      },
+      {
+        name: 'Tuukka Taponen',
+        code: 'TAP',
+        f2Team: 'MP Motorsport',
+        f1Team: 'Ferrari Driver Academy',
+        yearGraduated: 2026,
+        f2Result: 'Ganador en F3',
+        notes: 'Finés volador de Ferrari Driver Academy con brillante victoria en lluvia.',
+        notesEn: 'Flying Finn of the Ferrari Driver Academy with brilliant wet-weather victory.',
+        currentRole: 'Ferrari Junior',
+        flag: '🇫🇮',
       },
       {
         name: 'Alessandro Giusti',
@@ -788,6 +829,18 @@ export const F3_HISTORICAL_SEASONS: SeasonHistory[] = [
         notesEn: 'French talent from Williams Racing Driver Academy.',
         currentRole: 'Williams Junior',
         flag: '🇫🇷',
+      },
+      {
+        name: 'Ugo Ugochukwu',
+        code: 'UGO',
+        f2Team: 'Campos Racing',
+        f1Team: 'McLaren Driver Development',
+        yearGraduated: 2026,
+        f2Result: 'Top 3 F3',
+        notes: 'Ganador del GP de Macao y puntal de McLaren en el certamen.',
+        notesEn: 'Macau GP winner and McLaren Driver Development star in F3.',
+        currentRole: 'McLaren Junior',
+        flag: '🇺🇸',
       },
     ],
   },

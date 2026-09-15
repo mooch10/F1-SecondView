@@ -546,27 +546,36 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                     : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-transparent'
                 }`}
               >
-                {t.standings.allAcademies}
+                {t.standings.allAcademies} ({processedDrivers.length})
               </button>
-              {Object.values(F1_ACADEMIES).map((acad) => (
-                <button
-                  key={acad.id}
-                  type="button"
-                  onClick={() => setSelectedAcademyFilter(acad.id)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all shrink-0 cursor-pointer border ${
-                    selectedAcademyFilter === acad.id
-                      ? 'text-white shadow-sm'
-                      : 'bg-white/[0.03] text-zinc-400 hover:text-white border border-white/[0.05]'
-                  }`}
-                  style={
-                    selectedAcademyFilter === acad.id
-                      ? { backgroundColor: `${acad.color}25`, borderColor: acad.color }
-                      : undefined
-                  }
-                >
-                  {acad.badge}
-                </button>
-              ))}
+              {Object.values(F1_ACADEMIES).map((acad) => {
+                const count = processedDrivers.filter(
+                  (d) => (DRIVER_ACADEMY_MAP[d.code?.toUpperCase() || ''] || 'independent') === acad.id
+                ).length;
+                if (count === 0 && selectedAcademyFilter !== acad.id) {
+                  return null;
+                }
+                return (
+                  <button
+                    key={acad.id}
+                    type="button"
+                    onClick={() => setSelectedAcademyFilter(acad.id)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all shrink-0 cursor-pointer border flex items-center gap-1.5 ${
+                      selectedAcademyFilter === acad.id
+                        ? 'text-white shadow-sm'
+                        : 'bg-white/[0.03] text-zinc-400 hover:text-white border-white/[0.05]'
+                    }`}
+                    style={
+                      selectedAcademyFilter === acad.id
+                        ? { backgroundColor: `${acad.color}25`, borderColor: acad.color }
+                        : undefined
+                    }
+                  >
+                    <span>{acad.badge}</span>
+                    <span className="text-[10px] font-bold opacity-80">({count})</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -582,7 +591,14 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               </div>
 
               <div className="divide-y divide-white/[0.08]">
-                {filteredDrivers.map((d) => {
+                {filteredDrivers.length === 0 ? (
+                  <div className="p-8 text-center text-zinc-400 font-mono text-xs">
+                    {lang === 'es'
+                      ? `No hay pilotos de ${F1_ACADEMIES[selectedAcademyFilter]?.name || 'esta academia'} compitiendo en ${series.toUpperCase()} ${activeYear}.`
+                      : `No drivers from ${F1_ACADEMIES[selectedAcademyFilter]?.name || 'this academy'} competing in ${series.toUpperCase()} ${activeYear}.`}
+                  </div>
+                ) : (
+                  filteredDrivers.map((d) => {
                   const acadId = DRIVER_ACADEMY_MAP[d.code?.toUpperCase() || ''] || 'independent';
                   const acad = F1_ACADEMIES[acadId];
 
@@ -694,7 +710,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                       </div>
                     </div>
                   );
-                })}
+                }))}
               </div>
             </div>
           )}

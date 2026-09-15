@@ -97,9 +97,9 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     headshotUrl:
       'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/rodinmotorsport/aledun01/2026rodinmotorsportaledun01right.webp',
     biography:
-      'Piloto irlandés respaldado por McLaren Driver Development y campeón británico de F4. Célebre por su estilo de adelantamiento intrépido, gran tenacidad rueda a rueda y maestría en lluvia.',
+      'Piloto irlandés estrella de la Alpine Academy (previamente McLaren) y campeón británico de F4. Célebre por su estilo de adelantamiento intrépido, gran tenacidad rueda a rueda y maestría en lluvia.',
     biographyEn:
-      'Irish driver backed by the McLaren Driver Development programme and British F4 Champion. Renowned for fearless overtaking and exceptional wet-weather mastery.',
+      'Irish driver and star of the Alpine Academy (previously McLaren) and British F4 Champion. Renowned for fearless overtaking and exceptional wet-weather mastery.',
     careerStats: {
       grandsPrix: 22,
       podiums: 6,
@@ -680,9 +680,9 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     headshotUrl:
       'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/trident/fresla01/2026tridentfresla01right.webp',
     biography:
-      'Sensación británica y campeón dominante de la F4 italiana y Euro 4 con récord histórico de victorias. Lideró el asalto de Trident coronándose campeón de pilotos de la F3.',
+      'Sensación británica respaldada por el programa de desarrollo de Audi / Sauber y campeón dominante de la F4 italiana y Euro 4 con récord histórico de victorias. Lidera el asalto de Trident en la F3.',
     biographyEn:
-      'British sensation and dominant Italian F4 and Euro 4 champion with all-time win records. Led Trident\'s title charge claiming the 2026 F3 Drivers Championship.',
+      'British sensation backed by the Audi / Sauber Driver Development Programme, dominant Italian F4 and Euro 4 champion with all-time win records. Leads Trident\'s charge in F3.',
     careerStats: {
       grandsPrix: 18,
       podiums: 7,
@@ -1028,9 +1028,9 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     headshotUrl:
       'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/artgrandprix/macgla01/2026artgrandprixmacgla01right.webp',
     biography:
-      'Talento polaco de ART Grand Prix con brillante palmarés en karting y monoplazas juveniles. Muy consistente en la zona de puntos durante toda la gira europea.',
+      'Talento polaco de la Sauber Academy compitiendo en ART Grand Prix con brillante palmarés en karting y monoplazas juveniles. Muy consistente en la zona de puntos durante toda la gira europea.',
     biographyEn:
-      'Polish talent at ART Grand Prix with a sparkling record in junior single-seaters. Highly consistent points finisher across the entire European leg.',
+      'Polish Sauber Academy talent at ART Grand Prix with a sparkling record in junior single-seaters. Highly consistent points finisher across the entire European leg.',
     careerStats: {
       grandsPrix: 18,
       podiums: 2,
@@ -1057,9 +1057,9 @@ export const F3_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     headshotUrl:
       'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f3/2026/mpmotorsport/matcol01/2026mpmotorsportmatcol01right.webp',
     biography:
-      'Campeón de la F4 española y joya del automovilismo argentino con MP Motorsport. Destacado por su ritmo demoledor en clasificación y podios en Silverstone y Red Bull Ring.',
+      'Campeón de la F4 española y fichaje de Red Bull Junior Team con MP Motorsport. Destacado por su ritmo demoledor en clasificación y podios en Silverstone y Red Bull Ring.',
     biographyEn:
-      'Spanish F4 Champion and Argentine rising star with MP Motorsport. Known for blinding qualifying speed and impressive podiums at Silverstone and Red Bull Ring.',
+      'Spanish F4 Champion and Red Bull Junior Team recruit with MP Motorsport. Known for blinding qualifying speed and impressive podiums at Silverstone and Red Bull Ring.',
     careerStats: {
       grandsPrix: 18,
       podiums: 2,
