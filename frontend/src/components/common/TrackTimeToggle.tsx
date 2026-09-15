@@ -1,5 +1,4 @@
-import React from 'react';
-import { useTimezone } from '../../context/TimezoneContext';
+import { useTimezone } from '../../hooks/useTimezone';
 
 interface TrackTimeToggleProps {
   className?: string;

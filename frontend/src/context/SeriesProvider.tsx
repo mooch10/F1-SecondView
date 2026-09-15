@@ -1,14 +1,7 @@
-import { createContext, useState, useMemo, type ReactNode } from 'react';
+﻿import { useState, useMemo, type ReactNode } from 'react';
 import type { SeriesCategory } from '../types/f1';
-import { SERIES_THEMES, type SeriesTheme } from '../hooks/useSeries';
-
-export interface SeriesContextType {
-  series: SeriesCategory;
-  setSeries: (series: SeriesCategory) => void;
-  theme: SeriesTheme;
-}
-
-export const SeriesContext = createContext<SeriesContextType | undefined>(undefined);
+import { SERIES_THEMES } from '../hooks/useSeries';
+import { SeriesContext } from './SeriesContext';
 
 const STORAGE_KEY = 'delta_series';
 
@@ -47,4 +40,3 @@ export function SeriesProvider({ children }: { children: ReactNode }) {
 
   return <SeriesContext.Provider value={value}>{children}</SeriesContext.Provider>;
 }
-

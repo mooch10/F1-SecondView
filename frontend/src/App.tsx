@@ -18,7 +18,7 @@ import { useLiveTelemetry } from './hooks/useLiveTelemetry';
 import { useSeries } from './hooks/useSeries';
 import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
-import { useTimezone } from './context/TimezoneContext';
+import { useTimezone } from './hooks/useTimezone';
 import type { ActiveTab } from './types/f1';
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
   const [userSubView, setUserSubView] = useState<'timing' | 'betweenRaces' | null>(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const { t } = useLanguage();
-  const { setSeries } = useSeries();
+  const { series, setSeries } = useSeries();
   const { setTrackCircuit } = useTimezone();
 
   const handleEnter = () => {
@@ -209,15 +209,15 @@ function App() {
               </>
             )}
 
-            {activeTab === 'last-race' && <LastRaceView />}
+            {activeTab === 'last-race' && <LastRaceView key={series} />}
 
             {activeTab === 'qualy' && (
               <QualifyingView liveSnapshot={snapshot} liveDrivers={drivers} />
             )}
 
-            {activeTab === 'schedule' && <ScheduleView />}
+            {activeTab === 'schedule' && <ScheduleView key={series} />}
 
-            {activeTab === 'standings' && <StandingsView />}
+            {activeTab === 'standings' && <StandingsView key={series} />}
           </main>
 
           {/* Footer */}

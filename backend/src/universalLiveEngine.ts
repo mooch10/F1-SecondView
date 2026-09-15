@@ -357,7 +357,7 @@ export function generateUniversalLiveSnapshot(
     const q2Dur = idx < 15 ? driverLapDuration + (idx < 10 ? 0.28 : 0.12) : null;
     const q3Dur = idx < 10 ? driverLapDuration : null;
 
-    const effectiveBestDur = idx < 10 ? q3Dur! : idx < 15 ? q2Dur! : q1Dur;
+    const effectiveBestDur = idx < 10 ? (q3Dur ?? driverLapDuration) : idx < 15 ? (q2Dur ?? driverLapDuration) : q1Dur;
     const effectiveBestStr = formatLapSeconds(effectiveBestDur);
 
     // Realistic dynamic tyre strategy calibrated to current session progress and pit stops

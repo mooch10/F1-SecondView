@@ -93,15 +93,20 @@ export const StandingsView: React.FC = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     Promise.all([
       fetchStandings(series),
       series !== 'f1' ? fetchDriverChanges(series) : Promise.resolve([]),
     ]).then(([standingsRes, changesRes]) => {
-      setData(standingsRes);
-      setDriverChanges(changesRes);
-      setLoading(false);
+      if (!cancelled) {
+        setData(standingsRes);
+        setDriverChanges(changesRes);
+        setLoading(false);
+      }
     });
+    return () => {
+      cancelled = true;
+    };
   }, [series]);
 
   if (loading) {

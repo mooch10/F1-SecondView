@@ -1,26 +1,11 @@
-import { createContext, useState, useEffect, useMemo, useContext, useCallback, type ReactNode } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import {
   getCircuitTimezone,
   getCurrentClock,
   formatSessionTimeToZone,
   formatSessionDateToZone,
 } from '../utils/circuitTimezones';
-
-export type TimezoneMode = 'my' | 'track';
-
-export interface TimezoneContextType {
-  mode: TimezoneMode;
-  setMode: (mode: TimezoneMode) => void;
-  toggleMode: () => void;
-  trackTimezone: string;
-  setTrackCircuit: (circuit?: string, locality?: string, country?: string) => void;
-  myClock: string;
-  trackClock: string;
-  formatSessionTime: (isoStr: string, overrideTimezone?: string) => string | null;
-  formatSessionDate: (isoStr: string, lang?: 'es' | 'en', overrideTimezone?: string) => string;
-}
-
-export const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined);
+import { TimezoneContext, type TimezoneMode } from './TimezoneContext';
 
 const STORAGE_KEY = 'delta_timezone_mode';
 
@@ -69,13 +54,10 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
 
   // Keep clocks ticking live every 5 seconds (smooth and battery efficient)
   useEffect(() => {
-    const updateClocks = () => {
+    const interval = setInterval(() => {
       setMyClock(getCurrentClock());
       setTrackClock(getCurrentClock(trackTimezone));
-    };
-
-    updateClocks();
-    const interval = setInterval(updateClocks, 5000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [trackTimezone]);
 
@@ -125,12 +107,4 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
   );
 
   return <TimezoneContext.Provider value={value}>{children}</TimezoneContext.Provider>;
-}
-
-export function useTimezone(): TimezoneContextType {
-  const context = useContext(TimezoneContext);
-  if (!context) {
-    throw new Error('useTimezone must be used within a TimezoneProvider');
-  }
-  return context;
 }

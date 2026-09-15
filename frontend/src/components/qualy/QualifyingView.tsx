@@ -488,10 +488,17 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   )}
 
                   {/* Driver Row (Clickable) */}
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => toggleExpand(d.driverNumber)}
-                    className={`w-full text-left grid grid-cols-12 gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-3 sm:py-3 items-center transition-colors select-none ${
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleExpand(d.driverNumber);
+                      }
+                    }}
+                    className={`w-full text-left grid grid-cols-12 gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-3 sm:py-3 items-center transition-colors select-none cursor-pointer ${
                       isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                     } ${item.isPhaseLeader ? 'bg-[#FFD60A]/[0.03]' : ''}`}
                   >
@@ -611,7 +618,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
 
                   {/* Level 2: Expanded Driver Details */}
                   {isExpanded && (

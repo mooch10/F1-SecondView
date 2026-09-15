@@ -34,8 +34,8 @@ export interface DriverLive {
   teamColor: string;
   gap: string;
   interval: string;
-  isDrsZone: boolean;
-  isOvertakeZone?: boolean;
+  isOvertakeZone: boolean;
+  isDrsZone?: boolean;
   lastLapTime: string;
   bestLapTime?: string;
   bestLapDuration?: number | null;
@@ -190,7 +190,7 @@ export interface JuniorRaceDetail {
     fullName: string;
     teamName: string;
     time: string;
-  };
+  } | null;
   fastestLap?: {
     code: string;
     driverName: string;

@@ -93,11 +93,6 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       }
     }
 
-    // 5. Final fallback
-    if (!newSnapshot && activeSession) {
-      newSnapshot = generateUniversalLiveSnapshot(activeSession, new Date(), liveStream);
-    }
-
     if (newSnapshot) {
       // Maintain a 45-second sliding history in memory (up to 30 snapshots)
       if (cachedSnapshot?.history) {

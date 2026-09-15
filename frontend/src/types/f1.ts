@@ -313,7 +313,7 @@ export interface JuniorRaceDetail {
     fullName: string;
     teamName: string;
     time: string;
-  };
+  } | null;
   fastestLap?: {
     code: string;
     driverName: string;

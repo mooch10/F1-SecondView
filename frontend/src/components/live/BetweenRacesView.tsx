@@ -11,7 +11,7 @@ import { fetchScheduleDetails } from '../../services/api';
 import type { JolpicaRace, LastRacePodium } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { translateSessionName } from '../../utils/sessionTranslation';
-import { useTimezone } from '../../context/TimezoneContext';
+import { useTimezone } from '../../hooks/useTimezone';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
 
 interface BetweenRacesViewProps {

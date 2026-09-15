@@ -14,7 +14,7 @@ import type { JolpicaRace, JolpicaRaceDetail } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { translateSessionName } from '../../utils/sessionTranslation';
-import { useTimezone } from '../../context/TimezoneContext';
+import { useTimezone } from '../../hooks/useTimezone';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
 import { getCircuitTimezone } from '../../utils/circuitTimezones';
 
@@ -39,11 +39,9 @@ export const ScheduleView: React.FC = () => {
   const [now] = useState<number>(() => Date.now());
 
   useEffect(() => {
-    setLoading(true);
-    setRaces([]);
-    setExpandedRound(null);
-    setRoundResults({});
+    let cancelled = false;
     fetchSchedule(series).then((data) => {
+      if (cancelled) return;
       setRaces(data);
       setLoading(false);
       const next = data.find((r) => r.isNext);
@@ -53,6 +51,9 @@ export const ScheduleView: React.FC = () => {
         setExpandedRound(data[data.length - 1].round);
       }
     });
+    return () => {
+      cancelled = true;
+    };
   }, [series]);
 
 

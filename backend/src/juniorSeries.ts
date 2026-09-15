@@ -651,7 +651,7 @@ export class JuniorSeriesClient {
     const updated = races.map((race) => {
       const raceTime = new Date(race.raceDateTime).getTime();
       // A race event is completed once the Sunday race window ends (~3 hours after race start)
-      const isPast = !isNaN(raceTime) && raceTime + 3 * 3600 * 1000 < nowMs;
+      const isPast = !Number.isNaN(raceTime) && raceTime + 3 * 3600 * 1000 < nowMs;
       let isNext = false;
 
       if (!nextFound && !isPast) {
@@ -869,9 +869,9 @@ export class JuniorSeriesClient {
         ? false
         : roundConfig && roundConfig.feature.finish.length > 0 && !roundConfig.feature.isPending
           ? false
-          : roundConfig && roundConfig.feature.isPending
+          : roundConfig?.feature.isPending
             ? true
-            : (!isNaN(eventTime) && eventTime > nowMs);
+            : (!Number.isNaN(eventTime) && eventTime > nowMs);
 
     const totalFeatureLaps = series === 'f2' ? 32 : 24;
     const featurePoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -1003,9 +1003,9 @@ export class JuniorSeriesClient {
         ? false
         : roundConfig && roundConfig.sprint.finish.length > 0 && !roundConfig.sprint.isPending
           ? false
-          : roundConfig && roundConfig.sprint.isPending
+          : roundConfig?.sprint.isPending
             ? true
-            : (!isNaN(sprintTimeMs) && sprintTimeMs > nowMs);
+            : (!Number.isNaN(sprintTimeMs) && sprintTimeMs > nowMs);
 
     let sprintResults: JolpicaRaceResult[];
 
@@ -1152,7 +1152,7 @@ export class JuniorSeriesClient {
       date: raceEvent.raceDateTime,
       series,
       results: featureResults,
-      winner: winnerDriver as any,
+      winner: winnerDriver,
       fastestLap: featureSession.fastestLap,
       sprintRace: sprintSession,
       featureRace: featureSession,
