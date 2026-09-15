@@ -217,7 +217,13 @@ function App() {
 
             {activeTab === 'schedule' && <ScheduleView key={series} />}
 
-            {activeTab === 'standings' && <StandingsView key={series} />}
+            {activeTab === 'standings' && (
+              <StandingsView
+                key={series}
+                liveDrivers={drivers}
+                isLiveActive={isLiveSessionActive}
+              />
+            )}
           </main>
 
           {/* Footer */}

@@ -241,6 +241,7 @@ export interface JolpicaRaceResult {
   isFastestLap?: boolean;
   fastestLapTime?: string;
   fastestLapRank?: number;
+  pitStops?: number;
 }
 
 export interface JolpicaRaceDetail {

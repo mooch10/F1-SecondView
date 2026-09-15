@@ -242,6 +242,9 @@ export const translations = {
       constructorsTitle: 'MUNDIAL DE CONSTRUCTORES 2026',
       driversTab: 'Campeonato de Pilotos',
       constructorsTab: 'Campeonato de Constructores',
+      liveVirtualToggle: 'MUNDIAL EN VIVO',
+      liveVirtualActiveDesc: 'Puntos virtuales calculados en tiempo real según el orden actual en pista',
+      virtualBadge: 'VIRTUAL',
       headers: {
         pos: 'POS',
         driver: 'PILOTO',
@@ -533,6 +536,9 @@ export const translations = {
       constructorsTitle: '2026 CONSTRUCTORS CHAMPIONSHIP',
       driversTab: 'Drivers Championship',
       constructorsTab: 'Constructors Championship',
+      liveVirtualToggle: 'LIVE STANDINGS',
+      liveVirtualActiveDesc: 'Virtual points calculated in real-time based on current track order',
+      virtualBadge: 'VIRTUAL',
       headers: {
         pos: 'POS',
         driver: 'DRIVER',

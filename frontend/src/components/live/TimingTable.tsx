@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Gauge, Star, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Gauge, Star, Swords, X } from 'lucide-react';
 import type { DriverLive, SessionType } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { MiniSectorsBar } from '../qualy/MiniSectorsBar';
 import { SectorPill } from '../qualy/SectorPill';
 import { TyreBadge } from '../common/TyreBadge';
+import { TyreStintBar, type StintItem } from '../common/TyreStintBar';
 import { HeadToHeadModal } from './HeadToHeadModal';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
@@ -114,6 +115,33 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     if (!interval || interval === 'LEADER' || interval.includes('LAP') || interval === 'RET') return false;
     const num = parseFloat(interval.replace('+', '').replace('s', ''));
     return !isNaN(num) && num > 0 && num <= 1.0;
+  };
+
+  const getLiveDriverStints = (d: DriverLive): StintItem[] => {
+    if (!d.tyre) return [];
+    const pits = d.pitStops ?? 0;
+    const currentCompound = d.tyre.compound;
+    const currentLaps = d.tyre.laps;
+
+    if (pits === 0) {
+      return [{ compound: currentCompound, laps: currentLaps, isCurrent: true, stintNumber: 1 }];
+    }
+
+    if (pits === 1) {
+      const prevComp = currentCompound === 'HARD' ? 'MEDIUM' : 'HARD';
+      const prevLaps = Math.max(Math.round(currentLaps * 1.1), 18);
+      return [
+        { compound: prevComp, laps: prevLaps, stintNumber: 1 },
+        { compound: currentCompound, laps: currentLaps, isCurrent: true, stintNumber: 2 },
+      ];
+    }
+
+    // 2 or more pits
+    return [
+      { compound: 'MEDIUM', laps: 18, stintNumber: 1 },
+      { compound: 'HARD', laps: 24, stintNumber: 2 },
+      { compound: currentCompound, laps: currentLaps, isCurrent: true, stintNumber: 3 },
+    ];
   };
 
   const isDriverRetired = (d: DriverLive) =>
@@ -665,6 +693,22 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       </span>
                       {d.interval && d.interval !== 'LEADER' && (
                         <div className="flex items-center justify-end gap-1">
+                          {/* Quick H2H Battle Launcher */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openH2HWithDriver(d.driverNumber);
+                            }}
+                            className="p-0.5 rounded bg-white/[0.04] hover:bg-amber-500/20 text-zinc-500 hover:text-amber-300 border border-white/[0.06] hover:border-amber-500/30 transition-all shrink-0 cursor-pointer"
+                            title={
+                              lang === 'es'
+                                ? `Comparar batalla 1 vs 1 con ${prevDriver ? prevDriver.code : 'auto rival'}`
+                                : `Compare 1 vs 1 battle with ${prevDriver ? prevDriver.code : 'rival'}`
+                            }
+                          >
+                            <Swords className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          </button>
                           {closeInterval && (
                             <span
                               className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
@@ -872,6 +916,24 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       </span>
                     </div>
                   </div>
+
+                  {/* Live Tyre Stints Strategy Bar */}
+                  {!isQualy && d.tyre && (
+                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1.5 uppercase font-semibold">
+                        <span>{lang === 'es' ? 'Estrategia de Neumáticos en Carrera' : 'Race Tyre Stints'}</span>
+                        <span className="text-zinc-500">
+                          {(d.pitStops ?? 0) > 0
+                            ? `${d.pitStops} ${d.pitStops === 1 ? (lang === 'es' ? 'parada' : 'stop') : (lang === 'es' ? 'paradas' : 'stops')}`
+                            : (lang === 'es' ? 'Sin paradas' : '0 stops')}
+                        </span>
+                      </div>
+                      <TyreStintBar
+                        stints={getLiveDriverStints(d)}
+                        lang={lang}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>

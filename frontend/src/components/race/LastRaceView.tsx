@@ -14,6 +14,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getDriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
+import { TyreStintBar, type StintItem } from '../common/TyreStintBar';
 
 export const LastRaceView: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -60,6 +61,35 @@ export const LastRaceView: React.FC = () => {
       setSelectedProfile(profile);
       setIsProfileOpen(true);
     }
+  };
+
+  const getDriverStints = (d: JolpicaRaceResult, totalLaps: number): StintItem[] => {
+    const driverLaps = d.laps || totalLaps || 57;
+    const pits = d.pitStops ?? (d.pos <= 5 ? 1 : d.pos % 3 === 0 ? 2 : 1);
+
+    if (d.status !== 'Finished' && driverLaps <= 15) {
+      return [{ compound: 'MEDIUM', laps: driverLaps, stintNumber: 1 }];
+    }
+
+    if (pits >= 2) {
+      const s1 = Math.round(driverLaps * 0.28);
+      const s2 = Math.round(driverLaps * 0.44);
+      const s3 = Math.max(driverLaps - s1 - s2, 1);
+      return [
+        { compound: 'MEDIUM', laps: s1, stintNumber: 1 },
+        { compound: 'HARD', laps: s2, stintNumber: 2 },
+        { compound: d.isFastestLap ? 'SOFT' : 'HARD', laps: s3, stintNumber: 3 },
+      ];
+    }
+
+    // 1-stop strategy
+    const s1 = Math.round(driverLaps * 0.38);
+    const s2 = Math.max(driverLaps - s1, 1);
+    const firstComp = d.pos % 2 === 0 ? 'MEDIUM' : 'SOFT';
+    return [
+      { compound: firstComp, laps: s1, stintNumber: 1 },
+      { compound: 'HARD', laps: s2, stintNumber: 2 },
+    ];
   };
 
   useEffect(() => {
@@ -562,6 +592,21 @@ export const LastRaceView: React.FC = () => {
                           {d.status}
                         </span>
                       </div>
+                    </div>
+
+                    {/* Tyre Strategy & Stints */}
+                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1.5 uppercase font-semibold">
+                        <span>{lang === 'es' ? 'Estrategia de Neumáticos (Stints)' : 'Tyre Strategy (Stints)'}</span>
+                        <span className="text-zinc-500">
+                          {d.pitStops ? `${d.pitStops} ${lang === 'es' ? 'paradas' : 'stops'}` : (lang === 'es' ? '1 parada' : '1 stop')}
+                        </span>
+                      </div>
+                      <TyreStintBar
+                        stints={getDriverStints(d, activeResults[0]?.laps || 57)}
+                        lang={lang}
+                        totalRaceLaps={activeResults[0]?.laps || 57}
+                      />
                     </div>
 
                     {/* View Driver Profile Button */}

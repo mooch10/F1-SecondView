@@ -1,20 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { Award, Trophy, Users } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Award, Trophy, Users, Zap } from 'lucide-react';
 import { fetchDriverChanges, fetchStandings } from '../../services/api';
-import type { DriverChangeAlert, StandingsData } from '../../types/f1';
+import type { DriverChangeAlert, DriverLive, StandingsData } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
 import { DriverChangesAlert } from './DriverChangesAlert';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getDriverProfile, enrichDriverProfileWithSeason, type F1DriverProfile } from '../../data/f1DriversData';
 
-export const StandingsView: React.FC = () => {
+interface StandingsViewProps {
+  liveDrivers?: DriverLive[];
+  isLiveActive?: boolean;
+}
+
+const F1_POINTS_SYSTEM = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+
+const matchConstructorTeam = (liveTeam: string, constrName: string): boolean => {
+  const lt = (liveTeam || '').toLowerCase();
+  const cn = (constrName || '').toLowerCase();
+  if (!lt || !cn) return false;
+  if (lt.includes(cn) || cn.includes(lt)) return true;
+  if (cn.includes('red bull') && lt.includes('red bull')) return true;
+  if (cn.includes('mercedes') && lt.includes('mercedes')) return true;
+  if (cn.includes('ferrari') && lt.includes('ferrari')) return true;
+  if (cn.includes('mclaren') && lt.includes('mclaren')) return true;
+  if (cn.includes('aston martin') && lt.includes('aston')) return true;
+  if (cn.includes('alpine') && lt.includes('alpine')) return true;
+  if (cn.includes('williams') && lt.includes('williams')) return true;
+  if (cn.includes('haas') && lt.includes('haas')) return true;
+  if (cn.includes('sauber') && (lt.includes('sauber') || lt.includes('audi'))) return true;
+  if (cn.includes('audi') && (lt.includes('audi') || lt.includes('sauber'))) return true;
+  if (cn.includes('racing bulls') && (lt.includes('racing bulls') || lt.includes('rb'))) return true;
+  if (cn.includes('rb') && (lt.includes('rb') || lt.includes('racing bulls'))) return true;
+  return false;
+};
+
+export const StandingsView: React.FC<StandingsViewProps> = ({
+  liveDrivers = [],
+  isLiveActive: _isLiveActive = false,
+}) => {
   const { t, lang } = useLanguage();
   const { series, theme } = useSeries();
   const [data, setData] = useState<StandingsData | null>(null);
   const [driverChanges, setDriverChanges] = useState<DriverChangeAlert[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
+  const [isLiveVirtual, setIsLiveVirtual] = useState<boolean>(false);
 
   // 👤 Driver Profile Modal
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
@@ -92,6 +123,28 @@ export const StandingsView: React.FC = () => {
     return <span className="text-zinc-400 font-bold">{pos}</span>;
   };
 
+  const renderRankDiff = (diff: number) => {
+    if (diff > 0) {
+      return (
+        <span className="inline-flex items-center text-[10px] font-mono font-black text-emerald-400">
+          ▲{diff}
+        </span>
+      );
+    }
+    if (diff < 0) {
+      return (
+        <span className="inline-flex items-center text-[10px] font-mono font-black text-rose-400">
+          ▼{Math.abs(diff)}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center text-[10px] font-mono text-zinc-500">
+        =
+      </span>
+    );
+  };
+
   useEffect(() => {
     let cancelled = false;
     Promise.all([
@@ -108,6 +161,123 @@ export const StandingsView: React.FC = () => {
       cancelled = true;
     };
   }, [series]);
+
+  // Virtual points calculation for Drivers
+  const processedDrivers = useMemo(() => {
+    if (!data?.drivers) return [];
+    if (!isLiveVirtual || !liveDrivers || liveDrivers.length === 0) {
+      return data.drivers.map((d) => ({
+        ...d,
+        virtualPos: d.pos,
+        provisionalPoints: 0,
+        totalPoints: d.points,
+        rankDiff: 0,
+        liveTrackPos: undefined as number | undefined,
+      }));
+    }
+
+    const calculated = data.drivers.map((d) => {
+      const ld = liveDrivers.find(
+        (l) =>
+          (l.code && d.code && l.code.toUpperCase() === d.code.toUpperCase()) ||
+          (d.name && l.fullName && l.fullName.toLowerCase().includes(d.name.toLowerCase()))
+      );
+
+      let provisionalPoints = 0;
+      let liveTrackPos: number | undefined = undefined;
+
+      if (ld && ld.status !== 'DNF' && ld.status !== 'DNS' && ld.status !== 'DSQ') {
+        liveTrackPos = ld.pos;
+        if (ld.pos >= 1 && ld.pos <= 10) {
+          provisionalPoints = F1_POINTS_SYSTEM[ld.pos - 1] || 0;
+        }
+      }
+
+      return {
+        ...d,
+        provisionalPoints,
+        totalPoints: d.points + provisionalPoints,
+        liveTrackPos,
+      };
+    });
+
+    calculated.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins;
+      }
+      return a.pos - b.pos;
+    });
+
+    return calculated.map((d, index) => {
+      const virtualPos = index + 1;
+      const rankDiff = d.pos - virtualPos;
+      return {
+        ...d,
+        virtualPos,
+        rankDiff,
+      };
+    });
+  }, [data, isLiveVirtual, liveDrivers]);
+
+  // Virtual points calculation for Constructors
+  const processedConstructors = useMemo(() => {
+    if (!data?.constructors) return [];
+    if (!isLiveVirtual || !liveDrivers || liveDrivers.length === 0) {
+      return data.constructors.map((c) => ({
+        ...c,
+        virtualPos: c.pos,
+        provisionalPoints: 0,
+        totalPoints: c.points,
+        rankDiff: 0,
+      }));
+    }
+
+    const calculated = data.constructors.map((c) => {
+      const teamDrivers = liveDrivers.filter(
+        (ld) =>
+          ld.status !== 'DNF' &&
+          ld.status !== 'DNS' &&
+          ld.status !== 'DSQ' &&
+          matchConstructorTeam(ld.teamName, c.name)
+      );
+
+      const provisionalPoints = teamDrivers.reduce((acc, ld) => {
+        if (ld.pos >= 1 && ld.pos <= 10) {
+          return acc + (F1_POINTS_SYSTEM[ld.pos - 1] || 0);
+        }
+        return acc;
+      }, 0);
+
+      return {
+        ...c,
+        provisionalPoints,
+        totalPoints: c.points + provisionalPoints,
+      };
+    });
+
+    calculated.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins;
+      }
+      return a.pos - b.pos;
+    });
+
+    return calculated.map((c, index) => {
+      const virtualPos = index + 1;
+      const rankDiff = c.pos - virtualPos;
+      return {
+        ...c,
+        virtualPos,
+        rankDiff,
+      };
+    });
+  }, [data, isLiveVirtual, liveDrivers]);
 
   if (loading) {
     return (
@@ -131,38 +301,78 @@ export const StandingsView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Broadcast Style Sub-Tabs */}
-      <div className="flex gap-4 sm:gap-6 border-b border-white/[0.08] px-1 overflow-x-auto no-scrollbar">
-        <button
-          type="button"
-          onClick={() => setSubTab('drivers')}
-          className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
-            subTab === 'drivers'
-              ? 'text-white'
-              : 'text-zinc-400 hover:text-white border-transparent'
-          }`}
-          style={subTab === 'drivers' ? { borderColor: theme.primary } : undefined}
-        >
-          <Award className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
-          <span className="sm:hidden">{lang === 'es' ? 'PILOTOS' : 'DRIVERS'}</span>
-          <span className="hidden sm:inline">{t.standings.driversTab}</span>
-        </button>
+      {/* Broadcast Style Sub-Tabs with Live Virtual Toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] pb-1 px-1">
+        <div className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setSubTab('drivers')}
+            className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
+              subTab === 'drivers'
+                ? 'text-white'
+                : 'text-zinc-400 hover:text-white border-transparent'
+            }`}
+            style={subTab === 'drivers' ? { borderColor: theme.primary } : undefined}
+          >
+            <Award className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
+            <span className="sm:hidden">{lang === 'es' ? 'PILOTOS' : 'DRIVERS'}</span>
+            <span className="hidden sm:inline">{t.standings.driversTab}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setSubTab('constructors')}
-          className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
-            subTab === 'constructors'
-              ? 'text-white'
-              : 'text-zinc-400 hover:text-white border-transparent'
-          }`}
-          style={subTab === 'constructors' ? { borderColor: theme.primary } : undefined}
-        >
-          <Users className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
-          <span className="sm:hidden">{lang === 'es' ? 'CONSTRUCTORES' : 'CONSTRUCTORS'}</span>
-          <span className="hidden sm:inline">{t.standings.constructorsTab}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setSubTab('constructors')}
+            className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
+              subTab === 'constructors'
+                ? 'text-white'
+                : 'text-zinc-400 hover:text-white border-transparent'
+            }`}
+            style={subTab === 'constructors' ? { borderColor: theme.primary } : undefined}
+          >
+            <Users className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
+            <span className="sm:hidden">{lang === 'es' ? 'CONSTRUCTORES' : 'CONSTRUCTORS'}</span>
+            <span className="hidden sm:inline">{t.standings.constructorsTab}</span>
+          </button>
+        </div>
+
+        {liveDrivers && liveDrivers.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setIsLiveVirtual((prev) => !prev)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+              isLiveVirtual
+                ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.35)]'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border-white/[0.08]'
+            }`}
+          >
+            <Zap className={`w-3.5 h-3.5 ${isLiveVirtual ? 'fill-black text-black' : 'text-amber-400'}`} />
+            <span>{t.standings.liveVirtualToggle}</span>
+            {isLiveVirtual && (
+              <span className="text-[9px] px-1 py-0.5 rounded bg-black/20 text-black font-black">
+                ON
+              </span>
+            )}
+          </button>
+        )}
       </div>
+
+      {/* Live Virtual Standings Notice Banner */}
+      {isLiveVirtual && (
+        <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-lg bg-amber-400/10 border border-amber-400/25 text-amber-300 font-mono text-xs animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+            </span>
+            <span className="font-bold uppercase tracking-wide">
+              {t.standings.liveVirtualActiveDesc}
+            </span>
+          </div>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold uppercase tracking-wider hidden sm:inline">
+            F1 2026
+          </span>
+        </div>
+      )}
 
       {/* Driver Lineup Changes Notification for F2 / F3 */}
       {driverChanges.length > 0 && (
@@ -185,20 +395,21 @@ export const StandingsView: React.FC = () => {
           </div>
 
           <div className="divide-y divide-white/[0.08]">
-            {data.drivers.map((d) => (
+            {processedDrivers.map((d) => (
               <div
-                key={`${d.code}-${d.pos}`}
+                key={`${d.code}-${d.virtualPos}`}
                 className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
-                  d.pos === 1
+                  d.virtualPos === 1
                     ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
-                    : d.pos <= 3
+                    : d.virtualPos <= 3
                     ? 'bg-white/[0.015] hover:bg-white/[0.04]'
                     : 'hover:bg-white/[0.02]'
                 }`}
               >
                 {/* Pos */}
-                <div className="col-span-2 sm:col-span-1 flex items-center justify-center font-mono tabular-nums">
-                  {renderPosBadge(d.pos)}
+                <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
+                  {renderPosBadge(d.virtualPos)}
+                  {isLiveVirtual && renderRankDiff(d.rankDiff)}
                 </div>
 
                 {/* Driver */}
@@ -213,7 +424,11 @@ export const StandingsView: React.FC = () => {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDriverClick(d);
+                          handleDriverClick({
+                            ...d,
+                            pos: d.virtualPos,
+                            points: d.totalPoints,
+                          });
                         }}
                         className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
                         title={lang === 'es' ? 'Ver ficha técnica del piloto' : 'View driver profile'}
@@ -236,8 +451,15 @@ export const StandingsView: React.FC = () => {
                 </div>
 
                 {/* Points */}
-                <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3 font-mono text-xs sm:text-sm font-bold text-[#FFD60A] tabular-nums">
-                  {d.points}
+                <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
+                  <span className="text-xs sm:text-sm font-bold text-[#FFD60A]">
+                    {d.totalPoints}
+                  </span>
+                  {isLiveVirtual && (
+                    <span className={`text-[10px] font-bold leading-tight ${d.provisionalPoints > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                      +{d.provisionalPoints} {d.liveTrackPos ? `(P${d.liveTrackPos})` : ''}
+                    </span>
+                  )}
                 </div>
 
                 {/* Wins */}
@@ -261,20 +483,21 @@ export const StandingsView: React.FC = () => {
           </div>
 
           <div className="divide-y divide-white/[0.08]">
-            {data.constructors.map((c) => (
+            {processedConstructors.map((c) => (
               <div
                 key={c.name}
                 className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
-                  c.pos === 1
+                  c.virtualPos === 1
                     ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
-                    : c.pos <= 3
+                    : c.virtualPos <= 3
                     ? 'bg-white/[0.015] hover:bg-white/[0.04]'
                     : 'hover:bg-white/[0.02]'
                 }`}
               >
                 {/* Pos */}
-                <div className="col-span-2 sm:col-span-1 flex items-center justify-center font-mono tabular-nums">
-                  {renderPosBadge(c.pos)}
+                <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
+                  {renderPosBadge(c.virtualPos)}
+                  {isLiveVirtual && renderRankDiff(c.rankDiff)}
                 </div>
 
                 {/* Team Name with line indicator */}
@@ -289,8 +512,15 @@ export const StandingsView: React.FC = () => {
                 </div>
 
                 {/* Points */}
-                <div className="col-span-2 text-right pr-2 sm:pr-3 font-mono text-xs sm:text-sm font-bold text-[#FFD60A] tabular-nums">
-                  {c.points}
+                <div className="col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
+                  <span className="text-xs sm:text-sm font-bold text-[#FFD60A]">
+                    {c.totalPoints}
+                  </span>
+                  {isLiveVirtual && (
+                    <span className={`text-[10px] font-bold leading-tight ${c.provisionalPoints > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                      +{c.provisionalPoints}
+                    </span>
+                  )}
                 </div>
 
                 {/* Wins */}
