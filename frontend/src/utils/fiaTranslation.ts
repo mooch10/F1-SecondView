@@ -329,8 +329,8 @@ export function translateFIAMessage(raw?: string, drivers?: DriverLive[], lang: 
       (_, dbl, sector) => `${dbl ? 'Double yellow' : 'Yellow'} flag in Sector ${sector}`
     );
     text = text.replace(/CLEAR IN (?:TRACK\s+)?SECTOR (\d+)/gi, (_, sector) => `Sector ${sector} clear`);
-    text = text.replace(/(?:DRS|OVERTAKE) ENABLED(?: IN ALL DETECTION ZONES)?/gi, 'DRS / Overtake mode enabled');
-    text = text.replace(/(?:DRS|OVERTAKE) DISABLED/gi, 'DRS / Overtake mode disabled');
+    text = text.replace(/(?:DRS|OVERTAKE|MOM) ENABLED(?: IN ALL DETECTION ZONES)?/gi, 'Overtake mode (MOM) enabled');
+    text = text.replace(/(?:DRS|OVERTAKE|MOM) DISABLED/gi, 'Overtake mode (MOM) disabled');
     text = text.replace(/GREEN LIGHT\s*-\s*PIT EXIT OPEN/gi, 'Green light - Pit exit open');
     text = text.replace(/PIT EXIT OPEN/gi, 'Pit exit open');
     text = text.replace(/PIT EXIT CLOSED/gi, 'Pit exit closed');
@@ -514,8 +514,8 @@ export function translateFIAMessage(raw?: string, drivers?: DriverLive[], lang: 
   text = text.replace(/ESTIMATED (?:RACE )?RESTART IN (\d+) MINUTES/gi, 'Reinicio estimado en $1 minutos');
 
   // 6. Overtake Mode & Pit Lane
-  text = text.replace(/(?:DRS|OVERTAKE) ENABLED(?: IN ALL DETECTION ZONES)?/gi, 'Modo Overtake habilitado');
-  text = text.replace(/(?:DRS|OVERTAKE) DISABLED/gi, 'Modo Overtake deshabilitado');
+  text = text.replace(/(?:DRS|OVERTAKE|MOM) ENABLED(?: IN ALL DETECTION ZONES)?/gi, 'Modo Overtake (MOM) habilitado');
+  text = text.replace(/(?:DRS|OVERTAKE|MOM) DISABLED/gi, 'Modo Overtake (MOM) deshabilitado');
   text = text.replace(/GREEN LIGHT\s*-\s*PIT EXIT OPEN/gi, 'Luz verde - Salida de boxes abierta');
   text = text.replace(/PIT EXIT OPEN/gi, 'Salida de boxes abierta');
   text = text.replace(/PIT EXIT CLOSED/gi, 'Salida de boxes cerrada');

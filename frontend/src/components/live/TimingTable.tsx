@@ -338,7 +338,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   {!isQualy && (pinnedDriver.isOvertakeZone || pinnedDriver.isDrsZone || isCloseInterval(pinnedDriver.interval)) && (
                     <span
                       className="px-1 py-0.2 rounded text-[7px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse"
-                      title={lang === 'es' ? 'Modo Overtake habilitado (< 1.0s)' : 'Overtake Mode active (< 1.0s)'}
+                      title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s)' : 'Overtake Mode (MOM) active (< 1.0s)'}
                     >
                       OVERTAKE
                     </span>
@@ -689,7 +689,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           {closeInterval && (
                             <span
                               className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
-                              title={lang === 'es' ? 'Modo Overtake habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode active (< 1.0s behind car ahead)'}
+                              title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode (MOM) active (< 1.0s behind car ahead)'}
                             >
                               <span className="hidden sm:inline">OVERTAKE</span>
                               <span className="sm:hidden">OT</span>

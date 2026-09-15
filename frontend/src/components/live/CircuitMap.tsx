@@ -10,7 +10,7 @@ import {
   Navigation,
   Zap,
 } from 'lucide-react';
-import type { DriverLive, TrackOutline } from '../../types/f1';
+import type { DriverLive, SessionState, TrackOutline } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTrackAnimation } from '../../hooks/useTrackAnimation';
 
@@ -21,6 +21,7 @@ interface CircuitMapProps {
   circuitName?: string;
   className?: string;
   defaultExpanded?: boolean;
+  sessionStatus?: SessionState;
 }
 
 type FilterMode = 'all' | 'top10' | 'top3' | 'leader';
@@ -32,6 +33,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
   circuitName,
   className = '',
   defaultExpanded = true,
+  sessionStatus,
 }) => {
   const { lang } = useLanguage();
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
@@ -241,6 +243,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     drivers: sortedDrivers,
     trackGeometry,
     isGpsClustered,
+    sessionStatus,
   });
 
   // Render car coordinates with anti-overlap decluttering based on real GPS and 60 FPS spline animation

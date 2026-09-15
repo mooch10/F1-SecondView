@@ -161,6 +161,7 @@ function App() {
                           drivers={drivers}
                           sessionName={snapshot?.session.sessionName}
                           circuitName={snapshot?.session.circuit}
+                          sessionStatus={snapshot?.session.status}
                         />
                       )}
 

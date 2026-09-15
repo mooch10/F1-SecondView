@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { DriverLive } from '../types/f1';
+import type { DriverLive, SessionState } from '../types/f1';
 import {
   computeCircularDelta,
   normalizeProgress,
@@ -19,7 +19,7 @@ interface DriverKinematics {
   driverNumber: number;
   packetProgress: number; // Base progress from latest received telemetry packet
   lastPacketTime: number; // Timestamp (ms) when packet was received
-  speed: number; // Progress advancement per second (e.g. 1 / 82s = ~0.0122/s)
+  speed: number; // Progress advancement per second (0 if stationary)
   inPit: boolean;
   blendError: number; // Discrepancy between projected position and newly arrived packet
   blendStartTime: number; // Timestamp (ms) when blend started
@@ -42,6 +42,7 @@ interface UseTrackAnimationProps {
   drivers: DriverLive[];
   trackGeometry: TrackGeometryInterface | null;
   isGpsClustered: boolean;
+  sessionStatus?: SessionState;
 }
 
 // Typical racing benchmark: 1 lap ~ 85 seconds = ~0.0118 progress/sec
@@ -51,12 +52,16 @@ export function useTrackAnimation({
   drivers,
   trackGeometry,
   isGpsClustered,
+  sessionStatus,
 }: UseTrackAnimationProps) {
   const [animatedCoords, setAnimatedCoords] = useState<Map<number, AnimatedCarCoord>>(new Map());
 
   // Kinematics store preserved across frames without triggering React re-renders
   const kinematicsMapRef = useRef<Map<number, DriverKinematics>>(new Map());
   const rafRef = useRef<number | null>(null);
+
+  // Status flags: cars must stay stationary if session hasn't started or is finished
+  const isSessionStationary = sessionStatus === 'NOT_STARTED' || sessionStatus === 'FINISHED';
 
   // 1. Sync telemetry packets when new data arrives from polling/websocket
   useEffect(() => {
@@ -71,6 +76,7 @@ export function useTrackAnimation({
       currentActiveNumbers.add(num);
 
       const inPit = Boolean(driver.inPit || driver.status === 'DNF' || driver.status === 'DNS' || driver.status === 'DSQ');
+      const isStationary = isSessionStationary || inPit || isGpsClustered;
 
       // Compute target SVG point from coordinates
       let targetX = 0;
@@ -81,7 +87,7 @@ export function useTrackAnimation({
         targetX = gx;
         targetY = gy;
       } else {
-        // Fallback for cars without active GPS: position cleanly along grid
+        // Fallback for cars without active GPS: position cleanly along starting grid
         const pt = trackGeometry.getPointAtProgress(0.98 - ((idx * 0.02) % 0.25));
         targetX = pt.x;
         targetY = pt.y;
@@ -99,25 +105,28 @@ export function useTrackAnimation({
         targetProgress = proj.t;
       }
 
-      // Initial speed estimation from lap duration if available
-      let baseSpeed = DEFAULT_PROGRESS_SPEED;
-      if (driver.bestLapDuration && driver.bestLapDuration > 45 && driver.bestLapDuration < 140) {
-        baseSpeed = 1.0 / driver.bestLapDuration;
+      // If session is NOT started, speed is strictly 0
+      let baseSpeed = 0;
+      if (!isStationary) {
+        if (driver.bestLapDuration && driver.bestLapDuration > 45 && driver.bestLapDuration < 140) {
+          baseSpeed = 1.0 / driver.bestLapDuration;
+        } else {
+          baseSpeed = DEFAULT_PROGRESS_SPEED;
+        }
       }
 
       const existing = kinematicsMap.get(num);
 
       if (!existing) {
-        const initialPt =
-          inPit || isGpsClustered
-            ? { x: targetX, y: targetY }
-            : trackGeometry.getPointAtProgress(targetProgress);
+        const initialPt = isStationary
+          ? { x: targetX, y: targetY }
+          : trackGeometry.getPointAtProgress(targetProgress);
 
         kinematicsMap.set(num, {
           driverNumber: num,
           packetProgress: targetProgress,
           lastPacketTime: now,
-          speed: baseSpeed,
+          speed: isStationary ? 0 : baseSpeed,
           inPit,
           blendError: 0,
           blendStartTime: now,
@@ -126,33 +135,45 @@ export function useTrackAnimation({
           angle: 0,
         });
       } else {
-        // Dynamic speed calibration based on delta and time between packets
-        const dtSeconds = Math.max(0.3, (now - existing.lastPacketTime) / 1000);
-        const progressDelta = computeCircularDelta(targetProgress, existing.packetProgress);
-
-        let calibratedSpeed = existing.speed;
-        if (progressDelta > 0.001 && progressDelta < 0.15) {
-          const measuredSpeed = progressDelta / dtSeconds;
-          calibratedSpeed = Math.max(0.006, Math.min(0.025, measuredSpeed));
-        } else if (baseSpeed !== DEFAULT_PROGRESS_SPEED) {
-          calibratedSpeed = baseSpeed;
-        }
-
-        // Calculate current extrapolated position before replacing baseline
-        const elapsedSinceLast = Math.min(2.5, (now - existing.lastPacketTime) / 1000);
-        const currentExtrapolated = normalizeProgress(existing.packetProgress + existing.speed * elapsedSinceLast);
-
-        // Difference between where we were rendering and the new packet
-        const error = computeCircularDelta(currentExtrapolated, targetProgress);
-
-        existing.packetProgress = targetProgress;
-        existing.lastPacketTime = now;
-        existing.speed = calibratedSpeed;
         existing.inPit = inPit;
-        // Smoothly blend if error is reasonable (< 15% track length); snap if huge reset
-        existing.blendError = Math.abs(error) < 0.15 ? error : 0;
-        existing.blendStartTime = now;
         existing.targetPos = { x: targetX, y: targetY };
+
+        if (isStationary) {
+          // Stationary on grid, in pit or parc fermé: lock speed to 0 and snap directly to target box
+          existing.speed = 0;
+          existing.packetProgress = targetProgress;
+          existing.lastPacketTime = now;
+          existing.blendError = 0;
+        } else {
+          // Car is in active race
+          const dtSeconds = Math.max(0.3, (now - existing.lastPacketTime) / 1000);
+          const progressDelta = computeCircularDelta(targetProgress, existing.packetProgress);
+
+          // Anti-Rubber-Banding Protection:
+          // If progressDelta is near zero, it means the server returned an identical cached snapshot.
+          // Do NOT reset lastPacketTime or packetProgress; allow the car to continue coasting smoothly!
+          if (Math.abs(progressDelta) >= 0.0008) {
+            let calibratedSpeed = existing.speed;
+            if (progressDelta > 0.001 && progressDelta < 0.15) {
+              const measuredSpeed = progressDelta / dtSeconds;
+              calibratedSpeed = Math.max(0.005, Math.min(0.025, measuredSpeed));
+            } else if (baseSpeed > 0) {
+              calibratedSpeed = baseSpeed;
+            }
+
+            // Extrapolated progress up to this moment
+            const elapsedSinceLast = Math.min(2.5, (now - existing.lastPacketTime) / 1000);
+            const currentExtrapolated = normalizeProgress(existing.packetProgress + existing.speed * elapsedSinceLast);
+            const error = computeCircularDelta(currentExtrapolated, targetProgress);
+
+            existing.packetProgress = targetProgress;
+            existing.lastPacketTime = now;
+            existing.speed = calibratedSpeed;
+            // Smoothly blend if error is small (< 12% track length)
+            existing.blendError = Math.abs(error) < 0.12 ? error : 0;
+            existing.blendStartTime = now;
+          }
+        }
       }
     });
 
@@ -162,9 +183,9 @@ export function useTrackAnimation({
         kinematicsMap.delete(num);
       }
     }
-  }, [drivers, trackGeometry, isGpsClustered]);
+  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary]);
 
-  // 2. High-Performance 60 FPS Continuous Dead-Reckoning Animation Loop
+  // 2. High-Performance 60 FPS Continuous Animation Loop
   useEffect(() => {
     if (!trackGeometry) return;
 
@@ -177,10 +198,10 @@ export function useTrackAnimation({
       const nextMap = new Map<number, AnimatedCarCoord>();
 
       kinematicsMap.forEach((k) => {
-        if (k.inPit || isGpsClustered) {
-          // Direct smooth lerp for pitlane and parc fermé
-          const dt = 0.016; // approximate frame delta
-          const lerpFactor = Math.min(1, dt * 5.0);
+        if (k.inPit || isGpsClustered || isSessionStationary || k.speed === 0) {
+          // Stationary cars (Grid, Pits, Parc Fermé): smooth lerp directly to target slot without track progression
+          const dt = 0.016;
+          const lerpFactor = Math.min(1, dt * 8.0);
           k.currentPos.x += (k.targetPos.x - k.currentPos.x) * lerpFactor;
           k.currentPos.y += (k.targetPos.y - k.currentPos.y) * lerpFactor;
 
@@ -190,14 +211,14 @@ export function useTrackAnimation({
             y: k.currentPos.y,
             angle: 0,
             progress: k.packetProgress,
-            inPit: true,
+            inPit: k.inPit,
           });
         } else {
-          // Dead reckoning forward along track spline based on time elapsed since packet
+          // Active racing cars: dead-reckoning forward along track spline based on time elapsed
           const timeSincePacket = Math.min(3.0, (currentTime - k.lastPacketTime) / 1000);
           let currentProgress = normalizeProgress(k.packetProgress + k.speed * timeSincePacket);
 
-          // Apply smooth reconciliation decay over 350ms to absorb telemetry jumps seamlessly
+          // Apply smooth reconciliation decay over 350ms to absorb telemetry gaps seamlessly
           const blendElapsed = (currentTime - k.blendStartTime) / 1000;
           if (blendElapsed < 0.35 && k.blendError !== 0) {
             const blendFactor = 1.0 - (blendElapsed / 0.35);
@@ -236,7 +257,6 @@ export function useTrackAnimation({
           rafRef.current = null;
         }
       } else {
-        // When tab is restored, sync last packet timestamp so cars don't jump ahead
         const now = performance.now();
         kinematicsMapRef.current.forEach((k) => {
           k.lastPacketTime = now;
@@ -258,7 +278,7 @@ export function useTrackAnimation({
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [trackGeometry, isGpsClustered]);
+  }, [trackGeometry, isGpsClustered, isSessionStationary]);
 
   return animatedCoords;
 }
