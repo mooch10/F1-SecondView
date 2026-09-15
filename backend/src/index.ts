@@ -261,12 +261,12 @@ const server = createServer(async (req, res) => {
         return;
       }
 
-      const standings = await jolpica.getStandings();
+      const standings = await jolpica.getStandings(yearParam);
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       });
-      res.end(JSON.stringify({ ...standings, series: 'f1' }, null, 2));
+      res.end(JSON.stringify({ ...standings, series: 'f1', year: yearParam }, null, 2));
       return;
     }
 

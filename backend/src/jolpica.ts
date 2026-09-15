@@ -294,11 +294,12 @@ export class JolpicaClient {
     return races;
   }
 
-  async getStandings(): Promise<{
+  async getStandings(year?: number): Promise<{
     drivers: JolpicaDriverStanding[];
     constructors: JolpicaConstructorStanding[];
   }> {
-    if (this.standingsCache && Date.now() - this.standingsCache.timestamp < this.cacheTtlMs) {
+    const isHistorical = typeof year === 'number' && year > 1950 && year < 2026;
+    if (!isHistorical && this.standingsCache && Date.now() - this.standingsCache.timestamp < this.cacheTtlMs) {
       return this.standingsCache.data;
     }
 
@@ -344,9 +345,12 @@ export class JolpicaClient {
       };
     }
 
+    const driverPath = isHistorical ? `/${year}/driverStandings.json` : '/current/driverStandings.json';
+    const constrPath = isHistorical ? `/${year}/constructorStandings.json` : '/current/constructorStandings.json';
+
     const [rawDrivers, rawConstructors] = await Promise.all([
-      this.fetchRaw<RawDriversResponse>('/current/driverStandings.json'),
-      this.fetchRaw<RawConstructorsResponse>('/current/constructorStandings.json'),
+      this.fetchRaw<RawDriversResponse>(driverPath),
+      this.fetchRaw<RawConstructorsResponse>(constrPath),
     ]);
 
     const driversList =
@@ -378,7 +382,9 @@ export class JolpicaClient {
     }));
 
     const result = { drivers, constructors };
-    this.standingsCache = { timestamp: Date.now(), data: result };
+    if (!isHistorical) {
+      this.standingsCache = { timestamp: Date.now(), data: result };
+    }
     return result;
   }
 

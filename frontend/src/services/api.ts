@@ -61,9 +61,16 @@ export async function fetchScheduleDetails(series: SeriesCategory = 'f1'): Promi
   }
 }
 
-export async function fetchStandings(series: SeriesCategory = 'f1'): Promise<StandingsData | null> {
+export async function fetchStandings(
+  series: SeriesCategory = 'f1',
+  year?: number,
+): Promise<StandingsData | null> {
   try {
-    const query = series !== 'f1' ? `?series=${series}` : '';
+    const params = new URLSearchParams();
+    if (series !== 'f1') params.append('series', series);
+    if (year && year !== 2026) params.append('year', String(year));
+    const query = params.toString() ? `?${params.toString()}` : '';
+
     const res = await fetch(`${API_BASE_URL}/api/standings.json${query}`, {
       headers: { Accept: 'application/json' },
     });

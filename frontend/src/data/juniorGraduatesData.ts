@@ -1,0 +1,774 @@
+export interface F1AcademyInfo {
+  id: string;
+  name: string;
+  shortName: string;
+  color: string;
+  f1Team: string;
+  badge: string;
+}
+
+export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
+  ferrari: {
+    id: 'ferrari',
+    name: 'Ferrari Driver Academy',
+    shortName: 'FDA',
+    color: '#E8002D',
+    f1Team: 'Ferrari',
+    badge: '🐎 Ferrari',
+  },
+  redbull: {
+    id: 'redbull',
+    name: 'Red Bull Junior Team',
+    shortName: 'RBJT',
+    color: '#3671C6',
+    f1Team: 'Red Bull Racing',
+    badge: '🐂 Red Bull',
+  },
+  mclaren: {
+    id: 'mclaren',
+    name: 'McLaren Driver Development',
+    shortName: 'MCL',
+    color: '#FF8000',
+    f1Team: 'McLaren',
+    badge: '🧡 McLaren',
+  },
+  williams: {
+    id: 'williams',
+    name: 'Williams Racing Driver Academy',
+    shortName: 'WIL',
+    color: '#00A0DE',
+    f1Team: 'Williams',
+    badge: '🔷 Williams',
+  },
+  alpine: {
+    id: 'alpine',
+    name: 'Alpine Academy',
+    shortName: 'ALP',
+    color: '#0093CC',
+    f1Team: 'Alpine',
+    badge: '🔵 Alpine',
+  },
+  sauber: {
+    id: 'sauber',
+    name: 'Sauber Academy',
+    shortName: 'SAU',
+    color: '#52E252',
+    f1Team: 'Kick Sauber / Audi',
+    badge: '🟢 Sauber',
+  },
+  astonmartin: {
+    id: 'astonmartin',
+    name: 'Aston Martin Driver Development',
+    shortName: 'AMR',
+    color: '#229971',
+    f1Team: 'Aston Martin',
+    badge: '💚 Aston Martin',
+  },
+  mercedes: {
+    id: 'mercedes',
+    name: 'Mercedes Junior Team',
+    shortName: 'MERC',
+    color: '#27F4D2',
+    f1Team: 'Mercedes-AMG',
+    badge: '⭐ Mercedes',
+  },
+  cadillac: {
+    id: 'cadillac',
+    name: 'Cadillac F1 Test Program',
+    shortName: 'CAD',
+    color: '#EAB308',
+    f1Team: 'Cadillac F1',
+    badge: '🛡️ Cadillac',
+  },
+  independent: {
+    id: 'independent',
+    name: 'Independiente (Sin academia F1)',
+    shortName: 'IND',
+    color: '#71717A',
+    f1Team: 'Independiente',
+    badge: '⚡ Independiente',
+  },
+};
+
+// Map driver codes to their academy ID
+export const DRIVER_ACADEMY_MAP: Record<string, string> = {
+  // F2 Drivers
+  TSO: 'redbull',      // Nikola Tsolov
+  CAM: 'ferrari',      // Rafael Câmara
+  FOR: 'mclaren',      // Leonardo Fornaroli
+  DUR: 'independent',  // Joshua Dürksen
+  MIN: 'alpine',       // Gabriele Minì
+  BEG: 'ferrari',      // Dino Beganovic
+  DUN: 'mclaren',      // Alex Dunne
+  MAI: 'alpine',       // Kush Maini
+  HOE: 'independent',  // Christian Ho
+  FIT: 'sauber',       // Emerson Fittipaldi Jr
+  GOE: 'redbull',      // Oliver Goethe
+  BOY: 'astonmartin',  // Mari Boya
+  INT: 'independent',  // Tasanapol Inthraphuvasak
+  STE: 'mclaren',      // Martinius Stenshorne
+  BEN: 'redbull',      // Enzo Deligny / Bennett
+  MIY: 'independent',  // Ritomo Miyata (Toyota Gazoo)
+  HER: 'cadillac',     // Colton Herta (Cadillac F1 test)
+  BIL: 'independent',  // Roman Bilinski
+  MON: 'independent',  // Noel León / Montoya
+  LEO: 'independent',  // Noel León
+  VIL: 'independent',  // Santiago Ramos / Villagómez
+  VAR: 'independent',  // Rafael Villagómez
+  SHI: 'independent',  // Cian Shields
+
+  // F3 Drivers
+  TRA: 'redbull',      // Tim Tramnitz
+  TAP: 'ferrari',      // Tuukka Taponen
+  BRO: 'williams',     // Luke Browning
+  UGO: 'mclaren',      // Ugo Ugochukwu
+  GIU: 'williams',     // Alessandro Giusti
+  STR: 'mclaren',      // Martinius Stenshorne
+  LAC: 'alpine',       // Nicola Lacorte
+  BED: 'ferrari',      // James Wharton
+  WHA: 'ferrari',      // James Wharton
+  DEL: 'redbull',      // Enzo Deligny
+  CRA: 'astonmartin',  // Jak Crawford
+};
+
+export interface F1Graduate {
+  name: string;
+  code: string;
+  f2Team: string;
+  f1Team: string;
+  yearGraduated: number;
+  f2Result: string;
+  notes: string;
+  notesEn: string;
+  currentRole: string;
+  flag: string;
+}
+
+export interface SeasonHistory {
+  year: number;
+  series: 'f2' | 'f3';
+  champion: {
+    name: string;
+    code: string;
+    team: string;
+    points: number;
+    wins: number;
+    flag: string;
+    f1Destination?: string;
+  };
+  runnerUp: {
+    name: string;
+    team: string;
+    points: number;
+    flag: string;
+  };
+  thirdPlace: {
+    name: string;
+    team: string;
+    points: number;
+    flag: string;
+  };
+  keyFact: string;
+  keyFactEn: string;
+  graduatesToF1?: F1Graduate[];
+}
+
+export const F2_HISTORICAL_SEASONS: SeasonHistory[] = [
+  {
+    year: 2024,
+    series: 'f2',
+    champion: {
+      name: 'Gabriel Bortoleto',
+      code: 'BOR',
+      team: 'Invicta Racing',
+      points: 214.5,
+      wins: 2,
+      flag: '🇧🇷',
+      f1Destination: 'Kick Sauber / Audi F1',
+    },
+    runnerUp: {
+      name: 'Isack Hadjar',
+      team: 'Campos Racing',
+      points: 198.5,
+      flag: '🇫🇷',
+    },
+    thirdPlace: {
+      name: 'Paul Aron',
+      team: 'Hitech Pulse-Eight',
+      points: 168,
+      flag: '🇪🇪',
+    },
+    keyFact: 'Una de las temporadas más influyentes de la historia: cinco pilotos de la parrilla saltaron directamente a asientos titulares en la Fórmula 1.',
+    keyFactEn: 'One of the most impactful seasons in junior history: five drivers from the grid secured full-time race seats in Formula 1.',
+    graduatesToF1: [
+      {
+        name: 'Gabriel Bortoleto',
+        code: 'BOR',
+        f2Team: 'Invicta Racing',
+        f1Team: 'Kick Sauber / Audi',
+        yearGraduated: 2025,
+        f2Result: 'Campeón F2',
+        notes: 'Bicampeón consecutivo debutante de F3 (2023) y F2 (2024).',
+        notesEn: 'Back-to-back rookie Champion in F3 (2023) and F2 (2024).',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇧🇷',
+      },
+      {
+        name: 'Franco Colapinto',
+        code: 'COL',
+        f2Team: 'MP Motorsport',
+        f1Team: 'Williams Racing / Alpine',
+        yearGraduated: 2024,
+        f2Result: 'Ganador en Imola / 5º',
+        notes: 'Debut sensacional en F1 en Monza sumando puntos inmediatos para Williams.',
+        notesEn: 'Sensational F1 debut in Monza scoring immediate points for Williams.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇦🇷',
+      },
+      {
+        name: 'Andrea Kimi Antonelli',
+        code: 'ANT',
+        f2Team: 'PREMA Racing',
+        f1Team: 'Mercedes-AMG',
+        yearGraduated: 2025,
+        f2Result: 'Ganador Sprint & Feature',
+        notes: 'Prodigio de Mercedes ascendido como sustituto directo de Lewis Hamilton.',
+        notesEn: 'Mercedes prodigy promoted as Lewis Hamilton\'s successor.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇮🇹',
+      },
+      {
+        name: 'Oliver Bearman',
+        code: 'BEA',
+        f2Team: 'PREMA Racing',
+        f1Team: 'MoneyGram Haas F1',
+        yearGraduated: 2025,
+        f2Result: 'Ganador de carreras',
+        notes: 'Brilló al sustituir a Carlos Sainz en Ferrari (P7 en Jeddah) y a Kevin Magnussen en Haas.',
+        notesEn: 'Stunned with Ferrari subbing for Carlos Sainz (P7 in Jeddah) and Haas.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇬🇧',
+      },
+      {
+        name: 'Isack Hadjar',
+        code: 'HAD',
+        f2Team: 'Campos Racing',
+        f1Team: 'Racing Bulls / Red Bull',
+        yearGraduated: 2025,
+        f2Result: 'Subcampeón F2 (4 victorias)',
+        notes: 'Subcampeón destacado de Red Bull Junior Team promovido a la F1.',
+        notesEn: 'Star Red Bull Junior Team runner-up promoted to F1.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇫🇷',
+      },
+    ],
+  },
+  {
+    year: 2023,
+    series: 'f2',
+    champion: {
+      name: 'Théo Pourchaire',
+      code: 'POU',
+      team: 'ART Grand Prix',
+      points: 203,
+      wins: 1,
+      flag: '🇫🇷',
+      f1Destination: 'Sauber F1 Reserve / Super Formula',
+    },
+    runnerUp: {
+      name: 'Frederik Vesti',
+      team: 'PREMA Racing',
+      points: 192,
+      flag: '🇩🇰',
+    },
+    thirdPlace: {
+      name: 'Jack Doohan',
+      team: 'Invicta Virtuosi',
+      points: 168,
+      flag: '🇦🇺',
+    },
+    keyFact: 'Pourchaire se consagró campeón tras 3 años en ART con una constancia quirúrgica.',
+    keyFactEn: 'Pourchaire captured the title after 3 seasons with ART through clinical consistency.',
+    graduatesToF1: [
+      {
+        name: 'Jack Doohan',
+        code: 'DOO',
+        f2Team: 'Invicta Virtuosi',
+        f1Team: 'Alpine F1 Team',
+        yearGraduated: 2025,
+        f2Result: '3º en F2 (3 victorias)',
+        notes: 'Piloto reserva de Alpine ascendido a la butaca titular.',
+        notesEn: 'Alpine reserve driver promoted to full-time race seat.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇦🇺',
+      },
+    ],
+  },
+  {
+    year: 2022,
+    series: 'f2',
+    champion: {
+      name: 'Felipe Drugovich',
+      code: 'DRU',
+      team: 'MP Motorsport',
+      points: 265,
+      wins: 5,
+      flag: '🇧🇷',
+      f1Destination: 'Aston Martin F1 Reserve',
+    },
+    runnerUp: {
+      name: 'Théo Pourchaire',
+      team: 'ART Grand Prix',
+      points: 164,
+      flag: '🇫🇷',
+    },
+    thirdPlace: {
+      name: 'Liam Lawson',
+      team: 'Carlin',
+      points: 149,
+      flag: '🇳🇿',
+    },
+    keyFact: 'Drugovich arrasó con una ventaja récord de 101 puntos consagrándose en Monza.',
+    keyFactEn: 'Drugovich dominated the field with a record 101-point margin, sealing the crown at Monza.',
+    graduatesToF1: [
+      {
+        name: 'Logan Sargeant',
+        code: 'SAR',
+        f2Team: 'Carlin',
+        f1Team: 'Williams Racing',
+        yearGraduated: 2023,
+        f2Result: '4º en F2 (Rookie del Año)',
+        notes: 'Obtuvo la Superlicencia en Abu Dhabi y disputó dos temporadas en Williams.',
+        notesEn: 'Secured Super License at Abu Dhabi finale, completing two seasons at Williams.',
+        currentRole: 'Ex-Piloto F1',
+        flag: '🇺🇸',
+      },
+      {
+        name: 'Liam Lawson',
+        code: 'LAW',
+        f2Team: 'Carlin',
+        f1Team: 'Racing Bulls / Red Bull',
+        yearGraduated: 2023,
+        f2Result: '3º en F2',
+        notes: 'Debutó sumando puntos en Singapur 2023 y se consolidó en la grilla titular de F1.',
+        notesEn: 'Points-scoring debut in Singapore 2023, now an established F1 regular.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇳🇿',
+      },
+    ],
+  },
+  {
+    year: 2021,
+    series: 'f2',
+    champion: {
+      name: 'Oscar Piastri',
+      code: 'PIA',
+      team: 'PREMA Racing',
+      points: 252.5,
+      wins: 6,
+      flag: '🇦🇺',
+      f1Destination: 'McLaren F1 Team',
+    },
+    runnerUp: {
+      name: 'Robert Shwartzman',
+      team: 'PREMA Racing',
+      points: 192,
+      flag: '🇮🇱',
+    },
+    thirdPlace: {
+      name: 'Zhou Guanyu',
+      team: 'UNI-Virtuosi',
+      points: 183,
+      flag: '🇨🇳',
+    },
+    keyFact: 'Oscar Piastri logró la hazaña histórica de ganar la Fórmula Renault, F3 y F2 de manera consecutiva en sus temporadas como debutante.',
+    keyFactEn: 'Oscar Piastri completed the historic triple: Formula Renault, F3, and F2 Champion all in consecutive rookie campaigns.',
+    graduatesToF1: [
+      {
+        name: 'Oscar Piastri',
+        code: 'PIA',
+        f2Team: 'PREMA Racing',
+        f1Team: 'McLaren F1 Team',
+        yearGraduated: 2023,
+        f2Result: 'Campeón F2 (6 victorias)',
+        notes: 'Ganador múltiple de Grandes Premios de F1 y podios para McLaren.',
+        notesEn: 'Multiple Grand Prix winner and podium finisher with McLaren.',
+        currentRole: 'Piloto Estrella F1',
+        flag: '🇦🇺',
+      },
+      {
+        name: 'Zhou Guanyu',
+        code: 'ZHO',
+        f2Team: 'UNI-Virtuosi',
+        f1Team: 'Alfa Romeo / Sauber',
+        yearGraduated: 2022,
+        f2Result: '3º en F2 (4 victorias)',
+        notes: 'Primer piloto chino en la historia de la Fórmula 1, sumando puntos en su debut.',
+        notesEn: 'First Chinese driver in Formula 1 history, scoring points on debut.',
+        currentRole: 'Ex-Piloto F1 / Reserva',
+        flag: '🇨🇳',
+      },
+    ],
+  },
+  {
+    year: 2020,
+    series: 'f2',
+    champion: {
+      name: 'Mick Schumacher',
+      code: 'MSC',
+      team: 'PREMA Racing',
+      points: 215,
+      wins: 2,
+      flag: '🇩🇪',
+      f1Destination: 'Haas F1 Team',
+    },
+    runnerUp: {
+      name: 'Callum Ilott',
+      team: 'UNI-Virtuosi',
+      points: 201,
+      flag: '🇬🇧',
+    },
+    thirdPlace: {
+      name: 'Yuki Tsunoda',
+      team: 'Carlin',
+      points: 200,
+      flag: '🇯🇵',
+    },
+    keyFact: 'Mick Schumacher devolvió el célebre apellido a lo más alto en Sakhir con un duelo vibrante frente a Ilott y Tsunoda.',
+    keyFactEn: 'Mick Schumacher took the historic name to the summit at Sakhir in a dramatic title showdown.',
+    graduatesToF1: [
+      {
+        name: 'Yuki Tsunoda',
+        code: 'TSU',
+        f2Team: 'Carlin',
+        f1Team: 'AlphaTauri / Racing Bulls',
+        yearGraduated: 2021,
+        f2Result: '3º en F2 (Rookie del Año)',
+        notes: 'Ascenso supersónico desde la F4 japonesa hasta consolidarse en F1.',
+        notesEn: 'Meteoric rise from Japanese F4 to become an established F1 talent.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇯🇵',
+      },
+    ],
+  },
+  {
+    year: 2018,
+    series: 'f2',
+    champion: {
+      name: 'George Russell',
+      code: 'RUS',
+      team: 'ART Grand Prix',
+      points: 287,
+      wins: 7,
+      flag: '🇬🇧',
+      f1Destination: 'Williams / Mercedes-AMG',
+    },
+    runnerUp: {
+      name: 'Lando Norris',
+      team: 'Carlin',
+      points: 219,
+      flag: '🇬🇧',
+    },
+    thirdPlace: {
+      name: 'Alexander Albon',
+      team: 'DAMS',
+      points: 212,
+      flag: '🇹🇭',
+    },
+    keyFact: 'Considerada la generación dorada de la F2: los tres primeros del campeonato son hoy figuras consolidadas y ganadores de carreras en la Fórmula 1.',
+    keyFactEn: 'Widely hailed as F2\'s golden generation: the top 3 finishers are now premier Formula 1 winners and leaders.',
+    graduatesToF1: [
+      {
+        name: 'George Russell',
+        code: 'RUS',
+        f2Team: 'ART Grand Prix',
+        f1Team: 'Mercedes-AMG',
+        yearGraduated: 2019,
+        f2Result: 'Campeón F2 (7 victorias)',
+        notes: 'Ganador de Grandes Premios de F1 y líder de Mercedes.',
+        notesEn: 'Grand Prix winner and leader of Mercedes-AMG.',
+        currentRole: 'Piloto Estrella F1',
+        flag: '🇬🇧',
+      },
+      {
+        name: 'Lando Norris',
+        code: 'NOR',
+        f2Team: 'Carlin',
+        f1Team: 'McLaren F1 Team',
+        yearGraduated: 2019,
+        f2Result: 'Subcampeón F2',
+        notes: 'Polesitter y ganador de Grandes Premios peleando por el Campeonato Mundial de F1.',
+        notesEn: 'Polesitter and Grand Prix winner contending for the F1 World Championship.',
+        currentRole: 'Piloto Estrella F1',
+        flag: '🇬🇧',
+      },
+      {
+        name: 'Alexander Albon',
+        code: 'ALB',
+        f2Team: 'DAMS',
+        f1Team: 'Williams Racing',
+        yearGraduated: 2019,
+        f2Result: '3º en F2 (4 victorias)',
+        notes: 'Múltiples podios en Red Bull Racing y líder indiscutido de Williams Racing.',
+        notesEn: 'Multiple podium finisher at Red Bull Racing and team leader at Williams.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇹🇭',
+      },
+    ],
+  },
+  {
+    year: 2017,
+    series: 'f2',
+    champion: {
+      name: 'Charles Leclerc',
+      code: 'LEC',
+      team: 'PREMA Racing',
+      points: 282,
+      wins: 8,
+      flag: '🇲🇨',
+      f1Destination: 'Alfa Romeo / Ferrari',
+    },
+    runnerUp: {
+      name: 'Artem Markelov',
+      team: 'Russian Time',
+      points: 210,
+      flag: '🇷🇺',
+    },
+    thirdPlace: {
+      name: 'Oliver Rowland',
+      team: 'DAMS',
+      points: 191,
+      flag: '🇬🇧',
+    },
+    keyFact: 'Charles Leclerc firmó la campaña más dominante de un debutante en la era moderna de la categoría con 8 victorias y 8 poles consecutivas.',
+    keyFactEn: 'Charles Leclerc delivered the most dominant rookie campaign in modern history with 8 wins and 8 consecutive poles.',
+    graduatesToF1: [
+      {
+        name: 'Charles Leclerc',
+        code: 'LEC',
+        f2Team: 'PREMA Racing',
+        f1Team: 'Scuderia Ferrari',
+        yearGraduated: 2018,
+        f2Result: 'Campeón F2 (8 victorias, 8 poles)',
+        notes: 'Ganador en Monza, Mónaco, Spa y subcampeón mundial de Fórmula 1.',
+        notesEn: 'Winner at Monza, Monaco, Spa and Formula 1 World Vice-Champion.',
+        currentRole: 'Piloto Estrella Ferrari',
+        flag: '🇲🇨',
+      },
+    ],
+  },
+];
+
+export const F3_HISTORICAL_SEASONS: SeasonHistory[] = [
+  {
+    year: 2024,
+    series: 'f3',
+    champion: {
+      name: 'Leonardo Fornaroli',
+      code: 'FOR',
+      team: 'Trident',
+      points: 153,
+      wins: 0,
+      flag: '🇮🇹',
+      f1Destination: 'F2 Invicta / McLaren Development',
+    },
+    runnerUp: {
+      name: 'Gabriele Minì',
+      team: 'PREMA Racing',
+      points: 151,
+      flag: '🇮🇹',
+    },
+    thirdPlace: {
+      name: 'Luke Browning',
+      team: 'Hitech Pulse-Eight',
+      points: 128,
+      flag: '🇬🇧',
+    },
+    keyFact: 'Fornaroli se consagró con un adelantamiento milagroso en la última curva de Monza, ganando el campeonato por 2 puntos con pura regularidad.',
+    keyFactEn: 'Fornaroli clinched the title on the final corner of Monza with a heroic pass, winning the crown through supreme consistency.',
+  },
+  {
+    year: 2023,
+    series: 'f3',
+    champion: {
+      name: 'Gabriel Bortoleto',
+      code: 'BOR',
+      team: 'Trident',
+      points: 164,
+      wins: 2,
+      flag: '🇧🇷',
+      f1Destination: 'F2 Champion -> Kick Sauber F1',
+    },
+    runnerUp: {
+      name: 'Zak O\'Sullivan',
+      team: 'PREMA Racing',
+      points: 119,
+      flag: '🇬🇧',
+    },
+    thirdPlace: {
+      name: 'Paul Aron',
+      team: 'PREMA Racing',
+      points: 112,
+      flag: '🇪🇪',
+    },
+    keyFact: 'Bortoleto lideró la tabla desde la primera fecha en Bahrein con una ventaja de 45 puntos antes de dar el salto a ganar la F2.',
+    keyFactEn: 'Bortoleto led from Round 1 in Bahrain with a 45-point buffer before moving up to conquer F2.',
+  },
+  {
+    year: 2022,
+    series: 'f3',
+    champion: {
+      name: 'Victor Martins',
+      code: 'MAR',
+      team: 'ART Grand Prix',
+      points: 139,
+      wins: 2,
+      flag: '🇫🇷',
+      f1Destination: 'F2 ART / Alpine Academy',
+    },
+    runnerUp: {
+      name: 'Zane Maloney',
+      team: 'Trident',
+      points: 134,
+      flag: '🇧🇧',
+    },
+    thirdPlace: {
+      name: 'Oliver Bearman',
+      team: 'PREMA Racing',
+      points: 132,
+      flag: '🇬🇧',
+    },
+    keyFact: 'Final de infarto en Monza con 7 pilotos con chances matemáticas de campeonato hasta la última vuelta.',
+    keyFactEn: 'Heart-stopping Monza finale where 7 drivers held mathematical chances of the title until the checkered flag.',
+  },
+  {
+    year: 2021,
+    series: 'f3',
+    champion: {
+      name: 'Dennis Hauger',
+      code: 'HAU',
+      team: 'PREMA Racing',
+      points: 205,
+      wins: 4,
+      flag: '🇳🇴',
+      f1Destination: 'F2 MP Motorsport / Red Bull',
+    },
+    runnerUp: {
+      name: 'Jack Doohan',
+      team: 'Trident',
+      points: 179,
+      flag: '🇦🇺',
+    },
+    thirdPlace: {
+      name: 'Clément Novalak',
+      team: 'Trident',
+      points: 147,
+      flag: '🇫🇷',
+    },
+    keyFact: 'El noruego dominó el certamen con 9 podios y 4 victorias para la escudería PREMA.',
+    keyFactEn: 'The Norwegian dominated the season with 9 podiums and 4 race victories for PREMA.',
+  },
+  {
+    year: 2020,
+    series: 'f3',
+    champion: {
+      name: 'Oscar Piastri',
+      code: 'PIA',
+      team: 'PREMA Racing',
+      points: 164,
+      wins: 2,
+      flag: '🇦🇺',
+      f1Destination: 'F2 Champion -> McLaren F1',
+    },
+    runnerUp: {
+      name: 'Théo Pourchaire',
+      team: 'ART Grand Prix',
+      points: 161,
+      flag: '🇫🇷',
+    },
+    thirdPlace: {
+      name: 'Logan Sargeant',
+      team: 'PREMA Racing',
+      points: 160,
+      flag: '🇺🇸',
+    },
+    keyFact: 'Definición dramática en Mugello: apenas 4 puntos separaron a los tres primeros del campeonato (Piastri, Pourchaire y Sargeant).',
+    keyFactEn: 'Dramatic Mugello finale: just 4 points separated the top 3 drivers in the championship.',
+  },
+];
+
+export interface TechSpecsData {
+  series: 'f2' | 'f3';
+  chassis: string;
+  engine: string;
+  power: string;
+  weight: string;
+  topSpeed: string;
+  acceleration: string;
+  brakes: string;
+  gearbox: string;
+  tires: string;
+  weekendFormat: {
+    qualifying: string;
+    sprintRace: string;
+    featureRace: string;
+  };
+  pointsSystem: {
+    pole: string;
+    sprint: string;
+    feature: string;
+    fastestLap: string;
+  };
+  superlicense: string;
+}
+
+export const TECH_SPECS: Record<'f2' | 'f3', TechSpecsData> = {
+  f2: {
+    series: 'f2',
+    chassis: 'Dallara F2 2024 (Específico, monomarca FIA)',
+    engine: 'Mecachrome 3.4L V6 Single-Turbocharged (Combustible 55% sostenible)',
+    power: '620 CV @ 8.750 RPM',
+    weight: '795 kg (mínimo con piloto y fluidos)',
+    topSpeed: '335 km/h (Monza aero spec)',
+    acceleration: '0 - 100 km/h en 2.9 segundos | 0 - 200 km/h en 6.6 segundos',
+    brakes: 'Discos y pastillas Brembo de carbono ventilado (6 pistones)',
+    gearbox: 'Hewland secuencial de 6 velocidades con levas al volante',
+    tires: 'Pirelli 18 pulgadas (compuestos Prime y Option por fin de semana)',
+    weekendFormat: {
+      qualifying: 'Sesión única de 30 minutos. El 1º logra la Pole para la Feature del domingo (+2 pts).',
+      sprintRace: 'Sábado (120 km o 45 min). Parrilla invertida del Top 10 de clasificación.',
+      featureRace: 'Domingo (170 km o 60 min). Parrilla según la clasificación. Parada en boxes obligatoria (usar ambos compuestos).',
+    },
+    pointsSystem: {
+      pole: '2 puntos al autor de la Pole Position en Clasificación.',
+      sprint: 'Top 8: 10, 8, 6, 5, 4, 3, 2, 1.',
+      feature: 'Top 10 (escala F1): 25, 18, 15, 12, 10, 8, 6, 4, 2, 1.',
+      fastestLap: '1 punto por carrera si el piloto finaliza en el Top 10.',
+    },
+    superlicense: 'El Top 3 del Campeonato recibe 40 puntos FIA (Pase directo automático a la F1). P4: 30 pts, P5: 20 pts, P6: 10 pts, P7: 8 pts, P8: 6 pts, P9: 4 pts, P10: 3 pts.',
+  },
+  f3: {
+    series: 'f3',
+    chassis: 'Dallara F3 2025 (Específico, monomarca FIA)',
+    engine: 'Mecachrome 3.4L V6 Atmosférico de aspiración natural',
+    power: '380 CV @ 8.000 RPM',
+    weight: '698 kg (mínimo con piloto y fluidos)',
+    topSpeed: '300 km/h (Monza aero spec)',
+    acceleration: '0 - 100 km/h en 3.0 segundos | 0 - 200 km/h en 7.7 segundos',
+    brakes: 'Discos y pastillas Brembo de acero ranurado',
+    gearbox: 'Hewland secuencial de 6 velocidades con levas al volante',
+    tires: 'Pirelli 13 pulgadas monomarca (un solo compuesto por fin de semana)',
+    weekendFormat: {
+      qualifying: 'Sesión única de 30 minutos. El 1º logra la Pole para la Feature del domingo (+2 pts).',
+      sprintRace: 'Sábado (40 min). Parrilla invertida del Top 12 de clasificación.',
+      featureRace: 'Domingo (45 min). Parrilla según la clasificación. Sin parada en boxes obligatoria.',
+    },
+    pointsSystem: {
+      pole: '2 puntos al autor de la Pole Position en Clasificación.',
+      sprint: 'Top 10: 10, 9, 8, 7, 6, 5, 4, 3, 2, 1.',
+      feature: 'Top 10 (escala F1): 25, 18, 15, 12, 10, 8, 6, 4, 2, 1.',
+      fastestLap: '1 punto por carrera si el piloto finaliza en el Top 10.',
+    },
+    superlicense: 'El Campeón recibe 30 puntos FIA. P2: 25 pts, P3: 20 pts, P4: 15 pts, P5: 12 pts, P6: 9 pts, P7: 7 pts, P8: 5 pts, P9: 3 pts, P10: 2 pts.',
+  },
+};
