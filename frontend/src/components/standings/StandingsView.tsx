@@ -141,29 +141,30 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
     }
   };
 
-  const renderPosBadge = (pos: number) => {
-    if (pos === 1) {
+  const renderPosBadge = (pos: number | null | undefined, fallbackIndex?: number) => {
+    const displayPos = (typeof pos === 'number' && pos > 0) ? pos : (fallbackIndex || '-');
+    if (displayPos === 1) {
       return (
         <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-[0_0_8px_rgba(251,191,36,0.25)]">
-          <span className="text-[11px]">🥇</span> <span>{pos}</span>
+          <span className="text-[11px]">🥇</span> <span>{displayPos}</span>
         </span>
       );
     }
-    if (pos === 2) {
+    if (displayPos === 2) {
       return (
         <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-slate-300/15 text-slate-200 border border-slate-300/30">
-          <span className="text-[11px]">🥈</span> <span>{pos}</span>
+          <span className="text-[11px]">🥈</span> <span>{displayPos}</span>
         </span>
       );
     }
-    if (pos === 3) {
+    if (displayPos === 3) {
       return (
         <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-amber-700/15 text-amber-500 border border-amber-700/30">
-          <span className="text-[11px]">🥉</span> <span>{pos}</span>
+          <span className="text-[11px]">🥉</span> <span>{displayPos}</span>
         </span>
       );
     }
-    return <span className="text-zinc-400 font-bold">{pos}</span>;
+    return <span className="text-zinc-600 dark:text-zinc-400 font-bold">{displayPos}</span>;
   };
 
   const renderRankDiff = (diff: number) => {
@@ -213,9 +214,9 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const processedDrivers = useMemo(() => {
     if (!data?.drivers) return [];
     if (!isVirtualActive || !liveDrivers || liveDrivers.length === 0) {
-      return data.drivers.map((d) => ({
+      return data.drivers.map((d, index) => ({
         ...d,
-        virtualPos: d.pos,
+        virtualPos: (typeof d.pos === 'number' && d.pos > 0) ? d.pos : (index + 1),
         provisionalPoints: 0,
         totalPoints: d.points,
         rankDiff: 0,
@@ -223,7 +224,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
       }));
     }
 
-    const calculated = data.drivers.map((d) => {
+    const calculated = data.drivers.map((d, index) => {
       const ld = liveDrivers.find(
         (l) =>
           (l.code && d.code && l.code.toUpperCase() === d.code.toUpperCase()) ||
@@ -240,8 +241,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         }
       }
 
+      const basePos = (typeof d.pos === 'number' && d.pos > 0) ? d.pos : (index + 1);
+
       return {
         ...d,
+        pos: basePos,
         provisionalPoints,
         totalPoints: d.points + provisionalPoints,
         liveTrackPos,
@@ -284,16 +288,16 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const processedConstructors = useMemo(() => {
     if (!data?.constructors) return [];
     if (!isVirtualActive || !liveDrivers || liveDrivers.length === 0) {
-      return data.constructors.map((c) => ({
+      return data.constructors.map((c, index) => ({
         ...c,
-        virtualPos: c.pos,
+        virtualPos: (typeof c.pos === 'number' && c.pos > 0) ? c.pos : (index + 1),
         provisionalPoints: 0,
         totalPoints: c.points,
         rankDiff: 0,
       }));
     }
 
-    const calculated = data.constructors.map((c) => {
+    const calculated = data.constructors.map((c, index) => {
       const teamDrivers = liveDrivers.filter(
         (ld) =>
           ld.status !== 'DNF' &&
@@ -309,8 +313,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         return acc;
       }, 0);
 
+      const basePos = (typeof c.pos === 'number' && c.pos > 0) ? c.pos : (index + 1);
+
       return {
         ...c,
+        pos: basePos,
         provisionalPoints,
         totalPoints: c.points + provisionalPoints,
       };
@@ -487,6 +494,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   {data.constructors?.[0] && (
                     <span className="text-zinc-600 dark:text-zinc-400 ml-1.5 hidden md:inline">
                       • {lang === 'es' ? 'Constructores' : 'Constructors'}: <span className="text-zinc-900 dark:text-white font-bold">{data.constructors[0].name}</span>
+                      {series === 'f1' && activeYear >= 1950 && activeYear <= 1957 && (
+                        <span className="text-[10px] text-amber-700 dark:text-amber-300 font-semibold ml-1" title={lang === 'es' ? 'Campeonato de Constructores oficial de la FIA creado en 1958; tabla calculada según puntos de escudería' : 'Official FIA Constructors Championship created in 1958; table calculated from team points'}>
+                          ({lang === 'es' ? 'calculado' : 'calculated'})*
+                        </span>
+                      )}
                     </span>
                   )}
                 </span>
@@ -634,7 +646,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
           {/* DRIVERS TABLE */}
           {subTab === 'drivers' && (
-            <div className="bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
               <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
                 <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
                 <div className="col-span-5 sm:col-span-5">{t.standings.headers.driver}</div>
@@ -651,7 +663,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                       : `No drivers from ${F1_ACADEMIES[selectedAcademyFilter]?.name || 'this academy'} competing in ${series.toUpperCase()} ${activeYear}.`}
                   </div>
                 ) : (
-                  filteredDrivers.map((d) => {
+                  filteredDrivers.map((d, index) => {
                   const acadId = DRIVER_ACADEMY_MAP[d.code?.toUpperCase() || ''] || 'independent';
                   const acad = F1_ACADEMIES[acadId];
 
@@ -662,13 +674,13 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                         d.virtualPos === 1
                           ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
                           : d.virtualPos <= 3
-                          ? 'bg-white/[0.015] hover:bg-white/[0.04]'
-                          : 'hover:bg-white/[0.02]'
+                          ? 'bg-zinc-50/60 dark:bg-white/[0.015] hover:bg-zinc-100/80 dark:hover:bg-white/[0.04]'
+                          : 'hover:bg-zinc-50 dark:hover:bg-white/[0.02]'
                       }`}
                     >
                       {/* Pos */}
                       <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
-                        {renderPosBadge(d.virtualPos)}
+                        {renderPosBadge(d.virtualPos, index + 1)}
                         {isVirtualActive && renderRankDiff(d.rankDiff)}
                       </div>
 
@@ -770,61 +782,76 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
           {/* CONSTRUCTORS TABLE */}
           {subTab === 'constructors' && (
-            <div className="bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-              <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
-                <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
-                <div className="col-span-6 sm:col-span-7">{t.standings.headers.team}</div>
-                <div className="col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
-                <div className="col-span-2 text-right">{t.standings.headers.wins}</div>
-              </div>
+            <div className="space-y-3">
+              {series === 'f1' && activeYear >= 1950 && activeYear <= 1957 && (
+                <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-mono">
+                  <span className="font-bold uppercase tracking-wider text-[10px] bg-amber-200 dark:bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-950 dark:text-amber-300 shrink-0">
+                    {lang === 'es' ? 'Nota Histórica' : 'Historical Note'}
+                  </span>
+                  <span>
+                    {lang === 'es'
+                      ? `El Campeonato Mundial de Constructores de la FIA fue inaugurado formalmente en 1958. La tabla de ${activeYear} ha sido calculada retrospectivamente sumando puntos y victorias de pilotos por escudería.`
+                      : `The official FIA Constructors' World Championship began in 1958. Standings for ${activeYear} are retrospectively calculated based on team driver points and victories.`}
+                  </span>
+                </div>
+              )}
 
-              <div className="divide-y divide-zinc-200 dark:divide-white/[0.08]">
-                {processedConstructors.map((c) => (
-                  <div
-                    key={c.name}
-                    className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
-                      c.virtualPos === 1
-                        ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
-                        : c.virtualPos <= 3
-                        ? 'bg-white/[0.015] hover:bg-white/[0.04]'
-                        : 'hover:bg-white/[0.02]'
-                    }`}
-                  >
-                    {/* Pos */}
-                    <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
-                      {renderPosBadge(c.virtualPos)}
-                      {isVirtualActive && renderRankDiff(c.rankDiff)}
-                    </div>
+              <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
+                <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
+                  <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
+                  <div className="col-span-6 sm:col-span-7">{t.standings.headers.team}</div>
+                  <div className="col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
+                  <div className="col-span-2 text-right">{t.standings.headers.wins}</div>
+                </div>
 
-                    {/* Team Name with line indicator */}
-                    <div className="col-span-6 sm:col-span-7 flex items-center gap-2.5">
-                      <span
-                        className="w-[3px] h-5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: c.teamColor || '#8E929B' }}
-                      />
-                      <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight uppercase">
-                        {c.name}
-                      </span>
-                    </div>
+                <div className="divide-y divide-zinc-200 dark:divide-white/[0.08]">
+                  {processedConstructors.map((c, index) => (
+                    <div
+                      key={c.name}
+                      className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
+                        c.virtualPos === 1
+                          ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
+                          : c.virtualPos <= 3
+                          ? 'bg-zinc-50/60 dark:bg-white/[0.015] hover:bg-zinc-100/80 dark:hover:bg-white/[0.04]'
+                          : 'hover:bg-zinc-50 dark:hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      {/* Pos */}
+                      <div className="col-span-2 sm:col-span-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 font-mono tabular-nums">
+                        {renderPosBadge(c.virtualPos, index + 1)}
+                        {isVirtualActive && renderRankDiff(c.rankDiff)}
+                      </div>
 
-                    {/* Points */}
-                    <div className="col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
-                      <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
-                        {c.totalPoints}
-                      </span>
-                      {isVirtualActive && (
-                        <span className={`text-[10px] font-bold leading-tight ${c.provisionalPoints > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500'}`}>
-                          +{c.provisionalPoints}
+                      {/* Team Name with line indicator */}
+                      <div className="col-span-6 sm:col-span-7 flex items-center gap-2.5">
+                        <span
+                          className="w-[3px] h-5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: c.teamColor || '#8E929B' }}
+                        />
+                        <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight uppercase">
+                          {c.name}
                         </span>
-                      )}
-                    </div>
+                      </div>
 
-                    {/* Wins */}
-                    <div className="col-span-2 text-right font-mono text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
-                      {c.wins}
+                      {/* Points */}
+                      <div className="col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
+                        <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
+                          {c.totalPoints}
+                        </span>
+                        {isVirtualActive && (
+                          <span className={`text-[10px] font-bold leading-tight ${c.provisionalPoints > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500'}`}>
+                            +{c.provisionalPoints}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Wins */}
+                      <div className="col-span-2 text-right font-mono text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
+                        {c.wins}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}

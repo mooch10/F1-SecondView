@@ -352,8 +352,8 @@ export class JolpicaClient {
       };
     }
 
-    const driverPath = isHistorical ? `/${year}/driverStandings.json` : '/current/driverStandings.json';
-    const constrPath = isHistorical ? `/${year}/constructorStandings.json` : '/current/constructorStandings.json';
+    const driverPath = isHistorical ? `/${year}/driverStandings.json?limit=150` : '/current/driverStandings.json?limit=100';
+    const constrPath = isHistorical ? `/${year}/constructorStandings.json?limit=100` : '/current/constructorStandings.json?limit=100';
 
     const [rawDrivers, rawConstructors] = await Promise.all([
       this.fetchRaw<RawDriversResponse>(driverPath),
@@ -365,13 +365,15 @@ export class JolpicaClient {
     const constrList =
       rawConstructors?.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings || [];
 
-    const drivers: JolpicaDriverStanding[] = driversList.map((d) => {
+    const drivers: JolpicaDriverStanding[] = driversList.map((d, index) => {
       const primaryTeam = d.Constructors?.[0];
       const teamId = primaryTeam?.constructorId || 'unknown';
+      const parsedPos = Number(d.position);
+      const pos = (!isNaN(parsedPos) && parsedPos > 0) ? parsedPos : (index + 1);
       return {
-        pos: Number(d.position),
-        points: Number(d.points),
-        wins: Number(d.wins),
+        pos,
+        points: Number(d.points) || 0,
+        wins: Number(d.wins) || 0,
         code: d.Driver.code || d.Driver.familyName.substring(0, 3).toUpperCase(),
         name: `${d.Driver.givenName} ${d.Driver.familyName}`,
         nationality: d.Driver.nationality,
@@ -380,13 +382,46 @@ export class JolpicaClient {
       };
     });
 
-    const constructors: JolpicaConstructorStanding[] = constrList.map((c) => ({
-      pos: Number(c.position),
-      points: Number(c.points),
-      wins: Number(c.wins),
-      name: c.Constructor.name,
-      teamColor: getTeamColor(c.Constructor.constructorId),
-    }));
+    let constructors: JolpicaConstructorStanding[] = constrList.map((c, index) => {
+      const parsedPos = Number(c.position);
+      return {
+        pos: (!isNaN(parsedPos) && parsedPos > 0) ? parsedPos : (index + 1),
+        points: Number(c.points) || 0,
+        wins: Number(c.wins) || 0,
+        name: c.Constructor.name,
+        teamColor: getTeamColor(c.Constructor.constructorId),
+      };
+    });
+
+    // For seasons 1950-1957 (when the FIA had not yet established the official Constructors' Championship):
+    // Synthesize historical constructors standings by aggregating points and wins from drivers
+    if (constructors.length === 0 && driversList.length > 0) {
+      const teamMap = new Map<string, { name: string; constructorId: string; points: number; wins: number }>();
+      for (const d of driversList) {
+        const c = d.Constructors?.[0];
+        const teamName = c?.name || 'Independiente';
+        const teamId = c?.constructorId || 'unknown';
+        const pts = Number(d.points) || 0;
+        const wins = Number(d.wins) || 0;
+        if (!teamMap.has(teamName)) {
+          teamMap.set(teamName, { name: teamName, constructorId: teamId, points: 0, wins: 0 });
+        }
+        const current = teamMap.get(teamName)!;
+        current.points += pts;
+        current.wins += wins;
+      }
+      const sortedTeams = Array.from(teamMap.values()).sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        return b.wins - a.wins;
+      });
+      constructors = sortedTeams.map((t, idx) => ({
+        pos: idx + 1,
+        points: Math.round(t.points * 100) / 100,
+        wins: t.wins,
+        name: t.name,
+        teamColor: getTeamColor(t.constructorId),
+      }));
+    }
 
     const result = { drivers, constructors };
     if (isHistorical && drivers.length > 0) {
