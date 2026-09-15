@@ -190,7 +190,7 @@ export const JuniorTechSpecsModal: React.FC<JuniorTechSpecsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.15] text-white text-xs font-bold transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 dark:bg-white/[0.08] dark:hover:bg-white/[0.15] dark:text-white dark:border-transparent text-xs font-bold transition-colors cursor-pointer shadow-xs"
           >
             {lang === 'es' ? 'Cerrar' : 'Close'}
           </button>

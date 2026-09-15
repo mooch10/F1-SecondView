@@ -190,6 +190,9 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
   useEffect(() => {
     let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setLoading(true);
+    });
     const targetYear = activeYear;
     Promise.all([
       fetchStandings(series, targetYear),
@@ -357,10 +360,10 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   return (
     <div className="flex flex-col gap-3">
       {/* Historical Seasons Selector (F1, F2 & F3) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-zinc-200 dark:border-white/[0.06]">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1">
-          <span className="text-[11px] font-mono text-zinc-400 font-bold uppercase flex items-center gap-1.5 shrink-0 mr-1">
-            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+          <span className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 font-bold uppercase flex items-center gap-1.5 shrink-0 mr-1">
+            <Calendar className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
             {t.standings.historicalSeason}:
           </span>
           {pillsToRender.map((year) => {
@@ -372,8 +375,8 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 onClick={() => setSelectedSeasonYear(year)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer shrink-0 border ${
                   isSelected
-                    ? 'text-white shadow-sm font-black'
-                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white border-white/[0.08]'
+                    ? 'text-white shadow-sm font-black keep-white'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 border-zinc-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08]'
                 }`}
                 style={
                   isSelected
@@ -388,8 +391,8 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         </div>
 
         {/* Dropdown selector for all historical seasons */}
-        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto sm:pl-2 sm:border-l sm:border-white/[0.08]">
-          <label htmlFor="season-year-select" className="text-[11px] font-mono text-zinc-400 hidden xl:inline shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto sm:pl-2 sm:border-l border-zinc-200 dark:border-white/[0.08]">
+          <label htmlFor="season-year-select" className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 hidden xl:inline shrink-0 font-medium">
             {t.standings.allEras}:
           </label>
           <select
@@ -397,10 +400,10 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
             aria-label={t.standings.historicalSeason}
             value={activeYear}
             onChange={(e) => setSelectedSeasonYear(Number(e.target.value))}
-            className="bg-[#181C28] text-zinc-200 hover:text-white text-xs font-mono font-bold px-2.5 py-1 rounded-lg border border-white/[0.14] hover:border-white/30 transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-400"
+            className="bg-white text-zinc-800 border-zinc-300 hover:border-zinc-400 dark:bg-[#181C28] dark:text-zinc-200 dark:border-white/[0.14] dark:hover:border-white/30 text-xs font-mono font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-400 shadow-sm"
           >
             {allSeriesYears.map((year) => (
-              <option key={year} value={year} className="bg-[#131722] text-zinc-200">
+              <option key={year} value={year} className="bg-white text-zinc-800 dark:bg-[#131722] dark:text-zinc-200">
                 {year === 2026
                   ? `2026 (${lang === 'es' ? 'Actual' : 'Live'})`
                   : `${year} ${series.toUpperCase()}`}
@@ -412,23 +415,23 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
       {/* F2 & F3: Junior Hub Controls (Standings vs Graduates & Tech Specs) */}
       {series !== 'f1' && (
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-white/[0.06]">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-zinc-200 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setJuniorTab('standings')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                 juniorTab === 'standings'
-                  ? 'text-white border-white/30 shadow-sm'
-                  : 'bg-white/[0.03] text-zinc-400 hover:text-white border-transparent'
+                  ? 'text-white border-transparent shadow-sm keep-white'
+                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 border-zinc-200 dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:text-white dark:border-transparent'
               }`}
               style={
                 juniorTab === 'standings'
-                  ? { backgroundColor: `${theme.primary}25`, borderColor: theme.primary, color: '#FFFFFF' }
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary, color: '#FFFFFF' }
                   : undefined
               }
             >
-              <Trophy className="w-3.5 h-3.5" style={{ color: theme.primary }} />
+              <Trophy className="w-3.5 h-3.5" style={{ color: juniorTab === 'standings' ? '#FFFFFF' : theme.primary }} />
               <span>{lang === 'es' ? `Clasificación ${activeYear}` : `${activeYear} Standings`}</span>
             </button>
 
@@ -437,16 +440,16 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               onClick={() => setJuniorTab('graduates')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                 juniorTab === 'graduates'
-                  ? 'text-white border-white/30 shadow-sm'
-                  : 'bg-white/[0.03] text-zinc-400 hover:text-white border-transparent'
+                  ? 'text-white border-transparent shadow-sm keep-white'
+                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 border-zinc-200 dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:text-white dark:border-transparent'
               }`}
               style={
                 juniorTab === 'graduates'
-                  ? { backgroundColor: `${theme.primary}25`, borderColor: theme.primary, color: '#FFFFFF' }
+                  ? { backgroundColor: theme.primary, borderColor: theme.primary, color: '#FFFFFF' }
                   : undefined
               }
             >
-              <GraduationCap className="w-3.5 h-3.5" style={{ color: theme.primary }} />
+              <GraduationCap className="w-3.5 h-3.5" style={{ color: juniorTab === 'graduates' ? '#FFFFFF' : theme.primary }} />
               <span>{t.standings.graduatesTab}</span>
             </button>
           </div>
@@ -454,9 +457,9 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           <button
             type="button"
             onClick={() => setIsTechSpecsOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] dark:text-zinc-300 dark:hover:text-white dark:border-white/[0.08] transition-all cursor-pointer shadow-xs"
           >
-            <Wrench className="w-3.5 h-3.5 text-amber-400" />
+            <Wrench className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span>{t.standings.techSpecsBtn}</span>
           </button>
         </div>
@@ -469,21 +472,21 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         <>
           {/* Historical Season Banner (F1, F2 & F3) */}
           {activeYear < 2026 && (
-            <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs animate-fadeIn">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/30 text-amber-900 dark:text-amber-300 font-mono text-xs animate-fadeIn">
               <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
+                <Trophy className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>
                   <strong className="uppercase">
                     {t.standings.historicalSeason} {series.toUpperCase()} {activeYear}
                   </strong>
                   {data.drivers?.[0] && (
-                    <span className="text-zinc-300 ml-1.5">
-                      • {lang === 'es' ? 'Campeón' : 'Champion'}: <span className="text-white font-bold">{data.drivers[0].name} ({data.drivers[0].points} PTS)</span>
+                    <span className="text-zinc-700 dark:text-zinc-300 ml-1.5">
+                      • {lang === 'es' ? 'Campeón' : 'Champion'}: <span className="text-zinc-900 dark:text-white font-bold">{data.drivers[0].name} ({data.drivers[0].points} PTS)</span>
                     </span>
                   )}
                   {data.constructors?.[0] && (
-                    <span className="text-zinc-400 ml-1.5 hidden md:inline">
-                      • {lang === 'es' ? 'Constructores' : 'Constructors'}: <span className="text-white font-bold">{data.constructors[0].name}</span>
+                    <span className="text-zinc-600 dark:text-zinc-400 ml-1.5 hidden md:inline">
+                      • {lang === 'es' ? 'Constructores' : 'Constructors'}: <span className="text-zinc-900 dark:text-white font-bold">{data.constructors[0].name}</span>
                     </span>
                   )}
                 </span>
@@ -491,7 +494,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedSeasonYear(2026)}
-                className="px-2.5 py-1 rounded bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 text-[11px] font-bold uppercase transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-950 dark:bg-amber-400/20 dark:hover:bg-amber-400/30 dark:text-amber-300 text-[11px] font-bold uppercase transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'Volver a 2026' : 'Back to 2026'}
               </button>
@@ -499,15 +502,15 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           )}
 
           {/* Broadcast Style Sub-Tabs with Live Virtual Toggle */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] pb-1 px-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 dark:border-white/[0.08] pb-1 px-1">
             <div className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar">
               <button
                 type="button"
                 onClick={() => setSubTab('drivers')}
                 className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   subTab === 'drivers'
-                    ? 'text-white'
-                    : 'text-zinc-400 hover:text-white border-transparent'
+                    ? 'text-zinc-900 dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
                 }`}
                 style={subTab === 'drivers' ? { borderColor: theme.primary } : undefined}
               >
@@ -521,8 +524,8 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 onClick={() => setSubTab('constructors')}
                 className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   subTab === 'constructors'
-                    ? 'text-white'
-                    : 'text-zinc-400 hover:text-white border-transparent'
+                    ? 'text-zinc-900 dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
                 }`}
                 style={subTab === 'constructors' ? { borderColor: theme.primary } : undefined}
               >
@@ -589,19 +592,20 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedAcademyFilter('all')}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all shrink-0 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all shrink-0 cursor-pointer border ${
                   selectedAcademyFilter === 'all'
-                    ? 'bg-white/20 text-white border border-white/40 shadow-sm'
-                    : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-transparent'
+                    ? 'bg-zinc-800 text-white border-zinc-700 shadow-sm keep-white dark:bg-white/20 dark:text-white dark:border-white/40'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border-zinc-200 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:text-white dark:border-transparent'
                 }`}
               >
                 {t.standings.allAcademies} ({processedDrivers.length})
               </button>
               {Object.values(F1_ACADEMIES).map((acad) => {
+                const isAcadSelected = selectedAcademyFilter === acad.id;
                 const count = processedDrivers.filter(
                   (d) => (DRIVER_ACADEMY_MAP[d.code?.toUpperCase() || ''] || 'independent') === acad.id
                 ).length;
-                if (count === 0 && selectedAcademyFilter !== acad.id) {
+                if (count === 0 && !isAcadSelected) {
                   return null;
                 }
                 return (
@@ -610,18 +614,18 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                     type="button"
                     onClick={() => setSelectedAcademyFilter(acad.id)}
                     className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all shrink-0 cursor-pointer border flex items-center gap-1.5 ${
-                      selectedAcademyFilter === acad.id
-                        ? 'text-white shadow-sm'
-                        : 'bg-white/[0.03] text-zinc-400 hover:text-white border-white/[0.05]'
+                      isAcadSelected
+                        ? 'text-white shadow-sm keep-white'
+                        : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border-zinc-200 dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.05]'
                     }`}
                     style={
-                      selectedAcademyFilter === acad.id
-                        ? { backgroundColor: `${acad.color}25`, borderColor: acad.color }
+                      isAcadSelected
+                        ? { backgroundColor: acad.color, borderColor: acad.color }
                         : undefined
                     }
                   >
                     <span>{acad.badge}</span>
-                    <span className="text-[10px] font-bold opacity-80">({count})</span>
+                    <span className="text-[10px] font-bold opacity-90">({count})</span>
                   </button>
                 );
               })}
@@ -630,8 +634,8 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
           {/* DRIVERS TABLE */}
           {subTab === 'drivers' && (
-            <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-              <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-400 uppercase select-none">
+            <div className="bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
+              <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
                 <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
                 <div className="col-span-5 sm:col-span-5">{t.standings.headers.driver}</div>
                 <div className="col-span-3 hidden sm:block">{t.standings.headers.team}</div>
@@ -639,7 +643,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 <div className="col-span-2 sm:col-span-1 text-right">{t.standings.headers.wins}</div>
               </div>
 
-              <div className="divide-y divide-white/[0.08]">
+              <div className="divide-y divide-zinc-200 dark:divide-white/[0.08]">
                 {filteredDrivers.length === 0 ? (
                   <div className="p-8 text-center text-zinc-400 font-mono text-xs">
                     {lang === 'es'
@@ -686,12 +690,12 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                                   points: d.totalPoints,
                                 });
                               }}
-                              className="font-mono text-xs sm:text-sm font-black text-white tracking-tight uppercase hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                              className="font-mono text-xs sm:text-sm font-black text-zinc-900 dark:text-white tracking-tight uppercase hover:text-amber-500 dark:hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
                               title={lang === 'es' ? 'Ver ficha técnica del piloto' : 'View driver profile'}
                             >
                               {d.code}
                             </button>
-                            <span className="text-xs text-zinc-400 font-medium truncate hidden sm:inline">
+                            <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium truncate hidden sm:inline">
                               {d.name}
                             </span>
 
@@ -713,7 +717,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                             {/* Junior Series: Super License Indicator */}
                             {series === 'f2' && d.virtualPos <= 3 && (
                               <span
-                                className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0"
+                                className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0"
                                 title={lang === 'es' ? 'Top 3 F2: Otorga 40 puntos de Superlicencia FIA (Acceso F1)' : 'Top 3 F2: Grants 40 FIA Super License pts (Direct F1 ticket)'}
                               >
                                 <ShieldCheck className="w-2.5 h-2.5" />
@@ -722,7 +726,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                             )}
                             {series === 'f3' && d.virtualPos === 1 && (
                               <span
-                                className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0"
+                                className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-mono font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0"
                                 title={lang === 'es' ? 'Campeón F3: Otorga 30 puntos de Superlicencia FIA' : 'F3 Champion: Grants 30 FIA Super License pts'}
                               >
                                 <ShieldCheck className="w-2.5 h-2.5" />
@@ -730,31 +734,31 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-zinc-400 font-mono sm:hidden block truncate">
+                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono sm:hidden block truncate">
                             {d.team}
                           </span>
                         </div>
                       </div>
 
                       {/* Team (Desktop) */}
-                      <div className="col-span-3 text-xs text-zinc-400 font-mono truncate hidden sm:block">
+                      <div className="col-span-3 text-xs text-zinc-600 dark:text-zinc-400 font-mono truncate hidden sm:block">
                         {d.team}
                       </div>
 
                       {/* Points */}
                       <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
-                        <span className="text-xs sm:text-sm font-bold text-[#FFD60A]">
+                        <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
                           {d.totalPoints}
                         </span>
                         {isVirtualActive && (
-                          <span className={`text-[10px] font-bold leading-tight ${d.provisionalPoints > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                          <span className={`text-[10px] font-bold leading-tight ${d.provisionalPoints > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500'}`}>
                             +{d.provisionalPoints} {d.liveTrackPos ? `(P${d.liveTrackPos})` : ''}
                           </span>
                         )}
                       </div>
 
                       {/* Wins */}
-                      <div className="col-span-2 sm:col-span-1 text-right font-mono text-xs text-zinc-400 tabular-nums">
+                      <div className="col-span-2 sm:col-span-1 text-right font-mono text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
                         {d.wins}
                       </div>
                     </div>
@@ -766,15 +770,15 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
           {/* CONSTRUCTORS TABLE */}
           {subTab === 'constructors' && (
-            <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-              <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#131722] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-400 uppercase select-none">
+            <div className="bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
+              <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
                 <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
                 <div className="col-span-6 sm:col-span-7">{t.standings.headers.team}</div>
                 <div className="col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
                 <div className="col-span-2 text-right">{t.standings.headers.wins}</div>
               </div>
 
-              <div className="divide-y divide-white/[0.08]">
+              <div className="divide-y divide-zinc-200 dark:divide-white/[0.08]">
                 {processedConstructors.map((c) => (
                   <div
                     key={c.name}
@@ -798,25 +802,25 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                         className="w-[3px] h-5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: c.teamColor || '#8E929B' }}
                       />
-                      <span className="font-bold text-xs sm:text-sm text-white tracking-tight uppercase">
+                      <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight uppercase">
                         {c.name}
                       </span>
                     </div>
 
                     {/* Points */}
                     <div className="col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
-                      <span className="text-xs sm:text-sm font-bold text-[#FFD60A]">
+                      <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
                         {c.totalPoints}
                       </span>
                       {isVirtualActive && (
-                        <span className={`text-[10px] font-bold leading-tight ${c.provisionalPoints > 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                        <span className={`text-[10px] font-bold leading-tight ${c.provisionalPoints > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500'}`}>
                           +{c.provisionalPoints}
                         </span>
                       )}
                     </div>
 
                     {/* Wins */}
-                    <div className="col-span-2 text-right font-mono text-xs text-zinc-400 tabular-nums">
+                    <div className="col-span-2 text-right font-mono text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
                       {c.wins}
                     </div>
                   </div>

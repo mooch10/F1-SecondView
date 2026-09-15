@@ -415,8 +415,8 @@ export const ScheduleView: React.FC = () => {
                           }
                           className={`px-3 py-1 rounded-md font-bold uppercase text-[11px] transition-colors cursor-pointer flex items-center gap-1.5 ${
                             currentTab === 'results'
-                              ? 'text-white shadow-xs'
-                              : 'text-zinc-400 hover:text-white bg-white/[0.04]'
+                              ? 'keep-white text-white shadow-xs'
+                              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-white/[0.04]'
                           }`}
                           style={currentTab === 'results' ? { backgroundColor: theme.primary } : undefined}
                         >
@@ -430,8 +430,8 @@ export const ScheduleView: React.FC = () => {
                           }
                           className={`px-3 py-1 rounded-md font-bold uppercase text-[11px] transition-colors cursor-pointer flex items-center gap-1.5 ${
                             currentTab === 'schedule'
-                              ? 'bg-white/15 text-white shadow-xs'
-                              : 'text-zinc-400 hover:text-white bg-white/[0.04]'
+                              ? 'bg-zinc-200 dark:bg-white/15 text-zinc-900 dark:text-white shadow-xs'
+                              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-white/[0.04]'
                           }`}
                         >
                           <Clock className="w-3 h-3" />
@@ -486,8 +486,8 @@ export const ScheduleView: React.FC = () => {
                                       onClick={() => setSubSessionTab((prev) => ({ ...prev, [r.round]: 'feature' }))}
                                       className={`px-2.5 py-1 rounded font-bold uppercase transition-colors cursor-pointer ${
                                         selectedSubSession === 'feature'
-                                          ? 'text-white shadow-xs'
-                                          : 'text-zinc-400 hover:text-zinc-200'
+                                          ? 'keep-white text-white shadow-xs'
+                                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                                       }`}
                                       style={selectedSubSession === 'feature' ? { backgroundColor: theme.primary } : undefined}
                                     >
@@ -500,8 +500,8 @@ export const ScheduleView: React.FC = () => {
                                       onClick={() => setSubSessionTab((prev) => ({ ...prev, [r.round]: 'sprint' }))}
                                       className={`px-2.5 py-1 rounded font-bold uppercase transition-colors cursor-pointer ${
                                         selectedSubSession === 'sprint'
-                                          ? 'text-white shadow-xs'
-                                          : 'text-zinc-400 hover:text-zinc-200'
+                                          ? 'keep-white text-white shadow-xs'
+                                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                                       }`}
                                       style={selectedSubSession === 'sprint' ? { backgroundColor: theme.primary } : undefined}
                                     >

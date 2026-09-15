@@ -52,23 +52,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Portada / Inicio DELTA"
             >
               <div
-                className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-all active:scale-95 shrink-0"
+                className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-white text-xs tracking-tighter italic shadow-sm transition-all active:scale-95 shrink-0 keep-white"
                 style={{ backgroundColor: theme.primary }}
               >
                 D
               </div>
-              <span className="font-extrabold tracking-tight text-zinc-100 group-hover:text-white text-base uppercase italic font-sans transition-colors">
+              <span className="font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white text-base uppercase italic font-sans transition-colors">
                 DELTA
               </span>
             </button>
 
             {/* Series Category Badge (Non-clickable, strictly outside the button) */}
-            <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-[#131722] text-zinc-400 uppercase border border-white/[0.08] hidden sm:inline-block pointer-events-none select-none">
+            <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-[#131722] text-zinc-600 dark:text-zinc-400 uppercase border border-zinc-200 dark:border-white/[0.08] hidden sm:inline-block pointer-events-none select-none">
               {theme.badge}
             </span>
 
             {/* Series Switcher Pill Group: [ F1 | F2 | F3 ] */}
-            <div className="flex items-center bg-[#131722] p-0.5 rounded-lg border border-white/[0.08] text-xs font-mono shrink-0">
+            <div className="flex items-center bg-zinc-100 dark:bg-[#131722] p-0.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] text-xs font-mono shrink-0">
               {(['f1', 'f2', 'f3'] as const).map((s) => {
                 const isSelected = series === s;
                 const sTheme = SERIES_THEMES[s];
@@ -84,8 +84,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className={`px-2 py-0.5 rounded-md text-[11px] font-bold uppercase transition-all cursor-pointer select-none ${
                       isSelected
-                        ? 'text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
+                        ? 'text-white shadow-sm font-black keep-white'
+                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                     }`}
                     style={isSelected ? { backgroundColor: sTheme.primary } : undefined}
                   >

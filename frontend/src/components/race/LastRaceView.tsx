@@ -166,7 +166,7 @@ export const LastRaceView: React.FC = () => {
             onClick={() => setSelectedSession('feature')}
             className={`flex-1 py-1.5 px-3 rounded-lg font-bold uppercase transition-all cursor-pointer text-center ${
               selectedSession === 'feature'
-                ? 'text-white shadow-sm'
+                ? 'keep-white text-white shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
             style={selectedSession === 'feature' ? { backgroundColor: theme.primary } : undefined}
@@ -180,7 +180,7 @@ export const LastRaceView: React.FC = () => {
             onClick={() => setSelectedSession('sprint')}
             className={`flex-1 py-1.5 px-3 rounded-lg font-bold uppercase transition-all cursor-pointer text-center ${
               selectedSession === 'sprint'
-                ? 'text-white shadow-sm'
+                ? 'keep-white text-white shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
             style={selectedSession === 'sprint' ? { backgroundColor: theme.primary } : undefined}
@@ -280,7 +280,7 @@ export const LastRaceView: React.FC = () => {
                 ? 'bg-[#FFD60A] text-black'
                 : p.pos === 2
                 ? 'bg-zinc-300 text-black'
-                : 'bg-amber-700 text-white';
+                : 'bg-amber-700 text-white keep-white';
 
             return (
               <div

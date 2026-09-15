@@ -182,7 +182,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
         <div
           className="relative px-5 pt-4 pb-6 overflow-hidden flex items-center justify-between"
           style={{
-            background: `linear-gradient(135deg, ${activeProfile.teamColor}25 0%, #0E121A 85%)`,
+            background: `linear-gradient(135deg, ${activeProfile.teamColor}25 0%, var(--driver-modal-header-end, #0E121A) 85%)`,
           }}
         >
           {/* Background Team Color Glow */}
@@ -194,7 +194,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
           {/* Team and Number Tag */}
           <div className="flex items-center gap-2.5 z-10">
             <span
-              className="text-xs font-mono font-black uppercase px-2.5 py-1 rounded-md text-white border shadow-sm"
+              className="keep-white text-xs font-mono font-black uppercase px-2.5 py-1 rounded-md text-white border shadow-sm"
               style={{
                 backgroundColor: activeProfile.teamColor,
                 borderColor: `${activeProfile.teamColor}80`,
@@ -202,7 +202,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             >
               {activeProfile.team}
             </span>
-            <span className="text-xs font-mono text-zinc-400 font-bold uppercase">
+            <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold uppercase">
               {activeProfile.series === 'f2'
                 ? 'FIA FÓRMULA 2'
                 : activeProfile.series === 'f3'
@@ -215,7 +215,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-zinc-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer z-10"
+            className="w-8 h-8 rounded-full bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer z-10"
             aria-label={t.driverProfile.closeAria}
           >
             <X className="w-4 h-4" />
@@ -355,49 +355,49 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center font-mono">
-              <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
+              <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-white block">
                   {activeProfile.careerStats.grandsPrix}
                 </span>
-                <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
+                <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                   {t.driverProfile.grandsPrix}
                 </span>
               </div>
 
-              <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
+              <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-[#FFD60A] block">
                   {activeProfile.careerStats.podiums}
                 </span>
-                <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
+                <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                   {t.driverProfile.podiums}
                 </span>
               </div>
 
-              <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
+              <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-emerald-400 block">
                   {activeProfile.careerStats.victories}
                 </span>
-                <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
+                <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                   {t.driverProfile.victories}
                 </span>
               </div>
 
-              <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04]">
+              <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
                 <span className="text-xs sm:text-sm font-black text-white block">
                   {activeProfile.careerStats.worldChampionships > 0
                     ? `${activeProfile.careerStats.worldChampionships} 🏆`
                     : '0'}
                 </span>
-                <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
+                <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                   {t.driverProfile.championships}
                 </span>
               </div>
 
-              <div className="bg-white/[0.03] rounded-lg p-2 border border-white/[0.04] col-span-2 flex flex-col justify-center">
+              <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04] col-span-2 flex flex-col justify-center">
                 <span className="text-xs font-bold text-zinc-200 block truncate">
                   {localizedFinish}
                 </span>
-                <span className="text-[9px] uppercase text-zinc-400 tracking-wider">
+                <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                   {t.driverProfile.bestFinish}
                 </span>
               </div>
@@ -424,7 +424,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                 className={`flex-1 py-2.5 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border transition-all cursor-pointer active:scale-98 ${
                   isPinned
                     ? 'bg-[#FFD60A] text-black border-[#FFD60A] shadow-[0_0_15px_rgba(255,214,10,0.3)]'
-                    : 'bg-white/[0.06] hover:bg-white/10 text-white border-white/15'
+                    : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/10 dark:text-white dark:border-white/15'
                 }`}
               >
                 <Star
@@ -440,7 +440,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
               <button
                 type="button"
                 onClick={() => onCompare(activeProfile.number)}
-                className="py-2.5 px-4 rounded-xl bg-white/[0.06] hover:bg-white/10 text-white border border-white/15 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer active:scale-98"
+                className="py-2.5 px-4 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/10 dark:text-white dark:border-white/15 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer active:scale-98"
               >
                 <Swords className="w-4 h-4 text-zinc-300" />
                 <span>{t.driverProfile.compareBtn}</span>

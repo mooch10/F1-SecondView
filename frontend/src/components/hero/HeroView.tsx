@@ -222,7 +222,7 @@ export const HeroView: React.FC<HeroViewProps> = ({ onEnter }) => {
         <button
           type="button"
           onClick={handleEnterClick}
-          className="group relative w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-zinc-900/90 via-zinc-800/80 to-zinc-900/90 hover:from-zinc-850 hover:to-zinc-800 border border-white/20 hover:border-white/40 text-white font-chakra font-bold text-sm sm:text-base uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.6),0_0_20px_rgba(255,255,255,0.04)] hover:shadow-[0_6px_30px_rgba(0,0,0,0.8),0_0_25px_rgba(0,156,222,0.2)] active:scale-[0.98] cursor-pointer"
+          className="group relative w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-zinc-900/90 via-zinc-800/80 to-zinc-900/90 hover:from-zinc-850 hover:to-zinc-800 border border-white/20 hover:border-white/40 text-white keep-white font-chakra font-bold text-sm sm:text-base uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.6),0_0_20px_rgba(255,255,255,0.04)] hover:shadow-[0_6px_30px_rgba(0,0,0,0.8),0_0_25px_rgba(0,156,222,0.2)] active:scale-[0.98] cursor-pointer"
         >
           {/* Subtle button accent line glow */}
           <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent group-hover:via-white/80 transition-opacity" />

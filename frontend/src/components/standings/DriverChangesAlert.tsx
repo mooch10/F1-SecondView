@@ -57,19 +57,19 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
       {/* Accordion Header */}
-      <div className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white/[0.02] border-b border-white/[0.04]">
+      <div className="w-full flex items-center justify-between px-3.5 py-2.5 bg-zinc-50 dark:bg-white/[0.02] border-b border-zinc-200 dark:border-white/[0.04]">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-1.5 sm:gap-2 hover:opacity-90 transition-opacity cursor-pointer select-none text-left min-w-0"
         >
           <div
-            className="w-5 h-5 rounded-md flex items-center justify-center text-white shrink-0"
+            className="w-5 h-5 rounded-md flex items-center justify-center text-white shrink-0 keep-white"
             style={{ backgroundColor: theme.primary }}
           >
             <UserCheck className="w-3.5 h-3.5" />
           </div>
-          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-200 whitespace-nowrap">
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
             <span className="sm:hidden">{lang === 'es' ? 'CAMBIOS PILOTOS' : 'DRIVER CHANGES'}</span>
             <span className="hidden sm:inline">{t.driverChanges.title}</span>
           </span>
@@ -90,14 +90,14 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
             <button
               type="button"
               onClick={() => setShowDetailedBreakdown(!showDetailedBreakdown)}
-              className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1 border border-white/[0.08]"
+              className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/[0.06] hover:bg-zinc-200 dark:hover:bg-white/[0.12] text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 border border-zinc-200 dark:border-white/[0.08]"
               title={
                 showDetailedBreakdown
                   ? t.driverChanges.hideBreakdown
                   : t.driverChanges.breakdown
               }
             >
-              <Layers className="w-3 h-3 text-zinc-400" />
+              <Layers className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
               <span className="hidden sm:inline">
                 {showDetailedBreakdown
                   ? t.driverChanges.hideBreakdown
@@ -109,7 +109,7 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-zinc-400 hover:text-white p-1 transition-colors cursor-pointer"
+            className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white p-1 transition-colors cursor-pointer"
             aria-label={isExpanded ? 'Colapsar avisos' : 'Expandir avisos'}
           >
             {isExpanded ? (
@@ -184,7 +184,7 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
             </div>
           ) : (
             /* Standard Clean Row View with FULL Parentheses Text (No Truncate) */
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-zinc-200 dark:divide-white/[0.06]">
               {changes.map((change) => {
                 const reason = getReason(change);
                 return (
@@ -205,21 +205,21 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
                       </span>
 
                       {/* Driver swap flow */}
-                      <div className="flex items-center gap-1.5 text-zinc-300 font-semibold shrink-0">
+                      <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 font-semibold shrink-0">
                         <span className="line-through text-zinc-500">{change.originalDriver}</span>
                         <ArrowRight className="w-3 h-3 text-zinc-400" />
                         {onSelectDriver ? (
                           <button
                             type="button"
                             onClick={() => onSelectDriver(change.newDriver)}
-                            className="font-bold hover:text-[#FFD60A] hover:underline cursor-pointer text-left"
+                            className="font-bold hover:text-amber-500 dark:hover:text-[#FFD60A] hover:underline cursor-pointer text-left"
                             style={{ color: theme.primary }}
                             title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
                           >
                             {change.newDriver}
                           </button>
                         ) : (
-                          <span className="text-white font-bold" style={{ color: theme.primary }}>
+                          <span className="font-bold" style={{ color: theme.primary }}>
                             {change.newDriver}
                           </span>
                         )}
@@ -227,15 +227,15 @@ export const DriverChangesAlert: React.FC<DriverChangesAlertProps> = ({
 
                       {/* Explanation Reason - Fully visible, wraps cleanly without truncation */}
                       {reason && (
-                        <span className="text-zinc-400 text-[11px] leading-snug break-words">
+                        <span className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-snug break-words">
                           ({reason})
                         </span>
                       )}
                     </div>
 
                     {/* Round Badge */}
-                    <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-400 self-start md:self-auto">
-                      <span className="text-zinc-300 font-medium px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.06] whitespace-nowrap">
+                    <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 self-start md:self-auto">
+                      <span className="text-zinc-700 dark:text-zinc-300 font-medium px-2 py-0.5 rounded bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] whitespace-nowrap">
                         {t.driverChanges.fromRound} {change.roundName}
                       </span>
                     </div>
