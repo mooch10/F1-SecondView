@@ -222,7 +222,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
         </div>
 
         {/* Lap / Phase Instrument Box */}
-        {session.sessionType === 'Qualifying' ? (
+        {session.sessionType === 'Qualifying' && !isNotStarted ? (
           <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-cyan-500/30 px-3 py-1.5 rounded-lg shadow-xs">
             <span className="text-[9px] font-mono font-bold tracking-widest text-[#27F4D2] uppercase">
               {t.live.qualyPhase}
@@ -264,19 +264,19 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-3 py-2 flex flex-col gap-1.5 shadow-sm">
         <div className="flex items-center justify-between text-[10px] font-mono">
           <span className="text-zinc-400 uppercase tracking-wider font-semibold">
-            {session.sessionType === 'Qualifying'
-              ? `${t.live.qualyProgress} ${session.qualifyingPhase || 'Q1'}`
-              : isNotStarted
+            {isNotStarted
               ? (lang === 'es' ? 'INICIO PROGRAMADO: 10:00 HS' : 'SCHEDULED START: 10:00 HS')
+              : session.sessionType === 'Qualifying'
+              ? `${t.live.qualyProgress} ${session.qualifyingPhase || 'Q1'}`
               : t.live.gpProgress}
           </span>
           <span className="font-bold text-white tabular-nums">
-            {session.sessionType === 'Qualifying' ? (
-              session.poleDriver ? (
+            {session.sessionType === 'Qualifying' && !isNotStarted ? (
+              session.poleDriver && session.poleLapTime && session.poleLapTime !== '--:--.---' ? (
                 <>
                   {t.live.provisionalPole}{' '}
                   <span className="text-[#FFD60A] font-bold font-mono">
-                    {session.poleDriver} ({session.poleLapTime || '--:--.---'})
+                    {session.poleDriver} ({session.poleLapTime})
                   </span>
                 </>
               ) : (

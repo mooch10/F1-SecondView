@@ -324,7 +324,7 @@ export function generateUniversalLiveSnapshot(
     const { driverLapDuration, s1, s2, s3 } = precomputedSectors[idx];
     const diffSec = d.performanceBias;
     const gap = isNotStarted
-      ? (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `P${d.order}`)
+      ? `P${d.order}`
       : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${diffSec.toFixed(3)}`);
 
     const prevDuration = idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
@@ -401,12 +401,12 @@ export function generateUniversalLiveSnapshot(
       interval,
       isDrsZone: !isNotStarted && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
       isOvertakeZone: !isNotStarted && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      lastLapTime: isNotStarted ? (isPole ? effectiveBestStr : '--:--.---') : effectiveBestStr,
-      bestLapTime: effectiveBestStr,
-      bestLapDuration: effectiveBestDur,
-      isPole: isPole,
-      isFastestLap: !isNotStarted && isPole,
-      eliminatedPhase,
+      lastLapTime: isNotStarted ? '--:--.---' : effectiveBestStr,
+      bestLapTime: isNotStarted ? undefined : effectiveBestStr,
+      bestLapDuration: isNotStarted ? null : effectiveBestDur,
+      isPole: !isNotStarted && isQualy && isPole,
+      isFastestLap: !isNotStarted && !isQualy && isPole,
+      eliminatedPhase: isNotStarted ? null : eliminatedPhase,
       tyre: {
         compound: tyreCompound,
         laps: tyreLaps,
@@ -414,32 +414,46 @@ export function generateUniversalLiveSnapshot(
       pitStops,
       inPit: isNotStarted ? false : (d.status === 'PIT' || d.status === 'GARAGE'),
       status: 'ACTIVE',
-      sectors: {
-        s1,
-        s2,
-        s3,
-        s1Status,
-        s2Status,
-        s3Status,
-        segments: {
-          s1: generateMiniSegments(s1Status),
-          s2: generateMiniSegments(s2Status),
-          s3: generateMiniSegments(s3Status),
-        },
-      },
-      speedTrap: isNotStarted ? 0 : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
-      i1Speed: isNotStarted ? 0 : Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
-      i2Speed: isNotStarted ? 0 : Number((294.0 - d.performanceBias * 1.9).toFixed(1)),
+      sectors: isNotStarted
+        ? {
+            s1: null,
+            s2: null,
+            s3: null,
+            s1Status: 'none' as const,
+            s2Status: 'none' as const,
+            s3Status: 'none' as const,
+            segments: {
+              s1: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+              s2: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+              s3: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+            },
+          }
+        : {
+            s1,
+            s2,
+            s3,
+            s1Status,
+            s2Status,
+            s3Status,
+            segments: {
+              s1: generateMiniSegments(s1Status),
+              s2: generateMiniSegments(s2Status),
+              s3: generateMiniSegments(s3Status),
+            },
+          },
+      speedTrap: isNotStarted ? null : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
+      i1Speed: isNotStarted ? null : Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
+      i2Speed: isNotStarted ? null : Number((294.0 - d.performanceBias * 1.9).toFixed(1)),
       location: {
         x: coord[0],
         y: coord[1],
       },
-      q1Time: formatLapSeconds(q1Dur),
-      q2Time: q2Dur ? formatLapSeconds(q2Dur) : null,
-      q3Time: q3Dur ? formatLapSeconds(q3Dur) : null,
-      q1Duration: q1Dur,
-      q2Duration: q2Dur,
-      q3Duration: q3Dur,
+      q1Time: !isNotStarted && isQualy ? formatLapSeconds(q1Dur) : null,
+      q2Time: !isNotStarted && isQualy && q2Dur ? formatLapSeconds(q2Dur) : null,
+      q3Time: !isNotStarted && isQualy && q3Dur ? formatLapSeconds(q3Dur) : null,
+      q1Duration: !isNotStarted && isQualy ? q1Dur : null,
+      q2Duration: !isNotStarted && isQualy ? q2Dur : null,
+      q3Duration: !isNotStarted && isQualy ? q3Dur : null,
     };
   });
 
@@ -513,9 +527,9 @@ export function generateUniversalLiveSnapshot(
     sessionKey: 9600 + race.round,
     sessionName: activeSession.sessionName,
     sessionType: activeSession.sessionType,
-    qualifyingPhase: activeSession.qualifyingPhase,
-    poleDriver: drivers[0]?.code || 'DRV',
-    poleLapTime: drivers[0]?.bestLapTime || '--:--.---',
+    qualifyingPhase: isNotStarted || !isQualy ? null : activeSession.qualifyingPhase,
+    poleDriver: isNotStarted || !isQualy ? null : (drivers[0]?.code || 'DRV'),
+    poleLapTime: isNotStarted || !isQualy ? null : (drivers[0]?.bestLapTime || '--:--.---'),
     location: race.locality,
     country: race.country,
     circuit: race.circuitName,

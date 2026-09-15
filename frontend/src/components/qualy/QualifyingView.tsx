@@ -90,12 +90,15 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
     }
   };
 
-  const hasLiveSession =
-    Boolean(liveSnapshot?.session.sessionType === 'Qualifying') ||
-    (liveDrivers.length > 0 && liveSnapshot?.session.status === 'IN_PROGRESS');
+  const isQualifyingLive = Boolean(
+    liveSnapshot?.session?.sessionType === 'Qualifying' &&
+    liveSnapshot?.session?.status === 'IN_PROGRESS' &&
+    liveDrivers &&
+    liveDrivers.length > 0
+  );
 
   const [userViewMode, setUserViewMode] = useState<'LIVE' | 'RESULTS' | null>(null);
-  const viewMode = userViewMode ?? (hasLiveSession ? 'LIVE' : 'RESULTS');
+  const viewMode = userViewMode ?? (isQualifyingLive ? 'LIVE' : 'RESULTS');
 
   // Official F1 Qualifying Classification for Live Telemetry
   const displayedLiveDrivers = useMemo(() => {
@@ -372,7 +375,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
             </div>
 
             {/* Pole Position Winner Pill Card */}
-            {poleDriver && (
+            {poleDriver && poleDriver.bestLapTime && poleDriver.bestLapTime !== '--:--.---' && (
               <div className="bg-[#0B0E14] border border-amber-500/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg text-black font-mono shadow-sm shrink-0"
@@ -1099,8 +1102,8 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Sub-navigation Switcher: LIVE vs RESULTS (available when live data exists) */}
-      {liveDrivers.length > 0 && (
+      {/* Sub-navigation Switcher: LIVE vs RESULTS (available only when live qualifying is in progress) */}
+      {isQualifyingLive && (
         <div className="flex items-center justify-between bg-[#131722] border border-white/[0.08] rounded-xl p-1 select-none text-xs font-mono gap-1">
           <button
             type="button"
@@ -1131,7 +1134,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         </div>
       )}
 
-      {viewMode === 'LIVE' && liveDrivers.length > 0
+      {viewMode === 'LIVE' && isQualifyingLive
         ? renderLiveQualifying()
         : renderHistoricalQualifying()}
 
