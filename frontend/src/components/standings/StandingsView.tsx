@@ -17,10 +17,17 @@ interface StandingsViewProps {
 }
 
 const F1_POINTS_SYSTEM = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
-const AVAILABLE_SEASONS: Record<string, number[]> = {
-  f1: [2026, 2025, 2024, 2023, 2022, 2021],
-  f2: [2026, 2025, 2024],
-  f3: [2026, 2025, 2024],
+
+const MIN_SEASON_YEAR: Record<string, number> = {
+  f1: 1950,
+  f2: 2017,
+  f3: 2019,
+};
+
+const QUICK_PILL_SEASONS: Record<string, number[]> = {
+  f1: [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014],
+  f2: [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017],
+  f3: [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019],
 };
 
 const matchConstructorTeam = (liveTeam: string, constrName: string): boolean => {
@@ -59,8 +66,28 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const [isTechSpecsOpen, setIsTechSpecsOpen] = useState<boolean>(false);
   const [isLiveVirtual, setIsLiveVirtual] = useState<boolean>(false);
 
-  const validSeasons = AVAILABLE_SEASONS[series] || [2026];
-  const activeYear = validSeasons.includes(selectedSeasonYear) ? selectedSeasonYear : 2026;
+  const minYear = MIN_SEASON_YEAR[series] || 2026;
+  const activeYear =
+    selectedSeasonYear >= minYear && selectedSeasonYear <= 2026 ? selectedSeasonYear : 2026;
+
+  // Generate list of all supported years for current series (descending)
+  const allSeriesYears = useMemo(() => {
+    const list: number[] = [];
+    for (let y = 2026; y >= minYear; y--) {
+      list.push(y);
+    }
+    return list;
+  }, [minYear]);
+
+  // Quick pills to display: base pills plus the activeYear if user picked an older year from the dropdown
+  const pillsToRender = useMemo(() => {
+    const base = QUICK_PILL_SEASONS[series] || [2026];
+    if (!base.includes(activeYear)) {
+      return [activeYear, ...base];
+    }
+    return base;
+  }, [series, activeYear]);
+
   const isVirtualActive = series === 'f1' && activeYear === 2026 && isLiveActive && isLiveVirtual;
 
   // 👤 Driver Profile Modal
@@ -330,13 +357,13 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   return (
     <div className="flex flex-col gap-3">
       {/* Historical Seasons Selector (F1, F2 & F3) */}
-      <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-white/[0.06]">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-white/[0.06]">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1">
           <span className="text-[11px] font-mono text-zinc-400 font-bold uppercase flex items-center gap-1.5 shrink-0 mr-1">
             <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             {t.standings.historicalSeason}:
           </span>
-          {(AVAILABLE_SEASONS[series] || [2026]).map((year) => {
+          {pillsToRender.map((year) => {
             const isSelected = activeYear === year;
             return (
               <button
@@ -358,6 +385,28 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               </button>
             );
           })}
+        </div>
+
+        {/* Dropdown selector for all historical seasons */}
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto sm:pl-2 sm:border-l sm:border-white/[0.08]">
+          <label htmlFor="season-year-select" className="text-[11px] font-mono text-zinc-400 hidden xl:inline shrink-0">
+            {t.standings.allEras}:
+          </label>
+          <select
+            id="season-year-select"
+            aria-label={t.standings.historicalSeason}
+            value={activeYear}
+            onChange={(e) => setSelectedSeasonYear(Number(e.target.value))}
+            className="bg-[#181C28] text-zinc-200 hover:text-white text-xs font-mono font-bold px-2.5 py-1 rounded-lg border border-white/[0.14] hover:border-white/30 transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-400"
+          >
+            {allSeriesYears.map((year) => (
+              <option key={year} value={year} className="bg-[#131722] text-zinc-200">
+                {year === 2026
+                  ? `2026 (${lang === 'es' ? 'Actual' : 'Live'})`
+                  : `${year} ${series.toUpperCase()}`}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -523,7 +572,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           )}
 
           {/* Driver Lineup Changes Notification for F2 / F3 */}
-          {driverChanges.length > 0 && (
+          {activeYear === 2026 && driverChanges.length > 0 && (
             <DriverChangesAlert
               changes={driverChanges}
               series={series}

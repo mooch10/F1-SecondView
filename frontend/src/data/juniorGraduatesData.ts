@@ -134,7 +134,7 @@ export const DRIVER_ACADEMY_MAP: Record<string, string> = {
   STR: 'independent',  // Noah Strømsted
   PIN: 'independent',  // Bruno del Pino
   GLA: 'sauber',       // Maciej Gładysz (Sauber Academy)
-  COL: 'redbull',      // Mattia Colnaghi (Red Bull Junior Team)
+  CNG: 'redbull',      // Mattia Colnaghi (Red Bull Junior Team)
   WHA: 'ferrari',      // James Wharton (Ex-Ferrari Driver Academy)
   NAK: 'independent',  // Jin Nakamura (TGR)
   DAV: 'independent',  // Yevan David
@@ -143,9 +143,55 @@ export const DRIVER_ACADEMY_MAP: Record<string, string> = {
   POW: 'mercedes',     // Alex Powell (Mercedes Junior Team)
   LE: 'independent',   // Kanato Le
   XIE: 'independent',  // Gerrard Xie
-  DEP: 'independent',  // Matteo De Palo
-  BED: 'ferrari',      // James Wharton fallback
-  CRA: 'astonmartin',  // Jak Crawford
+  // Historical F2 & F3 Driver Codes
+  POU: 'sauber',       // Théo Pourchaire (Sauber Academy)
+  VES: 'mercedes',     // Frederik Vesti (Mercedes Junior Team)
+  DOO: 'alpine',       // Jack Doohan (Alpine Academy)
+  IWA: 'redbull',      // Ayumu Iwasa (Red Bull Junior Team)
+  MAR: 'alpine',       // Victor Martins / Artem Markelov (Alpine Academy)
+  BEA: 'ferrari',      // Oliver Bearman (Ferrari Driver Academy)
+  MAL: 'independent',  // Zane Maloney (Independiente)
+  DAR: 'redbull',      // Jehan Daruvala (Red Bull Junior Team)
+  HAD: 'redbull',      // Isack Hadjar (Red Bull Junior Team)
+  LEC: 'ferrari',      // Charles Leclerc / Arthur Leclerc (Ferrari Driver Academy)
+  DRU: 'astonmartin',  // Felipe Drugovich (Aston Martin Driver Development)
+  LAW: 'redbull',      // Liam Lawson (Red Bull Junior Team)
+  SAR: 'williams',     // Logan Sargeant (Williams Racing Driver Academy)
+  VIP: 'redbull',      // Jüri Vips (Red Bull Junior Team)
+  ARM: 'ferrari',      // Marcus Armstrong (Ferrari Driver Academy)
+  PIA: 'alpine',       // Oscar Piastri (Alpine Academy)
+  SHW: 'ferrari',      // Robert Shwartzman (Ferrari Driver Academy)
+  ZHO: 'alpine',       // Guanyu Zhou (Alpine Academy)
+  TIC: 'williams',     // Dan Ticktum (Williams Driver Academy)
+  MSC: 'ferrari',      // Mick Schumacher (Ferrari Driver Academy)
+  ILO: 'ferrari',      // Callum Ilott (Ferrari Driver Academy)
+  TSU: 'redbull',      // Yuki Tsunoda (Red Bull Junior Team)
+  MAZ: 'independent',  // Nikita Mazepin
+  LUN: 'alpine',       // Christian Lundgaard (Alpine Academy)
+  GHI: 'independent',  // Luca Ghiotto
+  DEV: 'mercedes',     // Nyck de Vries (Mercedes Junior / Reserve)
+  LAT: 'williams',     // Nicholas Latifi
+  AIT: 'williams',     // Jack Aitken (Williams Reserve)
+  HUB: 'alpine',       // Anthoine Hubert (Renault Sport Academy)
+  RUS: 'mercedes',     // George Russell (Mercedes Junior Team)
+  NOR: 'mclaren',      // Lando Norris (McLaren Driver Development)
+  ALB: 'redbull',      // Alexander Albon (Red Bull Junior Team)
+  ROW: 'williams',     // Oliver Rowland
+  FUO: 'ferrari',      // Antonio Fuoco (Ferrari Driver Academy)
+  BOR: 'mclaren',      // Gabriel Bortoleto (McLaren Driver Development)
+  OSU: 'williams',     // Zak O'Sullivan (Williams Driver Academy)
+  ARO: 'mercedes',     // Paul Aron (Mercedes Junior Team)
+  HAU: 'redbull',      // Dennis Hauger (Red Bull Junior Team)
+  CLT: 'alpine',       // Caio Collet (Alpine Academy)
+  VER: 'independent',  // Richard Verschoor
+  BOS: 'independent',  // Ralph Boschung
+  NOV: 'independent',  // Clément Novalak
+  STA: 'independent',  // Roman Staněk
+  COR: 'independent',  // Juan Manuel Correa
+  CRD: 'independent',  // Amaury Cordeel
+  NIS: 'independent',  // Roy Nissany
+  COL: 'williams',     // Franco Colapinto (Williams Racing Driver Academy)
+  CRA: 'astonmartin',  // Jak Crawford (Aston Martin Driver Development)
 };
 
 export interface F1Graduate {
@@ -635,6 +681,59 @@ export const F2_HISTORICAL_SEASONS: SeasonHistory[] = [
     ],
   },
   {
+    year: 2019,
+    series: 'f2',
+    champion: {
+      name: 'Nyck de Vries',
+      code: 'DEV',
+      team: 'ART Grand Prix',
+      points: 266,
+      wins: 4,
+      flag: '🇳🇱',
+      f1Destination: 'Williams / AlphaTauri',
+    },
+    runnerUp: {
+      name: 'Nicholas Latifi',
+      team: 'DAMS',
+      points: 214,
+      flag: '🇨🇦',
+    },
+    thirdPlace: {
+      name: 'Luca Ghiotto',
+      team: 'UNI-Virtuosi',
+      points: 207,
+      flag: '🇮🇹',
+    },
+    keyFact: 'Nyck de Vries se coronó campeón en Sochi de forma contundente con ART Grand Prix tras una campaña de 4 victorias y regularidad impecable.',
+    keyFactEn: 'Nyck de Vries clinched the championship in commanding style at Sochi for ART Grand Prix after a four-win, supremely consistent campaign.',
+    graduatesToF1: [
+      {
+        name: 'Nicholas Latifi',
+        code: 'LAT',
+        f2Team: 'DAMS',
+        f1Team: 'Williams Racing',
+        yearGraduated: 2020,
+        f2Result: 'Subcampeón F2 (4 victorias)',
+        notes: 'Graduado a Williams Racing, donde compitió durante tres temporadas de F1.',
+        notesEn: 'Graduated to Williams Racing, competing across three full F1 seasons.',
+        currentRole: 'Ex-Piloto F1',
+        flag: '🇨🇦',
+      },
+      {
+        name: 'Nyck de Vries',
+        code: 'DEV',
+        f2Team: 'ART Grand Prix',
+        f1Team: 'Williams / AlphaTauri',
+        yearGraduated: 2022,
+        f2Result: 'Campeón F2',
+        notes: 'Debut heroico en Monza sumando puntos antes de fichar por AlphaTauri.',
+        notesEn: 'Heroic points finish on Monza debut before signing with AlphaTauri.',
+        currentRole: 'Ex-Piloto F1',
+        flag: '🇳🇱',
+      },
+    ],
+  },
+  {
     year: 2018,
     series: 'f2',
     champion: {
@@ -1043,6 +1142,59 @@ export const F3_HISTORICAL_SEASONS: SeasonHistory[] = [
     },
     keyFact: 'Definición dramática en Mugello: apenas 4 puntos separaron a los tres primeros del campeonato (Piastri, Pourchaire y Sargeant).',
     keyFactEn: 'Dramatic Mugello finale: just 4 points separated the top 3 drivers in the championship.',
+  },
+  {
+    year: 2019,
+    series: 'f3',
+    champion: {
+      name: 'Robert Shwartzman',
+      code: 'SHW',
+      team: 'PREMA Racing',
+      points: 212,
+      wins: 3,
+      flag: '🇷🇺',
+      f1Destination: 'Ferrari F1 Reserve & IndyCar',
+    },
+    runnerUp: {
+      name: 'Marcus Armstrong',
+      team: 'PREMA Racing',
+      points: 158,
+      flag: '🇳🇿',
+    },
+    thirdPlace: {
+      name: 'Jehan Daruvala',
+      team: 'PREMA Racing',
+      points: 157,
+      flag: '🇮🇳',
+    },
+    keyFact: 'Temporada inaugural de la FIA Fórmula 3 moderna: PREMA Racing copó el podio completo del certamen con Shwartzman, Armstrong y Daruvala.',
+    keyFactEn: 'Inaugural season of modern FIA Formula 3: PREMA Racing locked out the entire championship podium with Shwartzman, Armstrong, and Daruvala.',
+    graduatesToF1: [
+      {
+        name: 'Yuki Tsunoda',
+        code: 'TSU',
+        f2Team: 'Jenzer Motorsport',
+        f1Team: 'AlphaTauri / Racing Bulls',
+        yearGraduated: 2021,
+        f2Result: '9º en F3 (1 victoria en Monza)',
+        notes: 'Victoria estelar con Jenzer en Monza que catapultó su carrera hacia la F1.',
+        notesEn: 'Stellar win with Jenzer at Monza launching his trajectory toward F1.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇯🇵',
+      },
+      {
+        name: 'Liam Lawson',
+        code: 'LAW',
+        f2Team: 'MP Motorsport',
+        f1Team: 'Racing Bulls / Red Bull',
+        yearGraduated: 2023,
+        f2Result: '11º en F3 (2 podios)',
+        notes: 'Destacada actuación en su primer año europeo con MP Motorsport.',
+        notesEn: 'Impressive rookie European campaign with MP Motorsport.',
+        currentRole: 'Piloto Titular F1',
+        flag: '🇳🇿',
+      },
+    ],
   },
 ];
 

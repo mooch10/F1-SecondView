@@ -152,6 +152,10 @@ export class JolpicaClient {
     timestamp: number;
     data: { drivers: JolpicaDriverStanding[]; constructors: JolpicaConstructorStanding[] };
   } | null = null;
+  private historicalStandingsCache = new Map<
+    number,
+    { drivers: JolpicaDriverStanding[]; constructors: JolpicaConstructorStanding[] }
+  >();
   private lastRaceCache: { timestamp: number; data: LastRacePodium | null } | null = null;
   private qualifyingCache: { timestamp: number; data: JolpicaQualifyingSession | null } | null =
     null;
@@ -298,7 +302,10 @@ export class JolpicaClient {
     drivers: JolpicaDriverStanding[];
     constructors: JolpicaConstructorStanding[];
   }> {
-    const isHistorical = typeof year === 'number' && year > 1950 && year < 2026;
+    const isHistorical = typeof year === 'number' && year >= 1950 && year < 2026;
+    if (isHistorical && this.historicalStandingsCache.has(year)) {
+      return this.historicalStandingsCache.get(year)!;
+    }
     if (!isHistorical && this.standingsCache && Date.now() - this.standingsCache.timestamp < this.cacheTtlMs) {
       return this.standingsCache.data;
     }
@@ -382,7 +389,9 @@ export class JolpicaClient {
     }));
 
     const result = { drivers, constructors };
-    if (!isHistorical) {
+    if (isHistorical && drivers.length > 0) {
+      this.historicalStandingsCache.set(year, result);
+    } else if (!isHistorical) {
       this.standingsCache = { timestamp: Date.now(), data: result };
     }
     return result;
