@@ -303,7 +303,8 @@ export const LastRaceView: React.FC = () => {
                 <span className="hidden sm:inline">{t.lastRace.fastestLapTitle}</span>
               </span>
               <strong className="text-white font-sans text-xs truncate">
-                {activeFastestLap.driverName} ({activeFastestLap.code})
+                <span className="hidden sm:inline">{activeFastestLap.driverName} ({activeFastestLap.code})</span>
+                <span className="sm:hidden">{activeFastestLap.code} • {activeFastestLap.driverName.split(' ').slice(-1)[0]}</span>
               </strong>
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-2">
@@ -405,8 +406,9 @@ export const LastRaceView: React.FC = () => {
                           #{d.driverNumber}
                         </span>
                         {d.isFastestLap && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight whitespace-nowrap">
-                            {t.live.table.fastestLap}
+                          <span className="px-1 sm:px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight whitespace-nowrap shrink-0">
+                            <span className="sm:hidden">🟣 VR</span>
+                            <span className="hidden sm:inline">{t.live.table.fastestLap}</span>
                           </span>
                         )}
                       </div>

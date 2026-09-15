@@ -26,6 +26,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { lang, toggleLang, t } = useLanguage();
   const { series, setSeries, theme } = useSeries();
+  const navRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    if (navRef.current) {
+      const activeEl = navRef.current.querySelector<HTMLElement>('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [activeTab]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
@@ -134,85 +144,99 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <nav className="flex items-center gap-1 sm:gap-6 md:gap-8 border-t border-white/[0.08] -mx-3 px-3 sm:mx-0 sm:px-1 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x">
-          {/* Live telemetry only for F1 */}
-          {series === 'f1' && (
-            <button
-              type="button"
-              onClick={() => setActiveTab('live')}
-              className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 flex items-center gap-1.5 shrink-0 ${
-                activeTab === 'live'
-                  ? 'text-zinc-100'
-                  : 'text-zinc-400 hover:text-zinc-100 border-transparent'
-              }`}
-              style={activeTab === 'live' ? { borderColor: theme.primary } : undefined}
-            >
-              <span>{t.nav.live}</span>
-              {isLiveActive && isLiveConnected && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#39B54A] animate-pulse" />
-                  <span>LIVE</span>
-                </span>
-              )}
-            </button>
-          )}
+        <div className="relative">
+          {/* Subtle gradient indicators for mobile horizontal scroll */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-[#0B0E14] to-transparent z-10 sm:hidden" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#0B0E14] to-transparent z-10 sm:hidden" />
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('last-race')}
-            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
-              activeTab === 'last-race'
-                ? 'text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-100 border-transparent'
-            }`}
-            style={activeTab === 'last-race' ? { borderColor: theme.primary } : undefined}
+          <nav
+            ref={navRef}
+            className="flex items-center gap-1 sm:gap-6 md:gap-8 border-t border-white/[0.08] -mx-3 px-3 sm:mx-0 sm:px-1 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x"
           >
-            <span>{t.nav.lastRace}</span>
-          </button>
+            {/* Live telemetry only for F1 */}
+            {series === 'f1' && (
+              <button
+                type="button"
+                data-active={activeTab === 'live'}
+                onClick={() => setActiveTab('live')}
+                className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'live'
+                    ? 'text-zinc-100'
+                    : 'text-zinc-400 hover:text-zinc-100 border-transparent'
+                }`}
+                style={activeTab === 'live' ? { borderColor: theme.primary } : undefined}
+              >
+                <span>{t.nav.live}</span>
+                {isLiveActive && isLiveConnected && (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#39B54A] animate-pulse" />
+                    <span>LIVE</span>
+                  </span>
+                )}
+              </button>
+            )}
 
-          {/* Qualy tab (F1 only) */}
-          {series === 'f1' && (
             <button
               type="button"
-              onClick={() => setActiveTab('qualy')}
+              data-active={activeTab === 'last-race'}
+              onClick={() => setActiveTab('last-race')}
               className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
-                activeTab === 'qualy'
+                activeTab === 'last-race'
                   ? 'text-zinc-100'
                   : 'text-zinc-400 hover:text-zinc-100 border-transparent'
               }`}
-              style={activeTab === 'qualy' ? { borderColor: theme.primary } : undefined}
+              style={activeTab === 'last-race' ? { borderColor: theme.primary } : undefined}
             >
-              <span className="sm:hidden">{t.nav.qualyShort}</span>
-              <span className="hidden sm:inline">{t.nav.qualy}</span>
+              <span>{t.nav.lastRace}</span>
             </button>
-          )}
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('schedule')}
-            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
-              activeTab === 'schedule'
-                ? 'text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-100 border-transparent'
-            }`}
-            style={activeTab === 'schedule' ? { borderColor: theme.primary } : undefined}
-          >
-            <span>{t.nav.schedule}</span>
-          </button>
+            {/* Qualy tab (F1 only) */}
+            {series === 'f1' && (
+              <button
+                type="button"
+                data-active={activeTab === 'qualy'}
+                onClick={() => setActiveTab('qualy')}
+                className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+                  activeTab === 'qualy'
+                    ? 'text-zinc-100'
+                    : 'text-zinc-400 hover:text-zinc-100 border-transparent'
+                }`}
+                style={activeTab === 'qualy' ? { borderColor: theme.primary } : undefined}
+              >
+                <span className="sm:hidden">{t.nav.qualyShort}</span>
+                <span className="hidden sm:inline">{t.nav.qualy}</span>
+              </button>
+            )}
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('standings')}
-            className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
-              activeTab === 'standings'
-                ? 'text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-100 border-transparent'
-            }`}
-            style={activeTab === 'standings' ? { borderColor: theme.primary } : undefined}
-          >
-            <span>{t.nav.standings}</span>
-          </button>
-        </nav>
+            <button
+              type="button"
+              data-active={activeTab === 'schedule'}
+              onClick={() => setActiveTab('schedule')}
+              className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+                activeTab === 'schedule'
+                  ? 'text-zinc-100'
+                  : 'text-zinc-400 hover:text-zinc-100 border-transparent'
+              }`}
+              style={activeTab === 'schedule' ? { borderColor: theme.primary } : undefined}
+            >
+              <span>{t.nav.schedule}</span>
+            </button>
+
+            <button
+              type="button"
+              data-active={activeTab === 'standings'}
+              onClick={() => setActiveTab('standings')}
+              className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+                activeTab === 'standings'
+                  ? 'text-zinc-100'
+                  : 'text-zinc-400 hover:text-zinc-100 border-transparent'
+              }`}
+              style={activeTab === 'standings' ? { borderColor: theme.primary } : undefined}
+            >
+              <span>{t.nav.standings}</span>
+            </button>
+          </nav>
+        </div>
       </div>
     </header>
   );

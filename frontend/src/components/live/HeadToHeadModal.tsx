@@ -229,7 +229,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
         )}
 
         {/* Main Content Area (Scrollable) */}
-        <div className="p-4 space-y-3.5 overflow-y-auto">
+        <div className="p-4 pb-12 space-y-3.5 overflow-y-auto overscroll-contain">
           {/* Driver Selector Row with Swap */}
           <div className="grid grid-cols-11 gap-1.5 items-center">
             {/* Driver A Card */}

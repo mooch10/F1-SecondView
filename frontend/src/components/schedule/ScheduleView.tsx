@@ -130,6 +130,20 @@ export const ScheduleView: React.FC = () => {
     }
   };
 
+  const formatLocalDateShort = (dateStr: string, roundTz?: string) => {
+    if (!dateStr) return '';
+    try {
+      const full = formatSessionDate(dateStr, lang, roundTz);
+      const parts = full.replace(',', '').split(' ').filter(Boolean);
+      if (parts.length >= 3) {
+        return `${parts[1]} ${parts[2]}`.toUpperCase();
+      }
+      return full.toUpperCase();
+    } catch {
+      return dateStr.split('T')[0] || '';
+    }
+  };
+
   const formatLocalTime = (dateStr: string, roundTz?: string): string | null => {
     return formatSessionTime(dateStr, roundTz);
   };
@@ -147,16 +161,16 @@ export const ScheduleView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Next GP Hero Countdown Card */}
+      {/* Next GP Countdown Header */}
       {nextRace && (
         <div
-          className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative shadow-sm"
+          className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative overflow-hidden shadow-sm"
           style={{ borderTop: `3px solid ${theme.primary}` }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
-            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest w-fit border whitespace-nowrap shrink-0"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest border"
                 style={{
                   backgroundColor: `${theme.primary}20`,
                   color: theme.primary,
@@ -165,16 +179,17 @@ export const ScheduleView: React.FC = () => {
               >
                 {series.toUpperCase()} • {t.schedule.nextGp} • {t.betweenRaces.round} {nextRace.round}
               </span>
+
               {(series !== 'f1' || nextRace.sessions?.some((s) => s.name.toLowerCase().includes('sprint'))) && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30">
                   <Zap className="w-2.5 h-2.5" />
                   <span>{t.schedule.doubleRaceFormat}</span>
                 </span>
               )}
             </div>
 
-            {/* Dual Clock Track Time Switcher in Next GP Hero Card */}
-            <div className="flex items-center self-end sm:self-auto gap-2 shrink-0">
+            {/* Dual Clock Track Time Switcher in Next GP Hero Card (Visible only on mobile since desktop navbar already displays it) */}
+            <div className="flex items-center self-end sm:self-auto gap-2 shrink-0 sm:hidden">
               <TrackTimeToggle />
             </div>
           </div>
@@ -330,10 +345,10 @@ export const ScheduleView: React.FC = () => {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0">
-                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase">
+                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate">
                           {r.raceName}
                         </span>
-                        <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
+                        <div className="flex items-center gap-1 flex-nowrap shrink-0">
                           {isDoubleRace && (
                             <span
                               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0 whitespace-nowrap"
@@ -371,14 +386,17 @@ export const ScheduleView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
                     <span className="font-mono text-xs text-zinc-400 tabular-nums hidden sm:inline">
                       {formatLocalDate(r.raceDateTime)}
                     </span>
+                    <span className="font-mono text-[10px] font-bold text-zinc-400 tabular-nums uppercase sm:hidden">
+                      {formatLocalDateShort(r.raceDateTime)}
+                    </span>
                     {isExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5 text-zinc-400" />
+                      <ChevronUp className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                      <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     )}
                   </div>
                 </button>

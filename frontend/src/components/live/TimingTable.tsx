@@ -518,7 +518,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       >
                         {d.code}
                       </button>
-                      <span className="text-[10px] text-zinc-500 font-mono shrink-0 hidden xs:inline">
+                      <span className="text-[10px] text-zinc-400 font-mono shrink-0">
                         #{d.driverNumber}
                       </span>
                       {/* Official Championship Points Badge in Race (Desktop) */}

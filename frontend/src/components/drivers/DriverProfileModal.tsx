@@ -223,7 +223,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-5 -mt-3">
+        <div className="flex-1 overflow-y-auto px-5 pb-10 sm:pb-6 space-y-5 -mt-3 overscroll-contain">
           {/* Driver Portrait & Headline */}
           <div className="flex items-center gap-4">
             {/* Driver Headshot with Team Halo */}
@@ -416,7 +416,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
           </div>
 
           {/* Quick Actions (Pin as My Driver / Compare 1 vs 1) */}
-          <div className="flex flex-col sm:flex-row gap-2 pt-1">
+          <div className="flex flex-col sm:flex-row gap-2 pt-1 pb-4 sm:pb-0">
             {onTogglePin && (
               <button
                 type="button"

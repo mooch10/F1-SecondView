@@ -125,7 +125,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit whitespace-nowrap shrink-0">
               {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
-            <div className="flex items-center self-end sm:self-auto gap-2 shrink-0">
+            <div className="flex items-center self-end sm:self-auto gap-2 shrink-0 sm:hidden">
               <TrackTimeToggle />
             </div>
           </div>
