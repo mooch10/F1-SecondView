@@ -101,7 +101,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                   : 'bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
-              {yr}
+              {yr === 2026 ? `${yr} (${lang === 'es' ? 'Actual' : 'Live'})` : yr}
             </button>
           ))}
         </div>
@@ -124,11 +124,11 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                   {season.year}
                 </span>
                 <span className="font-bold text-white text-sm tracking-wide">
-                  {series.toUpperCase()} {season.year} World Championship
+                  {series.toUpperCase()} {season.year} {season.year === 2026 ? (lang === 'es' ? '• Temporada en Curso' : '• Season In Progress') : 'World Championship'}
                 </span>
               </div>
               <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
-                {season.champion.team}
+                {season.year === 2026 ? (lang === 'es' ? 'Líderes de Campeonato' : 'Championship Leaders') : season.champion.team}
               </span>
             </div>
 
@@ -141,7 +141,9 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                     <span className="text-xl">🏆</span>
                     <div>
                       <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 block">
-                        {lang === 'es' ? 'CAMPEÓN' : 'CHAMPION'}
+                        {season.year === 2026
+                          ? (lang === 'es' ? 'LÍDER PROVISIONAL (P1)' : 'PROVISIONAL LEADER (P1)')
+                          : (lang === 'es' ? 'CAMPEÓN' : 'CHAMPION')}
                       </span>
                       <h3 className="text-base font-black text-white font-sans flex items-center gap-1.5">
                         <span>{season.champion.flag}</span>
@@ -165,7 +167,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                   <div className="mt-2 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
                     <Sparkles className="w-3 h-3 shrink-0 text-emerald-400" />
                     <span className="truncate">
-                      {lang === 'es' ? 'Salto a F1: ' : 'F1 Step: '}
+                      {lang === 'es' ? 'Salto / Vínculo F1: ' : 'F1 Link: '}
                       <strong>{season.champion.f1Destination}</strong>
                     </span>
                   </div>
@@ -177,7 +179,9 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 block">
-                      {lang === 'es' ? 'SUBCAMPEÓN' : 'RUNNER-UP'} (P2)
+                      {season.year === 2026
+                        ? (lang === 'es' ? 'P2 PROVISIONAL' : 'PROVISIONAL P2')
+                        : (lang === 'es' ? 'SUBCAMPEÓN (P2)' : 'RUNNER-UP (P2)')}
                     </span>
                     <h3 className="text-base font-bold text-white font-sans flex items-center gap-1.5 mt-0.5">
                       <span>{season.runnerUp.flag}</span>
@@ -199,7 +203,9 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700/80 block">
-                      {lang === 'es' ? '3º PUESTO' : '3RD PLACE'} (P3)
+                      {season.year === 2026
+                        ? (lang === 'es' ? 'P3 PROVISIONAL' : 'PROVISIONAL P3')
+                        : (lang === 'es' ? '3º PUESTO (P3)' : '3RD PLACE (P3)')}
                     </span>
                     <h3 className="text-base font-bold text-white font-sans flex items-center gap-1.5 mt-0.5">
                       <span>{season.thirdPlace.flag}</span>

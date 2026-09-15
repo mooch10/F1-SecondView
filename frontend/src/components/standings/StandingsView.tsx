@@ -17,7 +17,11 @@ interface StandingsViewProps {
 }
 
 const F1_POINTS_SYSTEM = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
-const F1_HISTORICAL_SEASONS = [2026, 2025, 2024, 2023, 2022, 2021];
+const AVAILABLE_SEASONS: Record<string, number[]> = {
+  f1: [2026, 2025, 2024, 2023, 2022, 2021],
+  f2: [2026, 2025, 2024],
+  f3: [2026, 2025, 2024],
+};
 
 const matchConstructorTeam = (liveTeam: string, constrName: string): boolean => {
   const lt = (liveTeam || '').toLowerCase();
@@ -54,7 +58,10 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const [selectedAcademyFilter, setSelectedAcademyFilter] = useState<string>('all');
   const [isTechSpecsOpen, setIsTechSpecsOpen] = useState<boolean>(false);
   const [isLiveVirtual, setIsLiveVirtual] = useState<boolean>(false);
-  const isVirtualActive = series === 'f1' && selectedSeasonYear === 2026 && isLiveActive && isLiveVirtual;
+
+  const validSeasons = AVAILABLE_SEASONS[series] || [2026];
+  const activeYear = validSeasons.includes(selectedSeasonYear) ? selectedSeasonYear : 2026;
+  const isVirtualActive = series === 'f1' && activeYear === 2026 && isLiveActive && isLiveVirtual;
 
   // 👤 Driver Profile Modal
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
@@ -156,7 +163,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
   useEffect(() => {
     let cancelled = false;
-    const targetYear = series === 'f1' ? selectedSeasonYear : 2026;
+    const targetYear = activeYear;
     Promise.all([
       fetchStandings(series, targetYear),
       series !== 'f1' ? fetchDriverChanges(series) : Promise.resolve([]),
@@ -170,7 +177,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [series, selectedSeasonYear]);
+  }, [series, activeYear]);
 
   // Virtual points calculation for Drivers
   const processedDrivers = useMemo(() => {
@@ -322,34 +329,37 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* F1: Historical Seasons Selector */}
-      {series === 'f1' && (
-        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-white/[0.06]">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <span className="text-[11px] font-mono text-zinc-400 font-bold uppercase flex items-center gap-1.5 shrink-0 mr-1">
-              <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-              {t.standings.historicalSeason}:
-            </span>
-            {F1_HISTORICAL_SEASONS.map((year) => {
-              const isSelected = selectedSeasonYear === year;
-              return (
-                <button
-                  key={year}
-                  type="button"
-                  onClick={() => setSelectedSeasonYear(year)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer shrink-0 border ${
-                    isSelected
-                      ? 'bg-[#E10600] text-white border-[#E10600] shadow-[0_0_10px_rgba(225,6,0,0.35)]'
-                      : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white border-white/[0.08]'
-                  }`}
-                >
-                  {year === 2026 ? `${year} (${lang === 'es' ? 'Actual' : 'Live'})` : year}
-                </button>
-              );
-            })}
-          </div>
+      {/* Historical Seasons Selector (F1, F2 & F3) */}
+      <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-white/[0.06]">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <span className="text-[11px] font-mono text-zinc-400 font-bold uppercase flex items-center gap-1.5 shrink-0 mr-1">
+            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+            {t.standings.historicalSeason}:
+          </span>
+          {(AVAILABLE_SEASONS[series] || [2026]).map((year) => {
+            const isSelected = activeYear === year;
+            return (
+              <button
+                key={year}
+                type="button"
+                onClick={() => setSelectedSeasonYear(year)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer shrink-0 border ${
+                  isSelected
+                    ? 'text-white shadow-sm font-black'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white border-white/[0.08]'
+                }`}
+                style={
+                  isSelected
+                    ? { backgroundColor: theme.primary, borderColor: theme.primary }
+                    : undefined
+                }
+              >
+                {year === 2026 ? `${year} (${lang === 'es' ? 'Actual' : 'Live'})` : year}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* F2 & F3: Junior Hub Controls (Standings vs Graduates & Tech Specs) */}
       {series !== 'f1' && (
@@ -370,7 +380,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               }
             >
               <Trophy className="w-3.5 h-3.5" style={{ color: theme.primary }} />
-              <span>{lang === 'es' ? 'Clasificación 2026' : '2026 Standings'}</span>
+              <span>{lang === 'es' ? `Clasificación ${activeYear}` : `${activeYear} Standings`}</span>
             </button>
 
             <button
@@ -408,14 +418,14 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
         <JuniorGraduatesView onSelectDriver={(name) => handleDriverClick({ name })} />
       ) : (
         <>
-          {/* F1 Historical Season Banner */}
-          {series === 'f1' && selectedSeasonYear < 2026 && (
+          {/* Historical Season Banner (F1, F2 & F3) */}
+          {activeYear < 2026 && (
             <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs animate-fadeIn">
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>
                   <strong className="uppercase">
-                    {t.standings.historicalSeason} {selectedSeasonYear}
+                    {t.standings.historicalSeason} {series.toUpperCase()} {activeYear}
                   </strong>
                   {data.drivers?.[0] && (
                     <span className="text-zinc-300 ml-1.5">
