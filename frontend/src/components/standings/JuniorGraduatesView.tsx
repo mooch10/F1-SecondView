@@ -30,7 +30,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
   return (
     <div className="flex flex-col gap-4 animate-fadeIn">
       {/* Header Banner */}
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-4 sm:p-5 relative overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl p-4 sm:p-5 relative overflow-hidden shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -44,14 +44,14 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
               >
                 {series.toUpperCase()} • {lang === 'es' ? 'SALÓN DE LA FAMA' : 'HALL OF FAME'}
               </span>
-              <span className="text-[11px] text-zinc-400 font-mono">
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
                 {lang === 'es' ? 'Semillero hacia la F1' : 'The Path to F1'}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+            <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight uppercase">
               {lang === 'es' ? 'CAMPEONES Y GRADUADOS A F1' : 'CHAMPIONS & F1 GRADUATES'}
             </h2>
-            <p className="text-xs text-zinc-400 mt-1 max-w-2xl">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 max-w-2xl">
               {lang === 'es'
                 ? 'Historial de los pilotos que conquistaron la categoría y las estrellas que dieron el salto a los Grandes Premios de Fórmula 1.'
                 : 'History of drivers who clinched the championship and the rising stars who made the leap to Formula 1 race seats.'}
@@ -84,26 +84,39 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
             onClick={() => setSelectedYear('all')}
             className={`px-3 py-1 rounded-lg text-xs font-mono font-bold uppercase transition-all shrink-0 cursor-pointer border ${
               selectedYear === 'all'
-                ? 'bg-zinc-900 text-white border-zinc-700 shadow-sm font-black keep-white dark:bg-white dark:text-black dark:border-transparent'
+                ? 'text-white border-transparent shadow-sm font-black keep-white'
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 border-zinc-200 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/[0.08] dark:border-transparent'
             }`}
+            style={
+              selectedYear === 'all'
+                ? { backgroundColor: theme.primary, borderColor: theme.primary, color: '#FFFFFF' }
+                : undefined
+            }
           >
             {lang === 'es' ? 'TODAS LAS TEMPORADAS' : 'ALL SEASONS'}
           </button>
-          {availableYears.map((yr) => (
-            <button
-              key={yr}
-              type="button"
-              onClick={() => setSelectedYear(yr)}
-              className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all shrink-0 cursor-pointer border ${
-                selectedYear === yr
-                  ? 'bg-zinc-900 text-white border-zinc-700 shadow-sm font-black keep-white dark:bg-white dark:text-black dark:border-transparent'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 border-zinc-200 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/[0.08] dark:border-transparent'
-              }`}
-            >
-              {yr === 2026 ? `${yr} (${lang === 'es' ? 'Actual' : 'Live'})` : yr}
-            </button>
-          ))}
+          {availableYears.map((yr) => {
+            const isSelected = selectedYear === yr;
+            return (
+              <button
+                key={yr}
+                type="button"
+                onClick={() => setSelectedYear(yr)}
+                className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all shrink-0 cursor-pointer border ${
+                  isSelected
+                    ? 'text-white border-transparent shadow-sm font-black keep-white'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 border-zinc-200 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/[0.08] dark:border-transparent'
+                }`}
+                style={
+                  isSelected
+                    ? { backgroundColor: theme.primary, borderColor: theme.primary, color: '#FFFFFF' }
+                    : undefined
+                }
+              >
+                {yr === 2026 ? `${yr} (${lang === 'es' ? 'Actual' : 'Live'})` : yr}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -112,7 +125,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
         {displayedSeasons.map((season: SeasonHistory) => (
           <div
             key={season.year}
-            className="bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm flex flex-col"
+            className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm flex flex-col"
           >
             {/* Season Card Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-100 dark:bg-[#1A1F2C] border-b border-zinc-200 dark:border-white/[0.06]">

@@ -606,9 +606,14 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 onClick={() => setSelectedAcademyFilter('all')}
                 className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all shrink-0 cursor-pointer border ${
                   selectedAcademyFilter === 'all'
-                    ? 'bg-zinc-800 text-white border-zinc-700 shadow-sm keep-white dark:bg-white/20 dark:text-white dark:border-white/40'
+                    ? 'text-white border-transparent shadow-sm keep-white font-bold'
                     : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border-zinc-200 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:text-white dark:border-transparent'
                 }`}
+                style={
+                  selectedAcademyFilter === 'all'
+                    ? { backgroundColor: theme.primary, borderColor: theme.primary, color: '#FFFFFF' }
+                    : undefined
+                }
               >
                 {t.standings.allAcademies} ({processedDrivers.length})
               </button>

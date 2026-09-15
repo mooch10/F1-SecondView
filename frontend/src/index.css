@@ -135,10 +135,6 @@ html.light .bg-\[\#141924\] {
   border-color: #CBD5E1 !important;
 }
 
-html.light .bg-zinc-900 {
-  background-color: #F3F4F6 !important;
-}
-
 html.light .bg-black\/30,
 html.light .bg-black\/40 {
   background-color: rgba(0, 0, 0, 0.08) !important;
