@@ -59,6 +59,7 @@ export function useTrackAnimation({
   // Kinematics store preserved across frames without triggering React re-renders
   const kinematicsMapRef = useRef<Map<number, DriverKinematics>>(new Map());
   const rafRef = useRef<number | null>(null);
+  const animateRef = useRef<((t: number) => void) | null>(null);
 
   // Status flags: cars must stay stationary if session hasn't started or is finished
   const isSessionStationary = sessionStatus === 'NOT_STARTED' || sessionStatus === 'FINISHED';
@@ -183,6 +184,11 @@ export function useTrackAnimation({
         kinematicsMap.delete(num);
       }
     }
+
+    // Wake up animation loop if it was asleep
+    if (rafRef.current === null && animateRef.current) {
+      rafRef.current = requestAnimationFrame(animateRef.current);
+    }
   }, [drivers, trackGeometry, isGpsClustered, isSessionStationary]);
 
   // 2. High-Performance 60 FPS Continuous Animation Loop
@@ -190,20 +196,34 @@ export function useTrackAnimation({
     if (!trackGeometry) return;
 
     let isRunning = true;
+    const minFrameDeltaMs = 1000 / 60; // 60 FPS cap (protects 120Hz/144Hz high refresh displays)
+    let lastFrameTime = 0;
 
     const animate = (currentTime: number) => {
       if (!isRunning) return;
+      animateRef.current = animate;
+
+      if (currentTime - lastFrameTime < minFrameDeltaMs) {
+        rafRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrameTime = currentTime;
 
       const kinematicsMap = kinematicsMapRef.current;
       const nextMap = new Map<number, AnimatedCarCoord>();
+      let maxMovement = 0;
+      let hasActiveRacers = false;
 
       kinematicsMap.forEach((k) => {
         if (k.inPit || isGpsClustered || isSessionStationary || k.speed === 0) {
           // Stationary cars (Grid, Pits, Parc Fermé): smooth lerp directly to target slot without track progression
           const dt = 0.016;
           const lerpFactor = Math.min(1, dt * 8.0);
-          k.currentPos.x += (k.targetPos.x - k.currentPos.x) * lerpFactor;
-          k.currentPos.y += (k.targetPos.y - k.currentPos.y) * lerpFactor;
+          const dx = (k.targetPos.x - k.currentPos.x) * lerpFactor;
+          const dy = (k.targetPos.y - k.currentPos.y) * lerpFactor;
+          k.currentPos.x += dx;
+          k.currentPos.y += dy;
+          maxMovement = Math.max(maxMovement, Math.abs(dx), Math.abs(dy));
 
           nextMap.set(k.driverNumber, {
             driverNumber: k.driverNumber,
@@ -214,6 +234,7 @@ export function useTrackAnimation({
             inPit: k.inPit,
           });
         } else {
+          hasActiveRacers = true;
           // Active racing cars: dead-reckoning forward along track spline based on time elapsed
           const timeSincePacket = Math.min(3.0, (currentTime - k.lastPacketTime) / 1000);
           let currentProgress = normalizeProgress(k.packetProgress + k.speed * timeSincePacket);
@@ -243,6 +264,12 @@ export function useTrackAnimation({
       });
 
       setAnimatedCoords(nextMap);
+
+      // Sleep loop if all cars are stationary and have settled into place (<0.08px movement)
+      if (!hasActiveRacers && maxMovement < 0.08) {
+        rafRef.current = null;
+        return;
+      }
 
       rafRef.current = requestAnimationFrame(animate);
     };

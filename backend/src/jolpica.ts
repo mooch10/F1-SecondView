@@ -1,9 +1,6 @@
-import type { LastRacePodium } from './types.js';
-import {
-  generateUniversalQualifyingSession,
-  resolveActiveSession,
-} from './universalLiveEngine.js';
 import { liveStreamClient } from './liveStreamClient.js';
+import type { LastRacePodium } from './types.js';
+import { generateUniversalQualifyingSession, resolveActiveSession } from './universalLiveEngine.js';
 
 export interface JolpicaRace {
   round: number;
@@ -278,8 +275,9 @@ export class JolpicaClient {
       });
 
       const rawCircuitName = r.Circuit.circuitName;
-      const circuitName =
-        rawCircuitName.toLowerCase().includes('madring') ? 'Circuito de Madrid' : rawCircuitName;
+      const circuitName = rawCircuitName.toLowerCase().includes('madring')
+        ? 'Circuito de Madrid'
+        : rawCircuitName;
 
       return {
         round: Number(r.round),
@@ -303,10 +301,15 @@ export class JolpicaClient {
     constructors: JolpicaConstructorStanding[];
   }> {
     const isHistorical = typeof year === 'number' && year >= 1950 && year < 2026;
-    if (isHistorical && this.historicalStandingsCache.has(year)) {
-      return this.historicalStandingsCache.get(year)!;
+    if (isHistorical) {
+      const cached = this.historicalStandingsCache.get(year);
+      if (cached) return cached;
     }
-    if (!isHistorical && this.standingsCache && Date.now() - this.standingsCache.timestamp < this.cacheTtlMs) {
+    if (
+      !isHistorical &&
+      this.standingsCache &&
+      Date.now() - this.standingsCache.timestamp < this.cacheTtlMs
+    ) {
       return this.standingsCache.data;
     }
 
@@ -352,8 +355,12 @@ export class JolpicaClient {
       };
     }
 
-    const driverPath = isHistorical ? `/${year}/driverStandings.json?limit=150` : '/current/driverStandings.json?limit=100';
-    const constrPath = isHistorical ? `/${year}/constructorStandings.json?limit=100` : '/current/constructorStandings.json?limit=100';
+    const driverPath = isHistorical
+      ? `/${year}/driverStandings.json?limit=150`
+      : '/current/driverStandings.json?limit=100';
+    const constrPath = isHistorical
+      ? `/${year}/constructorStandings.json?limit=100`
+      : '/current/constructorStandings.json?limit=100';
 
     const [rawDrivers, rawConstructors] = await Promise.all([
       this.fetchRaw<RawDriversResponse>(driverPath),
@@ -369,7 +376,7 @@ export class JolpicaClient {
       const primaryTeam = d.Constructors?.[0];
       const teamId = primaryTeam?.constructorId || 'unknown';
       const parsedPos = Number(d.position);
-      const pos = (!isNaN(parsedPos) && parsedPos > 0) ? parsedPos : (index + 1);
+      const pos = !Number.isNaN(parsedPos) && parsedPos > 0 ? parsedPos : index + 1;
       return {
         pos,
         points: Number(d.points) || 0,
@@ -385,7 +392,7 @@ export class JolpicaClient {
     let constructors: JolpicaConstructorStanding[] = constrList.map((c, index) => {
       const parsedPos = Number(c.position);
       return {
-        pos: (!isNaN(parsedPos) && parsedPos > 0) ? parsedPos : (index + 1),
+        pos: !Number.isNaN(parsedPos) && parsedPos > 0 ? parsedPos : index + 1,
         points: Number(c.points) || 0,
         wins: Number(c.wins) || 0,
         name: c.Constructor.name,
@@ -396,17 +403,21 @@ export class JolpicaClient {
     // For seasons 1950-1957 (when the FIA had not yet established the official Constructors' Championship):
     // Synthesize historical constructors standings by aggregating points and wins from drivers
     if (constructors.length === 0 && driversList.length > 0) {
-      const teamMap = new Map<string, { name: string; constructorId: string; points: number; wins: number }>();
+      const teamMap = new Map<
+        string,
+        { name: string; constructorId: string; points: number; wins: number }
+      >();
       for (const d of driversList) {
         const c = d.Constructors?.[0];
         const teamName = c?.name || 'Independiente';
         const teamId = c?.constructorId || 'unknown';
         const pts = Number(d.points) || 0;
         const wins = Number(d.wins) || 0;
-        if (!teamMap.has(teamName)) {
-          teamMap.set(teamName, { name: teamName, constructorId: teamId, points: 0, wins: 0 });
+        let current = teamMap.get(teamName);
+        if (!current) {
+          current = { name: teamName, constructorId: teamId, points: 0, wins: 0 };
+          teamMap.set(teamName, current);
         }
-        const current = teamMap.get(teamName)!;
         current.points += pts;
         current.wins += wins;
       }
@@ -559,7 +570,9 @@ export class JolpicaClient {
 
     // 1. If qualifying is LIVE IN PROGRESS right now:
     if (isQualyLive && activeSession) {
-      const raw = await this.fetchRaw<RawQualifyingResponse>(`/current/${activeSession.race.round}/qualifying.json`);
+      const raw = await this.fetchRaw<RawQualifyingResponse>(
+        `/current/${activeSession.race.round}/qualifying.json`,
+      );
       race = raw?.MRData?.RaceTable?.Races?.[0];
 
       if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
@@ -587,8 +600,11 @@ export class JolpicaClient {
 
     if (!race || !race.QualifyingResults || race.QualifyingResults.length === 0) {
       // Fallback: Last completed race is Round 14 (Madrid)
-      const lastCompletedRace = schedule.find((r) => r.round === 14) || schedule[schedule.length - 1];
-      return lastCompletedRace ? generateUniversalQualifyingSession(lastCompletedRace, liveSession) : null;
+      const lastCompletedRace =
+        schedule.find((r) => r.round === 14) || schedule[schedule.length - 1];
+      return lastCompletedRace
+        ? generateUniversalQualifyingSession(lastCompletedRace, liveSession)
+        : null;
     }
 
     const parseToSec = (str?: string): number | null => {
@@ -607,43 +623,45 @@ export class JolpicaClient {
     const poleTimeStr = firstResult?.Q3 || firstResult?.Q2 || firstResult?.Q1 || '';
     const poleSec = parseToSec(poleTimeStr);
 
-    const results: JolpicaQualifyingResult[] = (race.QualifyingResults || []).map((r: RawQualifyingResultItem) => {
-      const pos = Number(r.position);
-      const code = r.Driver.code || r.Driver.familyName.substring(0, 3).toUpperCase();
-      const fullName = `${r.Driver.givenName} ${r.Driver.familyName}`;
-      const q1 = r.Q1 || '';
-      const q2 = r.Q2 || '';
-      const q3 = r.Q3 || '';
-      const bestLap = q3 || q2 || q1 || '--:--.---';
-      const bestSec = parseToSec(bestLap);
+    const results: JolpicaQualifyingResult[] = (race.QualifyingResults || []).map(
+      (r: RawQualifyingResultItem) => {
+        const pos = Number(r.position);
+        const code = r.Driver.code || r.Driver.familyName.substring(0, 3).toUpperCase();
+        const fullName = `${r.Driver.givenName} ${r.Driver.familyName}`;
+        const q1 = r.Q1 || '';
+        const q2 = r.Q2 || '';
+        const q3 = r.Q3 || '';
+        const bestLap = q3 || q2 || q1 || '--:--.---';
+        const bestSec = parseToSec(bestLap);
 
-      let gap = '--';
-      if (pos === 1) {
-        gap = 'POLE';
-      } else if (poleSec !== null && bestSec !== null) {
-        const diff = bestSec - poleSec;
-        gap = `+${diff.toFixed(3)}s`;
-      }
+        let gap = '--';
+        if (pos === 1) {
+          gap = 'POLE';
+        } else if (poleSec !== null && bestSec !== null) {
+          const diff = bestSec - poleSec;
+          gap = `+${diff.toFixed(3)}s`;
+        }
 
-      const eliminatedPhase: 'Q1' | 'Q2' | null = pos >= 16 ? 'Q1' : pos >= 11 ? 'Q2' : null;
+        const eliminatedPhase: 'Q1' | 'Q2' | null = pos >= 16 ? 'Q1' : pos >= 11 ? 'Q2' : null;
 
-      return {
-        pos,
-        driverNumber: Number(r.number),
-        code,
-        fullName,
-        familyName: r.Driver.familyName,
-        teamName: r.Constructor.name,
-        teamColor: getTeamColor(r.Constructor.constructorId),
-        q1,
-        q2: q2 || undefined,
-        q3: q3 || undefined,
-        bestLap,
-        gap,
-        eliminatedPhase,
-        isPole: pos === 1,
-      };
-    });
+        return {
+          pos,
+          driverNumber: Number(r.number),
+          code,
+          fullName,
+          familyName: r.Driver.familyName,
+          teamName: r.Constructor.name,
+          teamColor: getTeamColor(r.Constructor.constructorId),
+          q1,
+          q2: q2 || undefined,
+          q3: q3 || undefined,
+          bestLap,
+          gap,
+          eliminatedPhase,
+          isPole: pos === 1,
+        };
+      },
+    );
 
     const data: JolpicaQualifyingSession = {
       round: Number(race.round),

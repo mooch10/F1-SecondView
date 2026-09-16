@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Mic, Pause, Play, Volume2, VolumeX } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AlertCircle, ChevronDown, ChevronUp, Mic, Pause, Play, Volume2, VolumeX, X } from 'lucide-react';
 import type { TeamRadioCapture } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -13,8 +13,27 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [filterDriver, setFilterDriver] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { lang } = useLanguage();
+
+  // Auto-dismiss audio error message after 5 seconds
+  useEffect(() => {
+    if (!audioError) return;
+    const timer = setTimeout(() => setAudioError(null), 5000);
+    return () => clearTimeout(timer);
+  }, [audioError]);
+
+  // Lifecycle Cleanup: stop playing and reset stream when unmounted (e.g. switching tabs)
+  useEffect(() => {
+    const audioEl = audioRef.current;
+    return () => {
+      if (audioEl) {
+        audioEl.pause();
+        audioEl.src = '';
+      }
+    };
+  }, []);
 
   if (!radios || radios.length === 0) {
     return null;
@@ -49,14 +68,29 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
 
     setActiveRadioId(radio.id);
     setIsPlaying(true);
+    setAudioError(null);
 
     if (audioRef.current) {
       audioRef.current.src = radio.audioUrl;
       audioRef.current.muted = isMuted;
-      audioRef.current.play().catch((err) => {
-        console.warn('[TeamRadio] Playback error:', err);
-        setIsPlaying(false);
-      });
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err: unknown) => {
+          console.warn('[TeamRadio] Playback error:', err);
+          setIsPlaying(false);
+          const isNotAllowed =
+            err instanceof Error &&
+            (err.name === 'NotAllowedError' || err.message.toLowerCase().includes('user gesture'));
+          const msg = isNotAllowed
+            ? (lang === 'en'
+                ? 'Audio autoplay blocked by browser. Click to interact and enable audio.'
+                : 'Audio bloqueado por el navegador. Haz clic en la pantalla para habilitar el sonido.')
+            : (lang === 'en'
+                ? 'Unable to play radio clip. Audio stream may be temporarily unreachable.'
+                : 'No se pudo reproducir la radio. El audio no está disponible temporalmente.');
+          setAudioError(msg);
+        });
+      }
     }
   };
 
@@ -76,9 +110,34 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
       <audio
         ref={audioRef}
         onEnded={() => setIsPlaying(false)}
-        onError={() => setIsPlaying(false)}
+        onError={() => {
+          setIsPlaying(false);
+          setAudioError(
+            lang === 'en'
+              ? 'Audio format or stream could not be decoded.'
+              : 'No se pudo decodificar o cargar el stream de audio.'
+          );
+        }}
         onPause={() => setIsPlaying(false)}
       />
+
+      {/* Browser Autoplay / Network Warning Banner */}
+      {audioError && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between text-xs text-amber-400 font-mono gap-2 animate-fadeIn">
+          <div className="flex items-center gap-2 truncate">
+            <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <span className="truncate">{audioError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAudioError(null)}
+            className="text-amber-400/80 hover:text-amber-300 cursor-pointer p-1 rounded hover:bg-amber-500/10 transition-colors flex-shrink-0"
+            title={lang === 'en' ? 'Dismiss' : 'Cerrar aviso'}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Header / Bar */}
       <div className="w-full px-3 py-2.5 flex items-center justify-between gap-2 bg-[#131722] hover:bg-white/[0.02] transition-colors">

@@ -1,15 +1,12 @@
 import { createServer } from 'node:http';
+import { f1LiveCdnClient } from './f1LiveCdnClient.js';
 import { JolpicaClient } from './jolpica.js';
 import { JuniorSeriesClient } from './juniorSeries.js';
+import { liveStreamClient } from './liveStreamClient.js';
 import { buildLiveSnapshot } from './normalizer.js';
 import { OpenF1Client } from './openf1.js';
-import {
-  generateUniversalLiveSnapshot,
-  resolveActiveSession,
-} from './universalLiveEngine.js';
-import { liveStreamClient } from './liveStreamClient.js';
-import { f1LiveCdnClient } from './f1LiveCdnClient.js';
 import type { LiveSnapshot, SeriesCategory } from './types.js';
+import { generateUniversalLiveSnapshot, resolveActiveSession } from './universalLiveEngine.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 
@@ -40,7 +37,9 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
 
     // 2. Secondary Source: OpenF1 (only if explicit SESSION_KEY or OPENF1_TOKEN is provided)
     if (!newSnapshot && (process.env.SESSION_KEY || process.env.OPENF1_TOKEN)) {
-      let targetSessionKey: number | null = process.env.SESSION_KEY ? Number(process.env.SESSION_KEY) : null;
+      let targetSessionKey: number | null = process.env.SESSION_KEY
+        ? Number(process.env.SESSION_KEY)
+        : null;
       if (!targetSessionKey) {
         const activeOrRecent = await openF1.findActiveOrRecentSession(new Date());
         if (activeOrRecent) {
@@ -51,7 +50,11 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       if (targetSessionKey) {
         try {
           const data = await openF1.getLiveSessionData(targetSessionKey);
-          if (data.session && data.drivers.length > 0 && (data.laps.length > 0 || data.positions.length > 0)) {
+          if (
+            data.session &&
+            data.drivers.length > 0 &&
+            (data.laps.length > 0 || data.positions.length > 0)
+          ) {
             newSnapshot = buildLiveSnapshot(
               data.session,
               data.drivers,
@@ -112,19 +115,18 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
 
     if (newSnapshot) {
       // Maintain a 45-second sliding history in memory (up to 30 snapshots)
-      if (cachedSnapshot?.history) {
-        const updatedHistory = [
-          {
-            timestamp: newSnapshot.session.timestamp,
-            drivers: newSnapshot.drivers,
-            session: newSnapshot.session,
-            messages: newSnapshot.messages,
-            weather: newSnapshot.weather,
-          },
-          ...cachedSnapshot.history,
-        ].slice(0, 30);
-        newSnapshot.history = updatedHistory;
-      }
+      const prevHistory = cachedSnapshot?.history || [];
+      const updatedHistory = [
+        {
+          timestamp: newSnapshot.session.timestamp,
+          drivers: [...newSnapshot.drivers],
+          session: { ...newSnapshot.session },
+          messages: [...newSnapshot.messages],
+          weather: newSnapshot.weather ? { ...newSnapshot.weather } : null,
+        },
+        ...prevHistory,
+      ].slice(0, 30);
+      newSnapshot.history = updatedHistory;
 
       cachedSnapshot = newSnapshot;
       console.log(
@@ -141,12 +143,35 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
   }
 }
 
-// In-memory IP Rate Limiter (sliding window 60s, max 120 reqs/min)
+// In-memory IP Rate Limiter (sliding window 60s, max 120 reqs/min, bounded 5000 entries)
+const MAX_RATE_LIMIT_ENTRIES = 5000;
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function extractClientIp(req: import('node:http').IncomingMessage): string {
+  const rawXForwarded = req.headers['x-forwarded-for'];
+  if (typeof rawXForwarded === 'string') {
+    const firstIp = rawXForwarded.split(',')[0]?.trim();
+    // Validate that it looks like a valid IP (IPv4 or IPv6) and avoid arbitrary header spoofing
+    if (firstIp && /^[\d.a-fA-F:]+$/.test(firstIp) && firstIp.length <= 45) {
+      return firstIp;
+    }
+  }
+  return req.socket.remoteAddress || '127.0.0.1';
+}
+
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const record = rateLimitMap.get(ip);
   if (!record || now > record.resetTime) {
+    if (rateLimitMap.size >= MAX_RATE_LIMIT_ENTRIES) {
+      // Evict oldest 500 entries if map is saturated
+      const it = rateLimitMap.keys();
+      for (let i = 0; i < 500; i++) {
+        const key = it.next().value;
+        if (key) rateLimitMap.delete(key);
+        else break;
+      }
+    }
     rateLimitMap.set(ip, { count: 1, resetTime: now + 60000 });
     return true;
   }
@@ -191,10 +216,7 @@ function resolveSeriesAndPath(url: URL): { series: SeriesCategory; cleanPath: st
 }
 
 const server = createServer(async (req, res) => {
-  const clientIp =
-    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-    req.socket.remoteAddress ||
-    '127.0.0.1';
+  const clientIp = extractClientIp(req);
 
   // Global Security & CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -398,7 +420,7 @@ const server = createServer(async (req, res) => {
     }
 
     // Healthcheck Endpoint
-    if (url.pathname === '/health') {
+    if (url.pathname === '/health' || url.pathname === '/api/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
       return;
@@ -414,12 +436,24 @@ const server = createServer(async (req, res) => {
 });
 
 // Initial update and server start
-await updateSnapshot();
+const initialSnapshot = await updateSnapshot();
 
-// Live background tick: keep telemetry and car positions advancing every 2 seconds
-setInterval(() => {
-  updateSnapshot().catch((err) => console.error('[Worker interval error]:', err));
-}, 2000);
+// Adaptive background loop: fast 2.5s interval during IN_PROGRESS sessions,
+// relaxed 30s interval during FINISHED or idle periods between race weekends
+let nextPollDelayMs = initialSnapshot?.session?.status === 'IN_PROGRESS' ? 2500 : 30000;
+async function adaptiveWorkerTick() {
+  try {
+    const snap = await updateSnapshot();
+    const isLive = snap?.session?.status === 'IN_PROGRESS';
+    nextPollDelayMs = isLive ? 2500 : 30000;
+  } catch (err) {
+    console.error('[Worker adaptive error]:', err);
+    nextPollDelayMs = 15000;
+  } finally {
+    setTimeout(adaptiveWorkerTick, nextPollDelayMs);
+  }
+}
+setTimeout(adaptiveWorkerTick, nextPollDelayMs);
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[Delta API] Server running at http://localhost:${PORT}`);

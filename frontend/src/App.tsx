@@ -1,5 +1,5 @@
 import { Radio, Tv } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { BetweenRacesView } from './components/live/BetweenRacesView';
 import { CircuitMap } from './components/live/CircuitMap';
@@ -9,14 +9,7 @@ import { TeamRadioFeed } from './components/live/TeamRadioFeed';
 import { SyncDelayBar } from './components/live/SyncDelayBar';
 import { TimingTable } from './components/live/TimingTable';
 import { TrackWeatherBar } from './components/live/TrackWeatherBar';
-import { QualifyingView } from './components/qualy/QualifyingView';
-import { LastRaceView } from './components/race/LastRaceView';
-import { ScheduleView } from './components/schedule/ScheduleView';
-import { StandingsView } from './components/standings/StandingsView';
 import { HeroView } from './components/hero/HeroView';
-import { CommandPalette } from './components/common/CommandPalette';
-import { DriverProfileModal } from './components/drivers/DriverProfileModal';
-import { HeadToHeadModal } from './components/live/HeadToHeadModal';
 import { getDriverProfile, type F1DriverProfile } from './data/f1DriversData';
 import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
@@ -25,6 +18,41 @@ import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
 import { useTimezone } from './hooks/useTimezone';
 import type { ActiveTab } from './types/f1';
+
+// Dynamic / Lazy loaded secondary views and overlays for code-splitting
+const QualifyingView = lazy(() =>
+  import('./components/qualy/QualifyingView').then((m) => ({ default: m.QualifyingView }))
+);
+const LastRaceView = lazy(() =>
+  import('./components/race/LastRaceView').then((m) => ({ default: m.LastRaceView }))
+);
+const ScheduleView = lazy(() =>
+  import('./components/schedule/ScheduleView').then((m) => ({ default: m.ScheduleView }))
+);
+const StandingsView = lazy(() =>
+  import('./components/standings/StandingsView').then((m) => ({ default: m.StandingsView }))
+);
+const CommandPalette = lazy(() =>
+  import('./components/common/CommandPalette').then((m) => ({ default: m.CommandPalette }))
+);
+const DriverProfileModal = lazy(() =>
+  import('./components/drivers/DriverProfileModal').then((m) => ({ default: m.DriverProfileModal }))
+);
+const HeadToHeadModal = lazy(() =>
+  import('./components/live/HeadToHeadModal').then((m) => ({ default: m.HeadToHeadModal }))
+);
+
+const ViewSuspenseFallback: React.FC = () => (
+  <div className="flex flex-col items-center justify-center min-h-[360px] w-full py-16 gap-3 select-none">
+    <div className="relative flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-[#E10600] animate-spin" />
+      <div className="absolute w-2 h-2 rounded-full bg-[#E10600] animate-ping" />
+    </div>
+    <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">
+      Cargando...
+    </span>
+  </div>
+);
 
 function App() {
   const [showHero, setShowHero] = useState<boolean>(true);
@@ -353,22 +381,24 @@ function App() {
               </>
             )}
 
-            {activeTab === 'last-race' && <LastRaceView key={series} />}
+            <Suspense fallback={<ViewSuspenseFallback />}>
+              {activeTab === 'last-race' && <LastRaceView key={series} />}
 
-            {activeTab === 'qualy' && (
-              <QualifyingView liveSnapshot={snapshot} liveDrivers={drivers} />
-            )}
+              {activeTab === 'qualy' && (
+                <QualifyingView liveSnapshot={snapshot} liveDrivers={drivers} />
+              )}
 
-            {activeTab === 'schedule' && <ScheduleView key={series} />}
+              {activeTab === 'schedule' && <ScheduleView key={series} />}
 
-            {activeTab === 'standings' && (
-              <StandingsView
-                key={`${series}-${historicalYear}`}
-                liveDrivers={drivers}
-                isLiveActive={isLiveRaceActive}
-                initialSeasonYear={historicalYear}
-              />
-            )}
+              {activeTab === 'standings' && (
+                <StandingsView
+                  key={`${series}-${historicalYear}`}
+                  liveDrivers={drivers}
+                  isLiveActive={isLiveRaceActive}
+                  initialSeasonYear={historicalYear}
+                />
+              )}
+            </Suspense>
           </main>
 
           {/* Footer */}
@@ -386,44 +416,56 @@ function App() {
           )}
 
           {/* Global Command Palette (Ctrl+K) */}
-          <CommandPalette
-            isOpen={isCommandPaletteOpen}
-            onClose={() => setIsCommandPaletteOpen(false)}
-            onSelectDriver={handleSelectDriver}
-            onSelectTab={setActiveTab}
-            onSelectSeries={setSeries}
-            onSelectHistoricalYear={handleSelectHistoricalYear}
-            onToggleTheme={toggleTheme}
-            onToggleTvMode={() => {
-              setIsTvMode((prev) => {
-                const next = !prev;
-                if (next) {
-                  setActiveTab('live');
-                  setUserSubView('timing');
-                }
-                return next;
-              });
-            }}
-          />
+          {isCommandPaletteOpen && (
+            <Suspense fallback={null}>
+              <CommandPalette
+                isOpen={isCommandPaletteOpen}
+                onClose={() => setIsCommandPaletteOpen(false)}
+                onSelectDriver={handleSelectDriver}
+                onSelectTab={setActiveTab}
+                onSelectSeries={setSeries}
+                onSelectHistoricalYear={handleSelectHistoricalYear}
+                onToggleTheme={toggleTheme}
+                onToggleTvMode={() => {
+                  setIsTvMode((prev) => {
+                    const next = !prev;
+                    if (next) {
+                      setActiveTab('live');
+                      setUserSubView('timing');
+                    }
+                    return next;
+                  });
+                }}
+              />
+            </Suspense>
+          )}
 
           {/* Driver Profile Modal */}
-          <DriverProfileModal
-            isOpen={isProfileOpen}
-            onClose={() => setIsProfileOpen(false)}
-            profile={selectedProfile}
-            onCompare={handleOpenH2H}
-          />
+          {isProfileOpen && (
+            <Suspense fallback={null}>
+              <DriverProfileModal
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                profile={selectedProfile}
+                onCompare={handleOpenH2H}
+              />
+            </Suspense>
+          )}
 
           {/* Global Head to Head Modal */}
-          <HeadToHeadModal
-            isOpen={isH2HOpen}
-            onClose={() => setIsH2HOpen(false)}
-            drivers={drivers}
-            driverAId={h2hDriverA}
-            driverBId={h2hDriverB}
-            onSelectDriverA={setH2hDriverA}
-            onSelectDriverB={setH2hDriverB}
-          />
+          {isH2HOpen && (
+            <Suspense fallback={null}>
+              <HeadToHeadModal
+                isOpen={isH2HOpen}
+                onClose={() => setIsH2HOpen(false)}
+                drivers={drivers}
+                driverAId={h2hDriverA}
+                driverBId={h2hDriverB}
+                onSelectDriverA={setH2hDriverA}
+                onSelectDriverB={setH2hDriverB}
+              />
+            </Suspense>
+          )}
     </div>
   );
 }

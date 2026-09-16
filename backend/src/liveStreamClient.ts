@@ -32,6 +32,65 @@ export interface LiveStreamSession {
   lastUpdated: number;
 }
 
+interface EspnStatistic {
+  name?: string;
+  value?: number;
+}
+
+interface EspnCompetitor {
+  order?: number;
+  athlete?: {
+    displayName?: string;
+    fullName?: string;
+  };
+  vehicle?: {
+    number?: string | number;
+    manufacturer?: string;
+    teamColor?: string;
+  };
+  status?: {
+    type?: {
+      name?: string;
+    };
+    displayValue?: string;
+  };
+  statistics?: EspnStatistic[];
+}
+
+interface EspnCompetition {
+  id?: string;
+  type?: {
+    id?: string;
+    text?: string;
+    abbreviation?: string;
+  };
+  status?: {
+    period?: number;
+    displayClock?: string;
+    type?: {
+      state?: string;
+      description?: string;
+    };
+  };
+  competitors?: EspnCompetitor[];
+}
+
+interface EspnEvent {
+  name?: string;
+  circuit?: {
+    fullName?: string;
+    address?: {
+      city?: string;
+      country?: string;
+    };
+  };
+  competitions?: EspnCompetition[];
+}
+
+interface EspnScoreboardResponse {
+  events?: EspnEvent[];
+}
+
 export class LiveStreamClient {
   private cache: { timestamp: number; data: LiveStreamSession | null } = {
     timestamp: 0,
@@ -46,19 +105,22 @@ export class LiveStreamClient {
     }
 
     try {
-      const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard', {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) F1LiveHub/1.0',
+      const res = await fetch(
+        'https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard',
+        {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) F1LiveHub/1.0',
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         console.warn(`[LiveStream] Scoreboard returned HTTP ${res.status}`);
         return this.cache.data;
       }
 
-      const json = (await res.json()) as any;
+      const json = (await res.json()) as EspnScoreboardResponse;
       const event = json.events?.[0];
       if (!event || !Array.isArray(event.competitions) || event.competitions.length === 0) {
         return null;
@@ -67,11 +129,18 @@ export class LiveStreamClient {
       // Prioritize active competition in progress, then most recent completed
       const comps = event.competitions;
       const activeComp =
-        comps.find((c: any) => c.status?.type?.state === 'in') ||
-        comps.slice().reverse().find((c: any) => c.status?.type?.state === 'post' && c.competitors?.length > 0) ||
+        comps.find((c) => c.status?.type?.state === 'in') ||
+        comps
+          .slice()
+          .reverse()
+          .find((c) => c.status?.type?.state === 'post' && (c.competitors?.length ?? 0) > 0) ||
         comps[0];
 
-      if (!activeComp || !Array.isArray(activeComp.competitors) || activeComp.competitors.length === 0) {
+      if (
+        !activeComp ||
+        !Array.isArray(activeComp.competitors) ||
+        activeComp.competitors.length === 0
+      ) {
         return null;
       }
 
@@ -91,7 +160,9 @@ export class LiveStreamClient {
         state === 'in' ? 'IN_PROGRESS' : state === 'post' ? 'FINISHED' : 'NOT_STARTED';
 
       const drivers: LiveStreamDriver[] = [];
-      const competitors = [...activeComp.competitors].sort((a: any, b: any) => (a.order || 99) - (b.order || 99));
+      const competitors = [...activeComp.competitors].sort(
+        (a, b) => (a.order || 99) - (b.order || 99),
+      );
 
       const assignedDriverNumbers = new Set<number>();
 
@@ -103,11 +174,19 @@ export class LiveStreamClient {
         const familyName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : displayName;
 
         // Match against 2026 driver dictionary (excluding already assigned drivers)
-        const seed = this.matchDriverSeed(displayName, familyName, c.vehicle?.number, assignedDriverNumbers);
-        let finalDriverNumber = seed?.driverNumber ?? (c.vehicle?.number ? Number(c.vehicle.number) : i + 1);
+        const seed = this.matchDriverSeed(
+          displayName,
+          familyName,
+          c.vehicle?.number !== undefined ? String(c.vehicle.number) : undefined,
+          assignedDriverNumbers,
+        );
+        let finalDriverNumber =
+          seed?.driverNumber ?? (c.vehicle?.number ? Number(c.vehicle.number) : i + 1);
 
         if (assignedDriverNumbers.has(finalDriverNumber)) {
-          const unusedSeed = DRIVERS_GRID_2026.find((d) => !assignedDriverNumbers.has(d.driverNumber));
+          const unusedSeed = DRIVERS_GRID_2026.find(
+            (d) => !assignedDriverNumbers.has(d.driverNumber),
+          );
           if (unusedSeed) {
             finalDriverNumber = unusedSeed.driverNumber;
           }
@@ -122,21 +201,37 @@ export class LiveStreamClient {
 
         // Official 2026 Madrid Qualifying Gap Curve and Laps
         const OFFICIAL_GAP_CURVE = [
-          0.000, 0.011, 0.140, 0.189, 0.195, 0.325, 0.470, 0.492, 1.079, 1.217, // Q3 (P1-P10: NOR, ANT, VER, HAM, LEC, RUS, PIA, LAW, COL, LIN)
-          1.326, 1.396, 1.516, 1.586, 1.696,                                     // Q2 (P11-P15: ALO, SAI, GAS, TSU, ALB)
-          2.066, 2.196, 2.326, 2.456, 2.626                                      // Q1 (P16-P20: HUL, BOR, BEA, OCO, STR)
+          0.0,
+          0.011,
+          0.14,
+          0.189,
+          0.195,
+          0.325,
+          0.47,
+          0.492,
+          1.079,
+          1.217, // Q3 (P1-P10: NOR, ANT, VER, HAM, LEC, RUS, PIA, LAW, COL, LIN)
+          1.326,
+          1.396,
+          1.516,
+          1.586,
+          1.696, // Q2 (P11-P15: ALO, SAI, GAS, TSU, ALB)
+          2.066,
+          2.196,
+          2.326,
+          2.456,
+          2.626, // Q1 (P16-P20: HUL, BOR, BEA, OCO, STR)
         ];
 
         const OFFICIAL_LAPS = [
-          19, 20, 18, 21, 21, 22, 22, 18, 17, 21,
-          19, 18, 17, 18, 16,
-          12, 13, 11, 12, 10
+          19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10,
         ];
 
         const gapToLeaderSec = OFFICIAL_GAP_CURVE[i] ?? Number((i * 0.16).toFixed(3));
         const prevGap = i > 0 ? (OFFICIAL_GAP_CURVE[i - 1] ?? (i - 1) * 0.16) : 0;
         const intervalSec = Number((gapToLeaderSec - prevGap).toFixed(3));
-        const lapsCompleted = c.statistics?.find((s: any) => s.name === 'lapsCompleted')?.value ?? (OFFICIAL_LAPS[i] ?? 18);
+        const lapsCompleted =
+          c.statistics?.find((s) => s.name === 'lapsCompleted')?.value ?? OFFICIAL_LAPS[i] ?? 18;
 
         drivers.push({
           order,
@@ -145,9 +240,11 @@ export class LiveStreamClient {
           fullName: seed?.fullName ?? displayName,
           familyName: seed?.familyName ?? familyName,
           teamName: seed?.teamName ?? (c.vehicle?.manufacturer || 'F1 Team'),
-          teamColor: seed?.teamColor ?? (c.vehicle?.teamColor ? `#${c.vehicle.teamColor}` : '#E10600'),
+          teamColor:
+            seed?.teamColor ?? (c.vehicle?.teamColor ? `#${c.vehicle.teamColor}` : '#E10600'),
           status: trackStatus,
-          statusText: c.status?.displayValue || (trackStatus === 'ON_TRACK' ? 'En Pista' : 'En Boxes'),
+          statusText:
+            c.status?.displayValue || (trackStatus === 'ON_TRACK' ? 'En Pista' : 'En Boxes'),
           lapsCompleted,
           gapToLeaderSec,
           intervalSec,
@@ -163,7 +260,9 @@ export class LiveStreamClient {
         sessionName,
         sessionType,
         status,
-        statusDescription: activeComp.status?.type?.description || (status === 'IN_PROGRESS' ? 'En Vivo' : 'Finalizada'),
+        statusDescription:
+          activeComp.status?.type?.description ||
+          (status === 'IN_PROGRESS' ? 'En Vivo' : 'Finalizada'),
         period: activeComp.status?.period || 1,
         displayClock: activeComp.status?.displayClock || '0:00',
         drivers,
@@ -178,18 +277,25 @@ export class LiveStreamClient {
     }
   }
 
-  private matchDriverSeed(displayName: string, familyName: string, vehicleNum?: string, assigned?: Set<number>): DriverGridSeed | undefined {
+  private matchDriverSeed(
+    displayName: string,
+    familyName: string,
+    vehicleNum?: string,
+    assigned?: Set<number>,
+  ): DriverGridSeed | undefined {
     const dLower = displayName.toLowerCase();
     const fLower = familyName.toLowerCase();
     const num = vehicleNum ? Number(vehicleNum) : null;
 
     if (num) {
-      const byNum = DRIVERS_GRID_2026.find((d) => d.driverNumber === num && (!assigned || !assigned.has(d.driverNumber)));
+      const byNum = DRIVERS_GRID_2026.find(
+        (d) => d.driverNumber === num && (!assigned || !assigned.has(d.driverNumber)),
+      );
       if (byNum) return byNum;
     }
 
     return DRIVERS_GRID_2026.find((d) => {
-      if (assigned && assigned.has(d.driverNumber)) return false;
+      if (assigned?.has(d.driverNumber)) return false;
       const seedFull = d.fullName.toLowerCase();
       const seedFam = d.familyName.toLowerCase();
       return (

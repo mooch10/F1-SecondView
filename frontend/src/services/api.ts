@@ -18,6 +18,7 @@ export async function fetchLiveSnapshot(): Promise<LiveSnapshot | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/api/live.json?t=${Date.now()}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -33,6 +34,7 @@ export async function fetchLiveTeamRadios(): Promise<TeamRadioCapture[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/api/live/radios.json?t=${Date.now()}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);

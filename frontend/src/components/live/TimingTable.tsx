@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { ChevronDown, ChevronUp, Gauge, Star, Swords, X } from 'lucide-react';
 import type { DriverLive, SessionType } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -6,10 +6,15 @@ import { MiniSectorsBar } from '../qualy/MiniSectorsBar';
 import { SectorPill } from '../qualy/SectorPill';
 import { TyreBadge } from '../common/TyreBadge';
 import { TyreStintBar, type StintItem } from '../common/TyreStintBar';
-import { HeadToHeadModal } from './HeadToHeadModal';
-import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 import { computeBestSessionSectors, resolveSectorStatus } from '../../utils/sectorUtils';
+
+const HeadToHeadModal = lazy(() =>
+  import('./HeadToHeadModal').then((m) => ({ default: m.HeadToHeadModal }))
+);
+const DriverProfileModal = lazy(() =>
+  import('../drivers/DriverProfileModal').then((m) => ({ default: m.DriverProfileModal }))
+);
 
 interface TimingTableProps {
   drivers: DriverLive[];
@@ -1124,32 +1129,40 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       )}
 
       {/* ⚔️ Head-to-Head 1 vs 1 Modal */}
-      <HeadToHeadModal
-        isOpen={isH2HOpen}
-        onClose={() => setIsH2HOpen(false)}
-        drivers={drivers}
-        driverAId={h2hDriverA}
-        driverBId={h2hDriverB}
-        onSelectDriverA={setH2hDriverA}
-        onSelectDriverB={setH2hDriverB}
-      />
+      {isH2HOpen && (
+        <Suspense fallback={null}>
+          <HeadToHeadModal
+            isOpen={isH2HOpen}
+            onClose={() => setIsH2HOpen(false)}
+            drivers={drivers}
+            driverAId={h2hDriverA}
+            driverBId={h2hDriverB}
+            onSelectDriverA={setH2hDriverA}
+            onSelectDriverB={setH2hDriverB}
+          />
+        </Suspense>
+      )}
 
       {/* 👤 Official Driver Profile Modal */}
-      <DriverProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
-        profile={selectedProfile}
-        isPinned={selectedProfile ? pinnedDriverNumber === selectedProfile.number : false}
-        onTogglePin={(num) => togglePin(num)}
-        onCompare={(num, teammateNum) => {
-          setIsProfileOpen(false);
-          if (teammateNum) {
-            openH2HWithTeammate(num, teammateNum);
-          } else {
-            openH2HWithDriver(num);
-          }
-        }}
-      />
+      {isProfileOpen && (
+        <Suspense fallback={null}>
+          <DriverProfileModal
+            isOpen={isProfileOpen}
+            onClose={() => setIsProfileOpen(false)}
+            profile={selectedProfile}
+            isPinned={selectedProfile ? pinnedDriverNumber === selectedProfile.number : false}
+            onTogglePin={(num) => togglePin(num)}
+            onCompare={(num, teammateNum) => {
+              setIsProfileOpen(false);
+              if (teammateNum) {
+                openH2HWithTeammate(num, teammateNum);
+              } else {
+                openH2HWithDriver(num);
+              }
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

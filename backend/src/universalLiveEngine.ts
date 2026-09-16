@@ -1,3 +1,6 @@
+import { CIRCUIT_ALIASES, OFFICIAL_2026_CIRCUITS } from './circuits/catalog.js';
+import type { JolpicaQualifyingResult, JolpicaQualifyingSession, JolpicaRace } from './jolpica.js';
+import type { LiveStreamSession } from './liveStreamClient.js';
 import type {
   DriverLive,
   LiveSnapshot,
@@ -10,9 +13,6 @@ import type {
   TrackWeather,
   TyreCompound,
 } from './types.js';
-import type { JolpicaQualifyingResult, JolpicaQualifyingSession, JolpicaRace } from './jolpica.js';
-import type { LiveStreamSession } from './liveStreamClient.js';
-import { OFFICIAL_2026_CIRCUITS, CIRCUIT_ALIASES } from './circuits/catalog.js';
 
 export interface CircuitData {
   totalLaps: number;
@@ -37,7 +37,7 @@ function normalizeCircuitTerm(str: string): string {
   return str
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\p{Diacritic}/gu, '')
     .replace(/[\s-]+/g, '_')
     .replace(/[^a-z0-9_]/g, '');
 }
@@ -45,7 +45,7 @@ function normalizeCircuitTerm(str: string): string {
 export function getCircuitData(circuitName = '', location = '', country = ''): CircuitData {
   const rawTerm = `${circuitName} ${location} ${country}`;
   const term = normalizeCircuitTerm(rawTerm);
-  
+
   // 1. Direct key match (sorted by length descending to prevent substring false positives)
   const sortedKeys = Object.keys(CIRCUITS_CATALOG)
     .filter((k) => k !== 'default')
@@ -70,7 +70,6 @@ export function getCircuitData(circuitName = '', location = '', country = ''): C
   return CIRCUITS_CATALOG.default;
 }
 
-
 export interface DriverGridSeed {
   driverNumber: number;
   code: string;
@@ -83,28 +82,188 @@ export interface DriverGridSeed {
 
 // Official 2026 Grid calibrated with the official Madrid Qualifying Results
 export const DRIVERS_GRID_2026: DriverGridSeed[] = [
-  { driverNumber: 4, code: 'NOR', fullName: 'Lando Norris', familyName: 'Norris', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0 },
-  { driverNumber: 12, code: 'ANT', fullName: 'Kimi Antonelli', familyName: 'Antonelli', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.011 },
-  { driverNumber: 1, code: 'VER', fullName: 'Max Verstappen', familyName: 'Verstappen', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 0.140 },
-  { driverNumber: 44, code: 'HAM', fullName: 'Lewis Hamilton', familyName: 'Hamilton', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.189 },
-  { driverNumber: 16, code: 'LEC', fullName: 'Charles Leclerc', familyName: 'Leclerc', teamName: 'Ferrari', teamColor: '#E8002D', performanceBias: 0.195 },
-  { driverNumber: 63, code: 'RUS', fullName: 'George Russell', familyName: 'Russell', teamName: 'Mercedes', teamColor: '#27F4D2', performanceBias: 0.325 },
-  { driverNumber: 81, code: 'PIA', fullName: 'Oscar Piastri', familyName: 'Piastri', teamName: 'McLaren', teamColor: '#FF8000', performanceBias: 0.470 },
-  { driverNumber: 30, code: 'LAW', fullName: 'Liam Lawson', familyName: 'Lawson', teamName: 'Racing Bulls', teamColor: '#6692FF', performanceBias: 0.492 },
-  { driverNumber: 43, code: 'COL', fullName: 'Franco Colapinto', familyName: 'Colapinto', teamName: 'Alpine', teamColor: '#00A1E8', performanceBias: 1.079 },
-  { driverNumber: 41, code: 'LIN', fullName: 'Arvid Lindblad', familyName: 'Lindblad', teamName: 'Racing Bulls', teamColor: '#6692FF', performanceBias: 1.217 },
+  {
+    driverNumber: 4,
+    code: 'NOR',
+    fullName: 'Lando Norris',
+    familyName: 'Norris',
+    teamName: 'McLaren',
+    teamColor: '#FF8000',
+    performanceBias: 0,
+  },
+  {
+    driverNumber: 12,
+    code: 'ANT',
+    fullName: 'Kimi Antonelli',
+    familyName: 'Antonelli',
+    teamName: 'Mercedes',
+    teamColor: '#27F4D2',
+    performanceBias: 0.011,
+  },
+  {
+    driverNumber: 1,
+    code: 'VER',
+    fullName: 'Max Verstappen',
+    familyName: 'Verstappen',
+    teamName: 'Red Bull Racing',
+    teamColor: '#3671C6',
+    performanceBias: 0.14,
+  },
+  {
+    driverNumber: 44,
+    code: 'HAM',
+    fullName: 'Lewis Hamilton',
+    familyName: 'Hamilton',
+    teamName: 'Ferrari',
+    teamColor: '#E8002D',
+    performanceBias: 0.189,
+  },
+  {
+    driverNumber: 16,
+    code: 'LEC',
+    fullName: 'Charles Leclerc',
+    familyName: 'Leclerc',
+    teamName: 'Ferrari',
+    teamColor: '#E8002D',
+    performanceBias: 0.195,
+  },
+  {
+    driverNumber: 63,
+    code: 'RUS',
+    fullName: 'George Russell',
+    familyName: 'Russell',
+    teamName: 'Mercedes',
+    teamColor: '#27F4D2',
+    performanceBias: 0.325,
+  },
+  {
+    driverNumber: 81,
+    code: 'PIA',
+    fullName: 'Oscar Piastri',
+    familyName: 'Piastri',
+    teamName: 'McLaren',
+    teamColor: '#FF8000',
+    performanceBias: 0.47,
+  },
+  {
+    driverNumber: 30,
+    code: 'LAW',
+    fullName: 'Liam Lawson',
+    familyName: 'Lawson',
+    teamName: 'Racing Bulls',
+    teamColor: '#6692FF',
+    performanceBias: 0.492,
+  },
+  {
+    driverNumber: 43,
+    code: 'COL',
+    fullName: 'Franco Colapinto',
+    familyName: 'Colapinto',
+    teamName: 'Alpine',
+    teamColor: '#00A1E8',
+    performanceBias: 1.079,
+  },
+  {
+    driverNumber: 41,
+    code: 'LIN',
+    fullName: 'Arvid Lindblad',
+    familyName: 'Lindblad',
+    teamName: 'Racing Bulls',
+    teamColor: '#6692FF',
+    performanceBias: 1.217,
+  },
   // Q2 Group
-  { driverNumber: 14, code: 'ALO', fullName: 'Fernando Alonso', familyName: 'Alonso', teamName: 'Aston Martin', teamColor: '#229971', performanceBias: 1.326 },
-  { driverNumber: 55, code: 'SAI', fullName: 'Carlos Sainz', familyName: 'Sainz', teamName: 'Williams', teamColor: '#64C4FF', performanceBias: 1.396 },
-  { driverNumber: 10, code: 'GAS', fullName: 'Pierre Gasly', familyName: 'Gasly', teamName: 'Alpine', teamColor: '#FF87BC', performanceBias: 1.516 },
-  { driverNumber: 22, code: 'TSU', fullName: 'Yuki Tsunoda', familyName: 'Tsunoda', teamName: 'Red Bull Racing', teamColor: '#3671C6', performanceBias: 1.586 },
-  { driverNumber: 23, code: 'ALB', fullName: 'Alexander Albon', familyName: 'Albon', teamName: 'Williams', teamColor: '#64C4FF', performanceBias: 1.696 },
+  {
+    driverNumber: 14,
+    code: 'ALO',
+    fullName: 'Fernando Alonso',
+    familyName: 'Alonso',
+    teamName: 'Aston Martin',
+    teamColor: '#229971',
+    performanceBias: 1.326,
+  },
+  {
+    driverNumber: 55,
+    code: 'SAI',
+    fullName: 'Carlos Sainz',
+    familyName: 'Sainz',
+    teamName: 'Williams',
+    teamColor: '#64C4FF',
+    performanceBias: 1.396,
+  },
+  {
+    driverNumber: 10,
+    code: 'GAS',
+    fullName: 'Pierre Gasly',
+    familyName: 'Gasly',
+    teamName: 'Alpine',
+    teamColor: '#FF87BC',
+    performanceBias: 1.516,
+  },
+  {
+    driverNumber: 22,
+    code: 'TSU',
+    fullName: 'Yuki Tsunoda',
+    familyName: 'Tsunoda',
+    teamName: 'Red Bull Racing',
+    teamColor: '#3671C6',
+    performanceBias: 1.586,
+  },
+  {
+    driverNumber: 23,
+    code: 'ALB',
+    fullName: 'Alexander Albon',
+    familyName: 'Albon',
+    teamName: 'Williams',
+    teamColor: '#64C4FF',
+    performanceBias: 1.696,
+  },
   // Q1 Group
-  { driverNumber: 27, code: 'HUL', fullName: 'Nico Hülkenberg', familyName: 'Hülkenberg', teamName: 'Audi', teamColor: '#52E252', performanceBias: 2.066 },
-  { driverNumber: 5, code: 'BOR', fullName: 'Gabriel Bortoleto', familyName: 'Bortoleto', teamName: 'Audi', teamColor: '#52E252', performanceBias: 2.196 },
-  { driverNumber: 87, code: 'BEA', fullName: 'Oliver Bearman', familyName: 'Bearman', teamName: 'Haas', teamColor: '#B6BABD', performanceBias: 2.326 },
-  { driverNumber: 31, code: 'OCO', fullName: 'Esteban Ocon', familyName: 'Ocon', teamName: 'Haas', teamColor: '#B6BABD', performanceBias: 2.456 },
-  { driverNumber: 18, code: 'STR', fullName: 'Lance Stroll', familyName: 'Stroll', teamName: 'Aston Martin', teamColor: '#229971', performanceBias: 2.626 },
+  {
+    driverNumber: 27,
+    code: 'HUL',
+    fullName: 'Nico Hülkenberg',
+    familyName: 'Hülkenberg',
+    teamName: 'Audi',
+    teamColor: '#52E252',
+    performanceBias: 2.066,
+  },
+  {
+    driverNumber: 5,
+    code: 'BOR',
+    fullName: 'Gabriel Bortoleto',
+    familyName: 'Bortoleto',
+    teamName: 'Audi',
+    teamColor: '#52E252',
+    performanceBias: 2.196,
+  },
+  {
+    driverNumber: 87,
+    code: 'BEA',
+    fullName: 'Oliver Bearman',
+    familyName: 'Bearman',
+    teamName: 'Haas',
+    teamColor: '#B6BABD',
+    performanceBias: 2.326,
+  },
+  {
+    driverNumber: 31,
+    code: 'OCO',
+    fullName: 'Esteban Ocon',
+    familyName: 'Ocon',
+    teamName: 'Haas',
+    teamColor: '#B6BABD',
+    performanceBias: 2.456,
+  },
+  {
+    driverNumber: 18,
+    code: 'STR',
+    fullName: 'Lance Stroll',
+    familyName: 'Stroll',
+    teamName: 'Aston Martin',
+    teamColor: '#229971',
+    performanceBias: 2.626,
+  },
 ];
 
 export interface ResolvedActiveSession {
@@ -139,7 +298,10 @@ export function resolveActiveSession(
       const startMs = new Date(s.dateTime).getTime();
 
       const nameLower = s.name.toLowerCase();
-      const isQualy = nameLower.includes('clasificación') || nameLower.includes('qualy') || nameLower.includes('qualifying');
+      const isQualy =
+        nameLower.includes('clasificación') ||
+        nameLower.includes('qualy') ||
+        nameLower.includes('qualifying');
       const isRace = nameLower.includes('carrera') || nameLower.includes('race');
 
       // Duration windows: Qualy 100m, Race 150m, Practice 90m
@@ -167,7 +329,7 @@ export function resolveActiveSession(
         }
 
         const sessionType: SessionType = isQualy ? 'Qualifying' : isRace ? 'Race' : 'Practice';
-        const isNearEnd = elapsedMin > (durationMs / 60000) - 10;
+        const isNearEnd = elapsedMin > durationMs / 60000 - 10;
 
         return {
           race,
@@ -193,7 +355,10 @@ export function resolveActiveSession(
       const startMs = new Date(s.dateTime).getTime();
 
       const nameLower = s.name.toLowerCase();
-      const isQualy = nameLower.includes('clasificación') || nameLower.includes('qualy') || nameLower.includes('qualifying');
+      const isQualy =
+        nameLower.includes('clasificación') ||
+        nameLower.includes('qualy') ||
+        nameLower.includes('qualifying');
       const isRace = nameLower.includes('carrera') || nameLower.includes('race');
 
       const durationMs = isRace ? 150 * 60 * 1000 : isQualy ? 105 * 60 * 1000 : 90 * 60 * 1000;
@@ -228,7 +393,10 @@ export function resolveActiveSession(
     const targetSession = upcoming || sessions[sessions.length - 1];
     if (targetSession) {
       const nameLower = targetSession.name.toLowerCase();
-      const isQualy = nameLower.includes('clasificación') || nameLower.includes('qualy') || nameLower.includes('qualifying');
+      const isQualy =
+        nameLower.includes('clasificación') ||
+        nameLower.includes('qualy') ||
+        nameLower.includes('qualifying');
       const isRace = nameLower.includes('carrera') || nameLower.includes('race');
       const sessionType: SessionType = isQualy ? 'Qualifying' : isRace ? 'Race' : 'Practice';
 
@@ -280,27 +448,32 @@ export function generateUniversalLiveSnapshot(
   const isQualy = activeSession.sessionType === 'Qualifying';
   const isNotStarted = activeSession.status === 'NOT_STARTED';
 
-  const rawSourceDrivers = (liveSession && liveSession.drivers.length > 0)
-    ? liveSession.drivers.map((ld) => ({
-        driverNumber: ld.driverNumber,
-        code: ld.code,
-        fullName: ld.fullName,
-        familyName: ld.familyName,
-        teamName: ld.teamName,
-        teamColor: ld.teamColor,
-        performanceBias: ld.gapToLeaderSec,
-        order: ld.order,
-        status: isNotStarted ? ('GARAGE' as const) : ld.status,
-        statusText: isNotStarted ? 'En Grilla' : ld.statusText,
-        lapsCompleted: isNotStarted ? 0 : ld.lapsCompleted,
-      }))
-    : DRIVERS_GRID_2026.map((d, i) => ({
-        ...d,
-        order: i + 1,
-        status: isNotStarted ? ('GARAGE' as const) : ('ON_TRACK' as const),
-        statusText: isNotStarted ? 'En Grilla' : 'En Pista',
-        lapsCompleted: isNotStarted ? 0 : [19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][i] ?? 18,
-      }));
+  const rawSourceDrivers =
+    liveSession && liveSession.drivers.length > 0
+      ? liveSession.drivers.map((ld) => ({
+          driverNumber: ld.driverNumber,
+          code: ld.code,
+          fullName: ld.fullName,
+          familyName: ld.familyName,
+          teamName: ld.teamName,
+          teamColor: ld.teamColor,
+          performanceBias: ld.gapToLeaderSec,
+          order: ld.order,
+          status: isNotStarted ? ('GARAGE' as const) : ld.status,
+          statusText: isNotStarted ? 'En Grilla' : ld.statusText,
+          lapsCompleted: isNotStarted ? 0 : ld.lapsCompleted,
+        }))
+      : DRIVERS_GRID_2026.map((d, i) => ({
+          ...d,
+          order: i + 1,
+          status: isNotStarted ? ('GARAGE' as const) : ('ON_TRACK' as const),
+          statusText: isNotStarted ? 'En Grilla' : 'En Pista',
+          lapsCompleted: isNotStarted
+            ? 0
+            : ([19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][
+                i
+              ] ?? 18),
+        }));
 
   // Ensure strict uniqueness of driverNumber to avoid duplicates
   const seenDriverNumbers = new Set<number>();
@@ -311,9 +484,16 @@ export function generateUniversalLiveSnapshot(
   });
 
   const isRaceSession = activeSession.sessionType === 'Race';
-  const calculatedCurrentLap = isQualy || isNotStarted
-    ? 0
-    : Math.max(1, Math.min(circuit.totalLaps, Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps)));
+  const calculatedCurrentLap =
+    isQualy || isNotStarted
+      ? 0
+      : Math.max(
+          1,
+          Math.min(
+            circuit.totalLaps,
+            Math.round((activeSession.progressPercentage / 100) * circuit.totalLaps),
+          ),
+        );
   const isRaceFinished =
     isRaceSession &&
     (activeSession.status === 'FINISHED' ||
@@ -324,8 +504,8 @@ export function generateUniversalLiveSnapshot(
   // Leader (idx 0) excels in S1/S2, P2/P3 trade S1/S3 records
   const precomputedSectors = sourceDrivers.map((d, idx) => {
     const driverLapDuration = benchmarkLap + d.performanceBias;
-    const s1Bias = idx === 1 ? -0.040 : idx === 0 ? -0.020 : idx * 0.015;
-    const s2Bias = idx === 0 ? -0.050 : idx === 2 ? -0.020 : idx * 0.020;
+    const s1Bias = idx === 1 ? -0.04 : idx === 0 ? -0.02 : idx * 0.015;
+    const s2Bias = idx === 0 ? -0.05 : idx === 2 ? -0.02 : idx * 0.02;
     const baseS1 = driverLapDuration * 0.307;
     const baseS2 = driverLapDuration * 0.375;
     const s1 = Number((baseS1 + s1Bias).toFixed(3));
@@ -344,24 +524,36 @@ export function generateUniversalLiveSnapshot(
     const diffSec = d.performanceBias;
     const gap = isNotStarted
       ? `P${d.order}`
-      : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${diffSec.toFixed(3)}`);
+      : isPole
+        ? isQualy
+          ? 'POLE'
+          : 'LÍDER'
+        : `+${diffSec.toFixed(3)}`;
 
-    const prevDuration = idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
+    const prevDuration =
+      idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
     const intervalDiff = driverLapDuration - prevDuration;
     const interval = isNotStarted
       ? '- - -'
-      : (isPole ? (isQualy ? 'POLE' : 'LÍDER') : `+${intervalDiff.toFixed(3)}`);
+      : isPole
+        ? isQualy
+          ? 'POLE'
+          : 'LÍDER'
+        : `+${intervalDiff.toFixed(3)}`;
 
-    const s1Status: SectorStatus = Math.abs(s1 - bestEngineS1) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
-    const s2Status: SectorStatus = Math.abs(s2 - bestEngineS2) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
-    const s3Status: SectorStatus = Math.abs(s3 - bestEngineS3) <= 0.001 ? 'purple' : idx < 8 ? 'green' : 'yellow';
+    const s1Status: SectorStatus =
+      Math.abs(s1 - bestEngineS1) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
+    const s2Status: SectorStatus =
+      Math.abs(s2 - bestEngineS2) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
+    const s3Status: SectorStatus =
+      Math.abs(s3 - bestEngineS3) <= 0.001 ? 'purple' : idx < 8 ? 'green' : 'yellow';
 
     // Position car along track outline with Leader at the front and followers behind
     const outlineLen = circuit.outline.length;
     const lagPoints = Math.round(d.performanceBias * 2.5 + idx * 3.5);
     const stepOffset = isNotStarted
-      ? ((((outlineLen - idx * 4) % outlineLen) + outlineLen) % outlineLen)
-      : ((((nowSec * 2 - lagPoints) % outlineLen) + outlineLen) % outlineLen);
+      ? (((outlineLen - idx * 4) % outlineLen) + outlineLen) % outlineLen
+      : (((nowSec * 2 - lagPoints) % outlineLen) + outlineLen) % outlineLen;
     const coord = circuit.outline[stepOffset] || [0, 0];
 
     const eliminatedPhase: 'Q1' | 'Q2' | null = isQualy
@@ -376,7 +568,8 @@ export function generateUniversalLiveSnapshot(
     const q2Dur = idx < 15 ? driverLapDuration + (idx < 10 ? 0.28 : 0.12) : null;
     const q3Dur = idx < 10 ? driverLapDuration : null;
 
-    const effectiveBestDur = idx < 10 ? (q3Dur ?? driverLapDuration) : idx < 15 ? (q2Dur ?? driverLapDuration) : q1Dur;
+    const effectiveBestDur =
+      idx < 10 ? (q3Dur ?? driverLapDuration) : idx < 15 ? (q2Dur ?? driverLapDuration) : q1Dur;
     const effectiveBestStr = formatLapSeconds(effectiveBestDur);
 
     // Realistic dynamic tyre strategy calibrated to current session progress and pit stops
@@ -393,7 +586,7 @@ export function generateUniversalLiveSnapshot(
     } else {
       // Race: compute realistic stint wear
       const firstStopLap = Math.floor(circuit.totalLaps * 0.38);
-      const secondStopLap = Math.floor(circuit.totalLaps * 0.70);
+      const secondStopLap = Math.floor(circuit.totalLaps * 0.7);
 
       if (pitStops === 2 && calculatedCurrentLap > secondStopLap) {
         tyreCompound = idx % 2 === 0 ? 'SOFT' : 'MEDIUM';
@@ -431,7 +624,7 @@ export function generateUniversalLiveSnapshot(
         laps: tyreLaps,
       },
       pitStops,
-      inPit: isNotStarted ? false : (d.status === 'PIT' || d.status === 'GARAGE'),
+      inPit: isNotStarted ? false : d.status === 'PIT' || d.status === 'GARAGE',
       status: 'ACTIVE',
       sectors: isNotStarted
         ? {
@@ -501,54 +694,54 @@ export function generateUniversalLiveSnapshot(
         },
       ]
     : isRaceFinished
-    ? [
-        {
-          id: 1,
-          time: '16:45:00',
-          text: `BANDERA A CUADROS • CARRERA FINALIZADA (${race.circuitName})`,
-          flag: 'CHEQUERED',
-        },
-        {
-          id: 2,
-          time: '16:47:00',
-          text: `GANADOR OFICIAL: AUTO ${drivers[0]?.driverNumber} (${drivers[0]?.code})`,
-          flag: 'CHEQUERED',
-        },
-      ]
-    : [
-        {
-          id: 1,
-          time: '14:00:00',
-          text: `INICIO DE SESIÓN - SEMÁFORO EN VERDE EN PIT EXIT (${race.circuitName})`,
-          flag: 'GREEN',
-        },
-        {
-          id: 2,
-          time: '14:15:30',
-          text: `PISTA LIBRE - SECTOR 2 (${race.locality})`,
-          flag: null,
-        },
-        {
-          id: 3,
-          time: '14:28:10',
-          text: 'AUTO 43 (COLAPINTO) - TIEMPO VÁLIDO EN EL TOP 10',
-          flag: null,
-        },
-        {
-          id: 4,
-          time: '14:45:00',
-          text: `BANDERA VERDE - REINICIO DE ACTIVIDAD EN PISTA (${race.circuitName})`,
-          flag: 'GREEN',
-        },
-      ];
+      ? [
+          {
+            id: 1,
+            time: '16:45:00',
+            text: `BANDERA A CUADROS • CARRERA FINALIZADA (${race.circuitName})`,
+            flag: 'CHEQUERED',
+          },
+          {
+            id: 2,
+            time: '16:47:00',
+            text: `GANADOR OFICIAL: AUTO ${drivers[0]?.driverNumber} (${drivers[0]?.code})`,
+            flag: 'CHEQUERED',
+          },
+        ]
+      : [
+          {
+            id: 1,
+            time: '14:00:00',
+            text: `INICIO DE SESIÓN - SEMÁFORO EN VERDE EN PIT EXIT (${race.circuitName})`,
+            flag: 'GREEN',
+          },
+          {
+            id: 2,
+            time: '14:15:30',
+            text: `PISTA LIBRE - SECTOR 2 (${race.locality})`,
+            flag: null,
+          },
+          {
+            id: 3,
+            time: '14:28:10',
+            text: 'AUTO 43 (COLAPINTO) - TIEMPO VÁLIDO EN EL TOP 10',
+            flag: null,
+          },
+          {
+            id: 4,
+            time: '14:45:00',
+            text: `BANDERA VERDE - REINICIO DE ACTIVIDAD EN PISTA (${race.circuitName})`,
+            flag: 'GREEN',
+          },
+        ];
 
   const session: SessionLive = {
     sessionKey: 9600 + race.round,
     sessionName: activeSession.sessionName,
     sessionType: activeSession.sessionType,
     qualifyingPhase: isNotStarted || !isQualy ? null : activeSession.qualifyingPhase,
-    poleDriver: isNotStarted || !isQualy ? null : (drivers[0]?.code || 'DRV'),
-    poleLapTime: isNotStarted || !isQualy ? null : (drivers[0]?.bestLapTime || '--:--.---'),
+    poleDriver: isNotStarted || !isQualy ? null : drivers[0]?.code || 'DRV',
+    poleLapTime: isNotStarted || !isQualy ? null : drivers[0]?.bestLapTime || '--:--.---',
     location: race.locality,
     country: race.country,
     circuit: race.circuitName,
@@ -596,17 +789,18 @@ export function generateUniversalQualifyingSession(
   const benchmarkLap = circuit.benchmarkLapSec;
   const poleTimeStr = formatLapSeconds(benchmarkLap);
 
-  const sourceDrivers = (liveSession && liveSession.drivers.length > 0)
-    ? liveSession.drivers.map((ld) => ({
-        driverNumber: ld.driverNumber,
-        code: ld.code,
-        fullName: ld.fullName,
-        familyName: ld.familyName,
-        teamName: ld.teamName,
-        teamColor: ld.teamColor,
-        performanceBias: ld.gapToLeaderSec,
-      }))
-    : DRIVERS_GRID_2026;
+  const sourceDrivers =
+    liveSession && liveSession.drivers.length > 0
+      ? liveSession.drivers.map((ld) => ({
+          driverNumber: ld.driverNumber,
+          code: ld.code,
+          fullName: ld.fullName,
+          familyName: ld.familyName,
+          teamName: ld.teamName,
+          teamColor: ld.teamColor,
+          performanceBias: ld.gapToLeaderSec,
+        }))
+      : DRIVERS_GRID_2026;
 
   const results: JolpicaQualifyingResult[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;

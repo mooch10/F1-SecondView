@@ -90,6 +90,23 @@ export interface OpenF1Weather {
   pressure?: number;
 }
 
+export interface OpenF1LiveSessionResult {
+  session: OpenF1Session | null;
+  drivers: OpenF1Driver[];
+  positions: OpenF1Position[];
+  intervals: OpenF1Interval[];
+  stints: OpenF1Stint[];
+  laps: OpenF1Lap[];
+  raceControl: OpenF1RaceControl[];
+  weather: OpenF1Weather[];
+  locations: OpenF1Location[];
+  trackOutline: {
+    circuitName: string;
+    outline: [number, number][];
+    bounds: { minX: number; maxX: number; minY: number; maxY: number };
+  } | null;
+}
+
 export class OpenF1Client {
   private baseUrl = 'https://api.openf1.org/v1';
   private timeoutMs = 8000;
@@ -104,8 +121,9 @@ export class OpenF1Client {
     }
   >();
 
-  private yearSessionsCache: { year: number; timestamp: number; data: OpenF1Session[] } | null = null;
-  private liveDataCache = new Map<number, { timestamp: number; data: any }>();
+  private yearSessionsCache: { year: number; timestamp: number; data: OpenF1Session[] } | null =
+    null;
+  private liveDataCache = new Map<number, { timestamp: number; data: OpenF1LiveSessionResult }>();
   private liveCooldownUntil = 0;
 
   private delay(ms: number): Promise<void> {
@@ -122,7 +140,7 @@ export class OpenF1Client {
           Accept: 'application/json',
         };
         if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+          headers.Authorization = `Bearer ${token}`;
         }
 
         const response = await fetch(url, {
@@ -140,7 +158,9 @@ export class OpenF1Client {
 
         if (response.status === 429) {
           if (attempt === retries) {
-            console.warn(`[OpenF1] 429 Rate limit reached on ${endpoint}. Entering cooldown for 30s.`);
+            console.warn(
+              `[OpenF1] 429 Rate limit reached on ${endpoint}. Entering cooldown for 30s.`,
+            );
             this.liveCooldownUntil = Date.now() + 30000;
             return [];
           }

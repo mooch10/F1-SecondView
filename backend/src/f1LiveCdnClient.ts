@@ -44,9 +44,121 @@ export interface F1CdnSessionInfo {
   Path?: string;
 }
 
+export interface F1CdnSector {
+  Value?: string;
+  PreviousValue?: string;
+  OverallFastest?: boolean;
+  PersonalFastest?: boolean;
+  Segments?: Array<{ Status?: number }>;
+}
+
+export interface F1CdnSpeeds {
+  I1?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
+  I2?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
+  FL?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
+  ST?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
+}
+
+export interface F1CdnTimingLine {
+  Position?: string;
+  Line?: number;
+  RacingNumber?: string;
+  GapToLeader?: string;
+  IntervalToPositionAhead?: { Value?: string; Catching?: boolean };
+  NumberOfLaps?: number;
+  NumberOfPitStops?: number;
+  InPit?: boolean;
+  PitOut?: boolean;
+  Stopped?: boolean;
+  Retired?: boolean;
+  Status?: number;
+  Sectors?: F1CdnSector[];
+  Speeds?: F1CdnSpeeds;
+  BestLapTime?: {
+    Value?: string;
+    Lap?: number;
+    OverallFastest?: boolean;
+    PersonalFastest?: boolean;
+  };
+  LastLapTime?: {
+    Value?: string;
+    Status?: number;
+    OverallFastest?: boolean;
+    PersonalFastest?: boolean;
+  };
+}
+
+export interface F1CdnTimingData {
+  Lines?: Record<string, F1CdnTimingLine>;
+  Withheld?: boolean;
+}
+
+export interface F1CdnStint {
+  LapTime?: string;
+  LapNumber?: number;
+  LapFlags?: number;
+  Compound?: string;
+  New?: string;
+  TyresNotChanged?: string;
+  TotalLaps?: number;
+  StartLaps?: number;
+}
+
+export interface F1CdnTimingAppLine {
+  RacingNumber?: string;
+  Line?: number;
+  GridPos?: string;
+  Stints?: F1CdnStint[];
+}
+
+export interface F1CdnTimingAppData {
+  Lines?: Record<string, F1CdnTimingAppLine>;
+}
+
+export interface F1CdnDriverEntry {
+  RacingNumber?: string;
+  BroadcastName?: string;
+  FullName?: string;
+  Tla?: string;
+  Line?: number;
+  TeamName?: string;
+  TeamColour?: string;
+  FirstName?: string;
+  LastName?: string;
+  Reference?: string;
+  HeadshotUrl?: string;
+}
+
+export type F1CdnDriverList = Record<string, F1CdnDriverEntry>;
+
+export interface F1CdnRaceControlMsg {
+  Utc?: string;
+  Lap?: number;
+  Category?: string;
+  Flag?: string;
+  Scope?: string;
+  Sector?: number;
+  RacingNumber?: string;
+  Message?: string;
+}
+
+export interface F1CdnRaceControl {
+  Messages?: F1CdnRaceControlMsg[];
+}
+
+export interface F1CdnRadioCapture {
+  Utc?: string;
+  RacingNumber?: string;
+  Path?: string;
+}
+
+export interface F1CdnTeamRadio {
+  Captures?: F1CdnRadioCapture[] | Record<string, F1CdnRadioCapture>;
+}
+
 export class F1LiveCdnClient {
   private readonly baseUrl = 'https://livetiming.formula1.com/static';
-  private readonly timeoutMs = 6000;
+  private readonly timeoutMs = 3500;
   private readonly userAgent =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
@@ -54,6 +166,17 @@ export class F1LiveCdnClient {
     timestamp: 0,
     data: null,
   };
+
+  // In-memory cache for static driver metadata per GP session (no need to re-fetch 15KB every 2s)
+  private driverListCache = new Map<string, F1CdnDriverList>();
+
+  // Long-term cache for completed races (prevents thousands of requests between GP weekends)
+  private finalizedSnapshotCache: {
+    sessionPath: string;
+    timestamp: number;
+    snapshot: LiveSnapshot;
+  } | null = null;
+  private readonly FINALIZED_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
   private async fetchCdnJson<T>(path: string, cacheBust = true): Promise<T | null> {
     const bustParam = cacheBust ? `?_=${Date.now()}` : '';
@@ -91,7 +214,12 @@ export class F1LiveCdnClient {
    */
   public async getSessionInfo(forceFresh = false): Promise<F1CdnSessionInfo | null> {
     const now = Date.now();
-    if (!forceFresh && this.cachedSessionInfo.data && now - this.cachedSessionInfo.timestamp < 4000) {
+    // Cache SessionInfo for 5 seconds to reduce edge roundtrips
+    if (
+      !forceFresh &&
+      this.cachedSessionInfo.data &&
+      now - this.cachedSessionInfo.timestamp < 5000
+    ) {
       return this.cachedSessionInfo.data;
     }
 
@@ -109,11 +237,12 @@ export class F1LiveCdnClient {
     const session = await this.getSessionInfo();
     if (!session || !session.Path) return false;
     const status = session.SessionStatus?.toLowerCase() || '';
-    return status === 'started' || status === 'ends' || status === 'finalised';
+    return status === 'started' || status === 'ends';
   }
 
   /**
    * Builds an authentic, rich LiveSnapshot using official F1 CDN feeds.
+   * Utilizes adaptive caching and parallel settled fetches to ensure maximum speed and stability.
    */
   public async getLiveRaceSnapshot(providedPath?: string): Promise<LiveSnapshot | null> {
     const sessionInfo = await this.getSessionInfo();
@@ -125,26 +254,57 @@ export class F1LiveCdnClient {
 
     // Standardize trailing slash
     const normalizedPath = sessionPath.endsWith('/') ? sessionPath : `${sessionPath}/`;
+    const isFinalised = sessionInfo?.SessionStatus?.toLowerCase() === 'finalised';
 
-    // Download timing, app data, driver list, race control and radio feeds in parallel
-    const [timingDataRaw, timingAppDataRaw, driverListRaw, raceControlRaw, teamRadioRaw] =
-      await Promise.all([
-        this.fetchCdnJson<any>(`${normalizedPath}TimingData.json`),
-        this.fetchCdnJson<any>(`${normalizedPath}TimingAppData.json`),
-        this.fetchCdnJson<any>(`${normalizedPath}DriverList.json`),
-        this.fetchCdnJson<any>(`${normalizedPath}RaceControlMessages.json`),
-        this.fetchCdnJson<any>(`${normalizedPath}TeamRadio.json`),
+    // 1. Adaptive Cache: If session is finalised and cached, return immediately
+    if (
+      isFinalised &&
+      this.finalizedSnapshotCache &&
+      this.finalizedSnapshotCache.sessionPath === normalizedPath &&
+      Date.now() - this.finalizedSnapshotCache.timestamp < this.FINALIZED_CACHE_TTL_MS
+    ) {
+      return this.finalizedSnapshotCache.snapshot;
+    }
+
+    // 2. Fetch DriverList: Only if not already cached in memory for this session
+    let driverListMap = this.driverListCache.get(normalizedPath);
+    const needDriverList = !driverListMap;
+
+    // 3. Parallel Settled Feeds
+    const [timingSettled, appDataSettled, driverListSettled, raceControlSettled, teamRadioSettled] =
+      await Promise.allSettled([
+        this.fetchCdnJson<F1CdnTimingData>(`${normalizedPath}TimingData.json`),
+        this.fetchCdnJson<F1CdnTimingAppData>(`${normalizedPath}TimingAppData.json`),
+        needDriverList
+          ? this.fetchCdnJson<F1CdnDriverList>(`${normalizedPath}DriverList.json`, false)
+          : Promise.resolve(null),
+        this.fetchCdnJson<F1CdnRaceControl>(`${normalizedPath}RaceControlMessages.json`),
+        this.fetchCdnJson<F1CdnTeamRadio>(`${normalizedPath}TeamRadio.json`),
       ]);
+
+    const timingDataRaw = timingSettled.status === 'fulfilled' ? timingSettled.value : null;
+    const timingAppDataRaw = appDataSettled.status === 'fulfilled' ? appDataSettled.value : null;
+    const freshDriverList =
+      driverListSettled.status === 'fulfilled' ? driverListSettled.value : null;
+    const raceControlRaw =
+      raceControlSettled.status === 'fulfilled' ? raceControlSettled.value : null;
+    const teamRadioRaw = teamRadioSettled.status === 'fulfilled' ? teamRadioSettled.value : null;
+
+    if (freshDriverList && Object.keys(freshDriverList).length > 0) {
+      driverListMap = freshDriverList;
+      this.driverListCache.set(normalizedPath, freshDriverList);
+    }
 
     if (!timingDataRaw || !timingDataRaw.Lines) {
       return null;
     }
 
-    const driverListMap: Record<string, any> = driverListRaw || {};
-    const timingLines: Record<string, any> = timingDataRaw.Lines || {};
-    const appDataLines: Record<string, any> = timingAppDataRaw?.Lines || {};
+    const timingLines = timingDataRaw.Lines || {};
+    const appDataLines = timingAppDataRaw?.Lines || {};
+    const safeDriverList: F1CdnDriverList = driverListMap || {};
 
-    const circuitName = sessionInfo?.Meeting?.Circuit?.ShortName || sessionInfo?.Meeting?.Name || '';
+    const circuitName =
+      sessionInfo?.Meeting?.Circuit?.ShortName || sessionInfo?.Meeting?.Name || '';
     const locationName = sessionInfo?.Meeting?.Location || '';
     const countryName = sessionInfo?.Meeting?.Country?.Name || '';
     const circuitMeta = getCircuitData(circuitName, locationName, countryName);
@@ -169,9 +329,15 @@ export class F1LiveCdnClient {
           currentFlag = 'CHEQUERED';
         } else if (flagUpper.includes('RED')) {
           currentFlag = 'RED';
-        } else if (flagUpper.includes('SAFETY CAR') || (m.Message || '').toUpperCase().includes('SAFETY CAR')) {
+        } else if (
+          flagUpper.includes('SAFETY CAR') ||
+          (m.Message || '').toUpperCase().includes('SAFETY CAR')
+        ) {
           currentFlag = 'SC';
-        } else if (flagUpper.includes('VIRTUAL') || (m.Message || '').toUpperCase().includes('VIRTUAL SAFETY CAR')) {
+        } else if (
+          flagUpper.includes('VIRTUAL') ||
+          (m.Message || '').toUpperCase().includes('VIRTUAL SAFETY CAR')
+        ) {
           currentFlag = 'VSC';
         } else if (flagUpper.includes('YELLOW') && currentFlag === 'GREEN') {
           currentFlag = 'YELLOW';
@@ -179,7 +345,9 @@ export class F1LiveCdnClient {
       }
     }
 
-    const isQualy = (sessionInfo?.Type || '').toLowerCase().includes('qual') || (sessionInfo?.Name || '').toLowerCase().includes('qual');
+    const isQualy =
+      (sessionInfo?.Type || '').toLowerCase().includes('qual') ||
+      (sessionInfo?.Name || '').toLowerCase().includes('qual');
     const sessionType: SessionType = isQualy ? 'Qualifying' : 'Race';
 
     // Parse drivers and normalize to DriverLive[]
@@ -192,7 +360,7 @@ export class F1LiveCdnClient {
       const num = Number.parseInt(racingNumStr, 10);
       if (Number.isNaN(num)) continue;
 
-      const dInfo = driverListMap[racingNumStr] || {};
+      const dInfo = safeDriverList[racingNumStr] || {};
       const appInfo = appDataLines[racingNumStr] || {};
 
       const pos = Number.parseInt(timing.Position || String(timing.Line || 99), 10) || 99;
@@ -232,9 +400,9 @@ export class F1LiveCdnClient {
             : 'none';
 
       // Parse mini-sectors if available
-      const parseMiniSectors = (sectorObj: any): MiniSectorStatus[] => {
+      const parseMiniSectors = (sectorObj: F1CdnSector | undefined): MiniSectorStatus[] => {
         if (!sectorObj?.Segments || !Array.isArray(sectorObj.Segments)) return [];
-        return sectorObj.Segments.map((seg: any) => {
+        return sectorObj.Segments.map((seg) => {
           const st = seg?.Status;
           if (st === 2049) return 'purple';
           if (st === 2048) return 'green';
@@ -281,7 +449,9 @@ export class F1LiveCdnClient {
         gap = isQualy ? 'POLE' : 'LÍDER';
       }
 
-      let interval = timing.IntervalToPositionAhead?.Value || (isLeader ? (isQualy ? 'POLE' : 'LÍDER') : '- - -');
+      let interval =
+        timing.IntervalToPositionAhead?.Value ||
+        (isLeader ? (isQualy ? 'POLE' : 'LÍDER') : '- - -');
       if (isLeader && !interval) {
         interval = isQualy ? 'POLE' : 'LÍDER';
       }
@@ -293,7 +463,7 @@ export class F1LiveCdnClient {
 
       // Track location coordinate
       const outlineLen = circuitMeta.outline.length;
-      const stepOffset = outlineLen > 0 ? ((((pos * 7) % outlineLen) + outlineLen) % outlineLen) : 0;
+      const stepOffset = outlineLen > 0 ? (((pos * 7) % outlineLen) + outlineLen) % outlineLen : 0;
       const location = circuitMeta.outline[stepOffset]
         ? { x: circuitMeta.outline[stepOffset][0], y: circuitMeta.outline[stepOffset][1] }
         : null;
@@ -312,7 +482,9 @@ export class F1LiveCdnClient {
         isOvertakeZone: false,
         lastLapTime: timing.LastLapTime?.Value || '',
         bestLapTime: timing.BestLapTime?.Value || '',
-        isFastestLap: Boolean(timing.BestLapTime?.OverallFastest || timing.LastLapTime?.OverallFastest),
+        isFastestLap: Boolean(
+          timing.BestLapTime?.OverallFastest || timing.LastLapTime?.OverallFastest,
+        ),
         isPole: isLeader,
         pitStops: timing.NumberOfPitStops ?? 0,
         inPit: Boolean(timing.InPit),
@@ -343,8 +515,8 @@ export class F1LiveCdnClient {
 
     // Normalize Team Radios
     const teamRadios: TeamRadioCapture[] = [];
-    if (teamRadioRaw && teamRadioRaw.Captures) {
-      const rawCaptures: any[] = Array.isArray(teamRadioRaw.Captures)
+    if (teamRadioRaw?.Captures) {
+      const rawCaptures: F1CdnRadioCapture[] = Array.isArray(teamRadioRaw.Captures)
         ? teamRadioRaw.Captures
         : Object.values(teamRadioRaw.Captures);
 
@@ -353,17 +525,18 @@ export class F1LiveCdnClient {
 
         const dNum = Number.parseInt(String(cap.RacingNumber), 10);
         const matchingDriver = parsedDrivers.find((d) => d.driverNumber === dNum);
-        const dInfo = driverListMap[String(cap.RacingNumber)];
+        const dInfo = safeDriverList[String(cap.RacingNumber)];
 
         const audioUrl = `${this.baseUrl}/${normalizedPath}${cap.Path.replace(/^\//, '')}`;
         teamRadios.push({
           id: `${cap.RacingNumber}_${cap.Utc}_${cap.Path}`,
-          utc: cap.Utc,
+          utc: cap.Utc || '',
           driverNumber: dNum,
           driverCode: matchingDriver?.code || dInfo?.Tla || `#${dNum}`,
           driverName: matchingDriver?.fullName || dInfo?.FullName || `Piloto ${dNum}`,
           teamName: matchingDriver?.teamName || dInfo?.TeamName || 'F1 Team',
-          teamColor: matchingDriver?.teamColor || (dInfo?.TeamColour ? `#${dInfo.TeamColour}` : '#E10600'),
+          teamColor:
+            matchingDriver?.teamColor || (dInfo?.TeamColour ? `#${dInfo.TeamColour}` : '#E10600'),
           audioUrl,
         });
       }
@@ -397,7 +570,7 @@ export class F1LiveCdnClient {
       timestamp: Math.floor(Date.now() / 1000),
     };
 
-    return {
+    const snapshotResult: LiveSnapshot = {
       session: sessionLive,
       drivers: parsedDrivers,
       messages: messages.slice(-25).reverse(),
@@ -409,6 +582,17 @@ export class F1LiveCdnClient {
       },
       history: [],
     };
+
+    // Store in finalized cache if session is complete
+    if (isFinalised) {
+      this.finalizedSnapshotCache = {
+        sessionPath: normalizedPath,
+        timestamp: Date.now(),
+        snapshot: snapshotResult,
+      };
+    }
+
+    return snapshotResult;
   }
 }
 
