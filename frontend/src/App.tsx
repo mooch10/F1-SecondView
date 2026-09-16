@@ -5,6 +5,7 @@ import { BetweenRacesView } from './components/live/BetweenRacesView';
 import { CircuitMap } from './components/live/CircuitMap';
 import { FlagBanner } from './components/live/FlagBanner';
 import { RaceControlFeed } from './components/live/RaceControlFeed';
+import { TeamRadioFeed } from './components/live/TeamRadioFeed';
 import { SyncDelayBar } from './components/live/SyncDelayBar';
 import { TimingTable } from './components/live/TimingTable';
 import { TrackWeatherBar } from './components/live/TrackWeatherBar';
@@ -291,6 +292,9 @@ function App() {
                       messages={snapshot?.messages || []}
                       drivers={drivers}
                     />
+
+                    {/* F1 Official Team Radios (Audio Live/Archive) */}
+                    <TeamRadioFeed radios={snapshot?.teamRadios} />
 
                     {/* Real-time 2D Interactive Circuit Map (Durante Qualy o Carrera EN VIVO o Replay de telemetría) */}
                     {(isLiveSessionActive || liveSubView === 'timing') &&

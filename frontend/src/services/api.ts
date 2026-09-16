@@ -7,6 +7,7 @@ import type {
   ScheduleResponse,
   SeriesCategory,
   StandingsData,
+  TeamRadioCapture,
 } from '../types/f1';
 
 const API_BASE_URL =
@@ -25,6 +26,22 @@ export async function fetchLiveSnapshot(): Promise<LiveSnapshot | null> {
   } catch (err) {
     console.warn('[API] Failed to fetch live telemetry snapshot:', err);
     return null;
+  }
+}
+
+export async function fetchLiveTeamRadios(): Promise<TeamRadioCapture[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/live/radios.json?t=${Date.now()}`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return (data.radios || []) as TeamRadioCapture[];
+  } catch (err) {
+    console.warn('[API] Failed to fetch live team radios:', err);
+    return [];
   }
 }
 

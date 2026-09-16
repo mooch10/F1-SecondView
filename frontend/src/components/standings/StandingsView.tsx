@@ -148,26 +148,26 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
     const displayPos = (typeof pos === 'number' && pos > 0) ? pos : (fallbackIndex || '-');
     if (displayPos === 1) {
       return (
-        <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-[0_0_8px_rgba(251,191,36,0.25)]">
-          <span className="text-[11px]">🥇</span> <span>{displayPos}</span>
+        <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded font-mono text-[10px] sm:text-xs font-black bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-[0_0_8px_rgba(251,191,36,0.25)]">
+          <span className="text-[9px] sm:text-[11px]">🥇</span> <span>{displayPos}</span>
         </span>
       );
     }
     if (displayPos === 2) {
       return (
-        <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-slate-300/15 text-slate-200 border border-slate-300/30">
-          <span className="text-[11px]">🥈</span> <span>{displayPos}</span>
+        <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded font-mono text-[10px] sm:text-xs font-black bg-slate-300/15 text-slate-200 border border-slate-300/30">
+          <span className="text-[9px] sm:text-[11px]">🥈</span> <span>{displayPos}</span>
         </span>
       );
     }
     if (displayPos === 3) {
       return (
-        <span className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded font-mono text-xs font-black bg-amber-700/15 text-amber-500 border border-amber-700/30">
-          <span className="text-[11px]">🥉</span> <span>{displayPos}</span>
+        <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded font-mono text-[10px] sm:text-xs font-black bg-amber-700/15 text-amber-500 border border-amber-700/30">
+          <span className="text-[9px] sm:text-[11px]">🥉</span> <span>{displayPos}</span>
         </span>
       );
     }
-    return <span className="text-zinc-600 dark:text-zinc-400 font-bold">{displayPos}</span>;
+    return <span className="text-[10px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-bold">{displayPos}</span>;
   };
 
   const renderRankDiff = (diff: number) => {
@@ -672,7 +672,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           {/* DRIVERS TABLE */}
           {subTab === 'drivers' && (
             <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-              <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
+              <div className="grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[9px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
                 <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
                 <div className="col-span-5 sm:col-span-5">{t.standings.headers.driver}</div>
                 <div className="col-span-3 hidden sm:block">{t.standings.headers.team}</div>
@@ -695,7 +695,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   return (
                     <div
                       key={`${d.code}-${d.virtualPos}`}
-                      className={`grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 items-center transition-colors ${
+                      className={`grid grid-cols-12 gap-1 px-1.5 sm:px-3 py-1 sm:py-2.5 items-center transition-colors ${
                         d.virtualPos === 1
                           ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
                           : d.virtualPos <= 3
@@ -727,7 +727,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                                   points: d.totalPoints,
                                 });
                               }}
-                              className="font-mono text-xs sm:text-sm font-black text-zinc-900 dark:text-white tracking-tight uppercase hover:text-amber-500 dark:hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                              className="font-mono text-[11px] sm:text-sm font-black text-zinc-900 dark:text-white tracking-tight uppercase hover:text-amber-500 dark:hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
                               title={lang === 'es' ? 'Ver ficha técnica del piloto' : 'View driver profile'}
                             >
                               {d.code}
@@ -771,7 +771,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono sm:hidden block break-words leading-tight">
+                          <span className="text-[9px] text-zinc-600 dark:text-zinc-400 font-mono sm:hidden block break-words leading-tight">
                             {d.team}
                           </span>
                         </div>
@@ -784,7 +784,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
                       {/* Points */}
                       <div className="col-span-3 sm:col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
-                        <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
+                        <span className="text-[11px] sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
                           {d.totalPoints}
                         </span>
                         {isVirtualActive && (
@@ -822,7 +822,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               )}
 
               <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
-                <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[10px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
+                <div className="grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[9px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
                   <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
                   <div className="col-span-6 sm:col-span-7">{t.standings.headers.team}</div>
                   <div className="col-span-2 text-right pr-2 sm:pr-3">{t.standings.headers.points}</div>
@@ -833,7 +833,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   {processedConstructors.map((c, index) => (
                     <div
                       key={c.name}
-                      className={`grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 items-center transition-colors ${
+                      className={`grid grid-cols-12 gap-1 px-1.5 sm:px-3 py-1 sm:py-2.5 items-center transition-colors ${
                         c.virtualPos === 1
                           ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
                           : c.virtualPos <= 3
@@ -853,14 +853,14 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                           className="w-[3px] h-5 rounded-full flex-shrink-0"
                           style={{ backgroundColor: c.teamColor || '#8E929B' }}
                         />
-                        <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white tracking-tight uppercase">
+                        <span className="font-bold text-[11px] sm:text-sm text-zinc-900 dark:text-white tracking-tight uppercase">
                           {c.name}
                         </span>
                       </div>
 
                       {/* Points */}
                       <div className="col-span-2 text-right pr-2 sm:pr-3 flex flex-col items-end justify-center font-mono tabular-nums">
-                        <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
+                        <span className="text-[11px] sm:text-sm font-bold text-amber-600 dark:text-[#FFD60A]">
                           {c.totalPoints}
                         </span>
                         {isVirtualActive && (

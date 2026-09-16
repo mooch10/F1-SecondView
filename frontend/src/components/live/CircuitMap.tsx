@@ -13,6 +13,7 @@ import {
 import type { DriverLive, SessionState, TrackOutline } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTrackAnimation } from '../../hooks/useTrackAnimation';
+import { getCircuitIntel } from '../../data/circuitIntelData';
 
 interface CircuitMapProps {
   circuitTrack?: TrackOutline | null;
@@ -69,13 +70,29 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     return maxDist < 400;
   }, [drivers]);
 
+  // Robust fallback: if live snapshot circuitTrack is missing/empty, resolve from 2026 circuit intel
+  const effectiveTrack = useMemo(() => {
+    if (circuitTrack && circuitTrack.outline && circuitTrack.outline.length >= 3) {
+      return circuitTrack;
+    }
+    const intel = getCircuitIntel(circuitName || sessionName);
+    if (intel && intel.outline && intel.outline.length >= 3) {
+      return {
+        circuitName: intel.name,
+        outline: intel.outline,
+        bounds: intel.bounds,
+      };
+    }
+    return null;
+  }, [circuitTrack, circuitName, sessionName]);
+
   // Dynamic aspect ratio calculation & track geometry
   const trackGeometry = useMemo(() => {
-    if (!circuitTrack || !circuitTrack.outline || circuitTrack.outline.length < 3) {
+    if (!effectiveTrack || !effectiveTrack.outline || effectiveTrack.outline.length < 3) {
       return null;
     }
 
-    const { minX, maxX, minY, maxY } = circuitTrack.bounds;
+    const { minX, maxX, minY, maxY } = effectiveTrack.bounds;
     const dx = Math.max(1, maxX - minX);
     const dy = Math.max(1, maxY - minY);
     const isPortrait = dy > dx * 1.35;
@@ -100,7 +117,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     };
 
     // Convert raw outline to SVG coordinates
-    const pts = circuitTrack.outline.map((pt) => toSvgPoint(pt[0], pt[1]));
+    const pts = effectiveTrack.outline.map((pt) => toSvgPoint(pt[0], pt[1]));
     const N = pts.length;
 
     // Cumulative distances along circuit perimeter
@@ -216,7 +233,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
         { start: ot2Start, end: ot2End, label: 'OVERTAKE 2' },
       ],
     };
-  }, [circuitTrack]);
+  }, [effectiveTrack]);
 
   // Filtered drivers based on active filter chip
   const filteredDrivers = useMemo(() => {
@@ -348,7 +365,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
             </div>
             <span className="text-[10px] text-zinc-400 font-mono">
               {(() => {
-                const raw = circuitName || circuitTrack?.circuitName || sessionName || 'Circuito';
+                const raw = circuitName || effectiveTrack?.circuitName || sessionName || 'Circuito';
                 return raw.toLowerCase().includes('madring') ? 'Circuito de Madrid' : raw;
               })()} •{' '}
               {sortedDrivers.length} {lang === 'es' ? 'autos' : 'cars'}

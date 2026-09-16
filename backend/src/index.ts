@@ -8,6 +8,7 @@ import {
   resolveActiveSession,
 } from './universalLiveEngine.js';
 import { liveStreamClient } from './liveStreamClient.js';
+import { f1LiveCdnClient } from './f1LiveCdnClient.js';
 import type { LiveSnapshot, SeriesCategory } from './types.js';
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
@@ -26,50 +27,66 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
   try {
     let newSnapshot: LiveSnapshot | null = null;
 
-    // 1. Check OpenF1: Query explicit SESSION_KEY or automatically discover the active/recent session
-    let targetSessionKey: number | null = process.env.SESSION_KEY ? Number(process.env.SESSION_KEY) : null;
-    if (!targetSessionKey) {
-      const activeOrRecent = await openF1.findActiveOrRecentSession(new Date());
-      if (activeOrRecent) {
-        targetSessionKey = activeOrRecent.session_key;
+    // 1. Primary Live Source: Official F1 Live Timing CDN (livetiming.formula1.com/static/)
+    // Free, zero auth required, authentic sectors, tyre stints, FIA race control and Team Radio MP3s
+    try {
+      const cdnSnapshot = await f1LiveCdnClient.getLiveRaceSnapshot();
+      if (cdnSnapshot && cdnSnapshot.drivers.length > 0) {
+        newSnapshot = cdnSnapshot;
+      }
+    } catch (err) {
+      console.warn('[Worker] F1 CDN Live fetch error:', err);
+    }
+
+    // 2. Secondary Source: OpenF1 (only if explicit SESSION_KEY or OPENF1_TOKEN is provided)
+    if (!newSnapshot && (process.env.SESSION_KEY || process.env.OPENF1_TOKEN)) {
+      let targetSessionKey: number | null = process.env.SESSION_KEY ? Number(process.env.SESSION_KEY) : null;
+      if (!targetSessionKey) {
+        const activeOrRecent = await openF1.findActiveOrRecentSession(new Date());
+        if (activeOrRecent) {
+          targetSessionKey = activeOrRecent.session_key;
+        }
+      }
+
+      if (targetSessionKey) {
+        try {
+          const data = await openF1.getLiveSessionData(targetSessionKey);
+          if (data.session && data.drivers.length > 0 && (data.laps.length > 0 || data.positions.length > 0)) {
+            newSnapshot = buildLiveSnapshot(
+              data.session,
+              data.drivers,
+              data.positions,
+              data.intervals,
+              data.stints,
+              data.laps,
+              data.raceControl,
+              data.weather,
+              data.locations,
+              data.trackOutline,
+            );
+          }
+        } catch (err) {
+          console.warn(`[Worker] Failed to fetch session ${targetSessionKey} from OpenF1:`, err);
+        }
       }
     }
 
-    if (targetSessionKey) {
+    // 3. Fallback A: Universal Live Engine + ESPN Scoreboard
+    if (!newSnapshot) {
       try {
-        const data = await openF1.getLiveSessionData(targetSessionKey);
-        if (data.session && data.drivers.length > 0 && (data.laps.length > 0 || data.positions.length > 0)) {
-          newSnapshot = buildLiveSnapshot(
-            data.session,
-            data.drivers,
-            data.positions,
-            data.intervals,
-            data.stints,
-            data.laps,
-            data.raceControl,
-            data.weather,
-            data.locations,
-            data.trackOutline,
-          );
+        const schedule = await jolpica.getSchedule();
+        const activeSession = resolveActiveSession(schedule);
+        const liveStream = await liveStreamClient.getLiveStream();
+
+        if (activeSession) {
+          newSnapshot = generateUniversalLiveSnapshot(activeSession, new Date(), liveStream);
         }
       } catch (err) {
-        console.warn(`[Worker] Failed to fetch session ${targetSessionKey} from OpenF1:`, err);
+        console.warn('[Worker] Universal engine fallback error:', err);
       }
     }
 
-    // 2. Query official 2026 calendar to automatically determine active Grand Prix and session
-    const schedule = await jolpica.getSchedule();
-    const activeSession = resolveActiveSession(schedule);
-
-    // Fetch real live stream from ESPN if available
-    const liveStream = await liveStreamClient.getLiveStream();
-
-    // 3. If an active session is running or recently finished:
-    if (!newSnapshot && activeSession) {
-      newSnapshot = generateUniversalLiveSnapshot(activeSession, new Date(), liveStream);
-    }
-
-    // 4. Fallback: If no active session detected, try OpenF1 default session
+    // 4. Fallback B: If no active session detected, try OpenF1 default session
     if (!newSnapshot) {
       try {
         const defaultKey = 9590;
@@ -207,11 +224,9 @@ const server = createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     const { series, cleanPath } = resolveSeriesAndPath(url);
 
-    // Endpoint 1: Live Timing (High-frequency, 1s Edge Cache) - F1
+    // Endpoint 1: Live Timing (High-frequency, instant in-memory response) - F1
     if (cleanPath === '/api/live.json' || cleanPath === '/api/live') {
-      const now = Date.now();
-      const lastUpdate = cachedSnapshot?.session?.timestamp ? cachedSnapshot.session.timestamp * 1000 : 0;
-      if (!cachedSnapshot || now - lastUpdate >= 1200) {
+      if (!cachedSnapshot) {
         await updateSnapshot();
       }
 
@@ -220,6 +235,31 @@ const server = createServer(async (req, res) => {
         'Cache-Control': 'public, max-age=1, stale-while-revalidate=1',
       });
       res.end(JSON.stringify(cachedSnapshot || { error: 'No data available' }, null, 2));
+      return;
+    }
+
+    // Endpoint 1b: Dedicated Team Radios feed - F1
+    if (cleanPath === '/api/live/radios.json' || cleanPath === '/api/live/radios') {
+      if (!cachedSnapshot) {
+        await updateSnapshot();
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=2, stale-while-revalidate=5',
+      });
+      res.end(
+        JSON.stringify(
+          {
+            session: cachedSnapshot?.session?.sessionName || 'Live Session',
+            circuit: cachedSnapshot?.session?.circuit || 'F1 Circuit',
+            count: cachedSnapshot?.teamRadios?.length || 0,
+            radios: cachedSnapshot?.teamRadios || [],
+          },
+          null,
+          2,
+        ),
+      );
       return;
     }
 
@@ -385,6 +425,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`[Delta API] Server running at http://localhost:${PORT}`);
   console.log('[Delta API] Endpoints available:');
   console.log(`- GET http://localhost:${PORT}/api/live.json`);
+  console.log(`- GET http://localhost:${PORT}/api/live/radios.json`);
   console.log(`- GET http://localhost:${PORT}/api/schedule.json`);
   console.log(`- GET http://localhost:${PORT}/api/standings.json`);
   console.log(`- GET http://localhost:${PORT}/api/qualifying.json`);

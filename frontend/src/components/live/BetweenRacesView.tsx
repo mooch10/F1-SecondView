@@ -159,7 +159,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
             </div>
           </div>
 
-          <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight uppercase">
+          <h2 className="text-sm sm:text-2xl font-black text-white tracking-tight uppercase">
             {nextRace.raceName}
           </h2>
           <div className="flex items-center justify-between mt-1 flex-wrap gap-2">

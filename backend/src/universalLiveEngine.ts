@@ -33,24 +33,43 @@ for (const [alias, targetKey] of Object.entries(CIRCUIT_ALIASES)) {
   }
 }
 
+function normalizeCircuitTerm(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
+}
+
 export function getCircuitData(circuitName = '', location = '', country = ''): CircuitData {
-  const term = `${circuitName} ${location} ${country}`.toLowerCase().replace(/[\s-]+/g, '_');
+  const rawTerm = `${circuitName} ${location} ${country}`;
+  const term = normalizeCircuitTerm(rawTerm);
   
-  for (const [key, data] of Object.entries(CIRCUITS_CATALOG)) {
-    if (key === 'default') continue;
-    if (term.includes(key)) {
-      return data;
+  // 1. Direct key match (sorted by length descending to prevent substring false positives)
+  const sortedKeys = Object.keys(CIRCUITS_CATALOG)
+    .filter((k) => k !== 'default')
+    .sort((a, b) => b.length - a.length);
+
+  for (const key of sortedKeys) {
+    const normKey = normalizeCircuitTerm(key);
+    if (term.includes(normKey)) {
+      return CIRCUITS_CATALOG[key];
     }
   }
 
-  for (const [alias, targetKey] of Object.entries(CIRCUIT_ALIASES)) {
-    if (term.includes(alias) && CIRCUITS_CATALOG[targetKey]) {
+  // 2. Direct alias mapping
+  const sortedAliases = Object.entries(CIRCUIT_ALIASES).sort((a, b) => b[0].length - a[0].length);
+  for (const [alias, targetKey] of sortedAliases) {
+    const normAlias = normalizeCircuitTerm(alias);
+    if (term.includes(normAlias) && CIRCUITS_CATALOG[targetKey]) {
       return CIRCUITS_CATALOG[targetKey];
     }
   }
 
   return CIRCUITS_CATALOG.default;
 }
+
 
 export interface DriverGridSeed {
   driverNumber: number;

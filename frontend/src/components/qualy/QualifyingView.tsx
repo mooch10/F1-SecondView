@@ -358,7 +358,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   {liveSnapshot?.session.circuit || 'Circuito F1'}
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase font-chakra">
+              <h2 className="text-sm sm:text-2xl font-black text-white tracking-tight uppercase font-chakra">
                 {liveSnapshot?.session.sessionName &&
                 (liveSnapshot.session.sessionName.toLowerCase().includes('qualifying') ||
                  liveSnapshot.session.sessionName.toLowerCase().includes('clasificaci') ||
@@ -461,7 +461,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
         {/* Live Qualy Table */}
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-2.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
+          <div className="grid grid-cols-12 gap-1.5 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
             <div className="col-span-1 text-center">{t.qualy.headers.pos}</div>
             <div className="col-span-4 sm:col-span-3">{t.qualy.headers.driver}</div>
             <div className="col-span-4 sm:col-span-5 text-center">
@@ -501,7 +501,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         toggleExpand(d.driverNumber);
                       }
                     }}
-                    className={`w-full text-left grid grid-cols-12 gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-3 sm:py-3 items-center transition-colors select-none cursor-pointer ${
+                    className={`w-full text-left grid grid-cols-12 gap-1.5 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 items-center transition-colors select-none cursor-pointer ${
                       isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                     } ${item.isPhaseLeader ? 'bg-[#FFD60A]/[0.03]' : ''}`}
                   >
@@ -527,7 +527,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                       className="col-span-4 sm:col-span-3 flex items-center gap-1 sm:gap-2.5 min-w-0"
                     >
                       <span
-                        className="w-1 sm:w-1.5 h-6 sm:h-7 rounded-full flex-shrink-0"
+                        className="w-1 sm:w-1.5 h-5 sm:h-7 rounded-full flex-shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
                       <div className="flex flex-col leading-tight min-w-0">
@@ -547,7 +547,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                             #{d.driverNumber}
                           </span>
                           {item.isPhaseLeader && (
-                            <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 whitespace-nowrap">
+                            <span className="px-1.5 py-0.5 rounded text-[7px] sm:text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 whitespace-nowrap">
                               POLE
                             </span>
                           )}
@@ -557,11 +557,12 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
+                        <span className="text-[9px] sm:text-[11px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
                           {d.fullName}
                         </span>
                       </div>
                     </div>
+
 
                     {/* Sectors & Mini-Sectors Center Column */}
                     <div className="col-span-4 sm:col-span-5 flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-0.5 sm:px-2 min-w-0">
@@ -756,7 +757,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   {session.date}
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+              <h2 className="text-sm sm:text-2xl font-black text-white tracking-tight uppercase">
                 {session.raceName}
               </h2>
               <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-mono">
@@ -819,12 +820,12 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
               }`}
             >
-              {t.qualy.filters.all}
+              <span>{t.qualy.filters.all}</span>
             </button>
             <button
               type="button"
               onClick={() => setPhaseFilter('Q3')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
                 phaseFilter === 'Q3'
                   ? 'bg-[#FFD60A]/20 text-[#FFD60A] border border-[#FFD60A]/40 shadow-xs'
                   : 'text-zinc-400 hover:text-zinc-200 bg-transparent'
@@ -859,7 +860,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
         {/* Historical Qualifying Table */}
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
-          <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+          <div className="grid grid-cols-12 gap-1.5 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
             <div className="col-span-1 text-center whitespace-nowrap">{t.qualy.headers.pos}</div>
             <div className="col-span-5 sm:col-span-3 whitespace-nowrap">{t.qualy.headers.driver}</div>
 
@@ -893,13 +894,13 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleExpand(d.driverNumber)}
-                    className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none ${
+                    className={`w-full text-left grid grid-cols-12 gap-1.5 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 items-center transition-colors select-none ${
                       isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                     } ${item.isPhaseLeader ? 'bg-[#FFD60A]/[0.03]' : ''}`}
                   >
                     <div className="col-span-1 flex items-center justify-center">
                       <span
-                        className={`font-mono text-sm font-black font-tabular text-center ${
+                        className={`font-mono text-xs sm:text-sm font-black font-tabular text-center ${
                           item.isPhaseLeader
                             ? 'text-[#FFD60A]'
                             : item.displayPos <= 3
@@ -914,40 +915,40 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                     </div>
 
                     <div
-                      className="col-span-5 sm:col-span-3 flex items-center gap-2 overflow-hidden"
+                      className="col-span-5 sm:col-span-3 flex items-center gap-1.5 sm:gap-2 overflow-hidden"
                     >
                       <span
-                        className="w-1 h-6 rounded-full flex-shrink-0"
+                        className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
                       <div className="flex flex-col leading-tight truncate">
-                        <div className="flex items-center gap-1.5 flex-nowrap">
+                        <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               openDriverProfile(undefined, d.code, d.fullName);
                             }}
-                            className="font-mono text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer whitespace-nowrap shrink-0"
+                            className="font-mono text-xs sm:text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer whitespace-nowrap shrink-0"
                             title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
                           >
                             {d.code}
                           </button>
-                          <span className="text-[10px] text-zinc-500 font-mono whitespace-nowrap shrink-0">
+                          <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono whitespace-nowrap shrink-0">
                             #{d.driverNumber}
                           </span>
                           {item.isPhaseLeader && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight whitespace-nowrap shrink-0">
+                            <span className="px-1.5 py-0.2 rounded text-[7px] sm:text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight whitespace-nowrap shrink-0">
                               {phaseFilter === 'ALL' || phaseFilter === 'Q3' ? 'POLE 🥇' : (lang === 'es' ? 'LÍDER' : 'LEADER')}
                             </span>
                           )}
                           {d.eliminatedPhase && phaseFilter === 'ALL' && (
-                            <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 whitespace-nowrap shrink-0">
+                            <span className="px-1 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 whitespace-nowrap shrink-0">
                               {d.eliminatedPhase}
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
+                        <span className="text-[9px] sm:text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
                           {d.fullName}
                         </span>
                       </div>
@@ -956,21 +957,21 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                     {/* Mobile Time and Gap */}
                     <div className="col-span-3 text-right sm:hidden flex flex-col justify-center leading-tight">
                       <span
-                        className={`font-mono text-xs font-tabular ${
+                        className={`font-mono text-[10px] sm:text-xs font-tabular ${
                           item.isPhaseLeader ? 'text-[#FFD60A] font-black' : 'text-zinc-200 font-bold'
                         }`}
                       >
                         {item.displayTime}
                       </span>
-                      <span className="font-mono text-[9px] text-zinc-500 uppercase">
+                      <span className="font-mono text-[8px] sm:text-[9px] text-zinc-500 uppercase">
                         {phaseFilter === 'ALL' ? (d.q3 ? 'Q3' : d.q2 ? 'Q2' : d.q1 ? 'Q1' : '') : phaseFilter}
                       </span>
                     </div>
 
-                    <div className="col-span-3 text-right sm:hidden flex items-center justify-end gap-1 font-mono text-xs font-tabular">
+                    <div className="col-span-3 text-right sm:hidden flex items-center justify-end gap-1 font-mono text-[10px] sm:text-xs font-tabular">
                       <span
                         className={`truncate ${
-                          item.isPhaseLeader ? 'text-[#FFD60A] font-bold text-[11px]' : 'text-zinc-400'
+                          item.isPhaseLeader ? 'text-[#FFD60A] font-bold text-[10px] sm:text-[11px]' : 'text-zinc-400'
                         }`}
                       >
                         {item.displayGap}

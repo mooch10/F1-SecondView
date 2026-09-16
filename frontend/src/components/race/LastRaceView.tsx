@@ -217,7 +217,7 @@ export const LastRaceView: React.FC = () => {
                 {formatDisplayDate(raceDetail.date)}
               </span>
             </div>
-            <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight uppercase">
+            <h2 className="text-sm sm:text-2xl font-black text-white tracking-tight uppercase">
               {raceDetail.raceName}
             </h2>
             <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-mono">
@@ -429,7 +429,7 @@ export const LastRaceView: React.FC = () => {
       {(analysisTab === 'results' || series !== 'f1') && (
         <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+        <div className="grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center whitespace-nowrap">{t.lastRace.headers.pos}</div>
           <div className="col-span-5 sm:col-span-4 whitespace-nowrap">{t.lastRace.headers.driver}</div>
           <div className="hidden sm:block sm:col-span-2 text-center whitespace-nowrap">{t.lastRace.headers.start}</div>
@@ -468,14 +468,14 @@ export const LastRaceView: React.FC = () => {
                       toggleExpand(d.driverNumber);
                     }
                   }}
-                  className={`w-full text-left grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors select-none cursor-pointer ${
+                  className={`w-full text-left grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 items-center transition-colors select-none cursor-pointer ${
                     isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                   } ${d.isWinner ? 'bg-[#FFD60A]/[0.03]' : ''}`}
                 >
                   {/* Position */}
                   <div className="col-span-1 flex items-center justify-center">
                     <span
-                      className={`font-mono text-sm font-black font-tabular text-center ${
+                      className={`font-mono text-xs sm:text-sm font-black font-tabular text-center ${
                         d.isWinner
                           ? 'text-[#FFD60A]'
                           : d.isPodium
@@ -491,14 +491,14 @@ export const LastRaceView: React.FC = () => {
 
                   {/* Driver & Team */}
                   <div
-                    className="col-span-5 sm:col-span-4 flex items-center gap-2 overflow-hidden"
+                    className="col-span-5 sm:col-span-4 flex items-center gap-1.5 sm:gap-2 overflow-hidden"
                   >
                     <span
-                      className="w-1 h-6 rounded-full flex-shrink-0"
+                      className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
                       style={{ backgroundColor: d.teamColor || '#71717A' }}
                     />
                     <div className="flex flex-col leading-tight truncate">
-                      <div className="flex items-center gap-1.5 flex-nowrap">
+                      <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
                         {d.code ? (
                           <button
                             type="button"
@@ -506,27 +506,27 @@ export const LastRaceView: React.FC = () => {
                               e.stopPropagation();
                               openDriverProfile(undefined, d.code, d.fullName);
                             }}
-                            className="font-mono text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors whitespace-nowrap"
+                            className="font-mono text-xs sm:text-sm font-bold text-white tracking-tight hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors whitespace-nowrap"
                             title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
                           >
                             {d.code}
                           </button>
                         ) : (
-                          <span className="font-mono text-sm font-bold text-white tracking-tight whitespace-nowrap">
+                          <span className="font-mono text-xs sm:text-sm font-bold text-white tracking-tight whitespace-nowrap">
                             {d.code}
                           </span>
                         )}
-                        <span className="text-[10px] text-zinc-500 font-mono whitespace-nowrap">
+                        <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono whitespace-nowrap">
                           #{d.driverNumber}
                         </span>
                         {d.isFastestLap && (
-                          <span className="px-1 sm:px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight whitespace-nowrap shrink-0">
+                          <span className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight whitespace-nowrap shrink-0">
                             <span className="sm:hidden">🟣 VR</span>
                             <span className="hidden sm:inline">{t.live.table.fastestLap}</span>
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
+                      <span className="text-[9px] sm:text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate hidden sm:block transition-colors">
                         {d.fullName}
                       </span>
                     </div>
@@ -556,14 +556,14 @@ export const LastRaceView: React.FC = () => {
                   </div>
 
                   {/* Time / Status / Gap */}
-                  <div className="col-span-3 sm:col-span-2 text-right sm:text-center font-mono text-xs font-tabular">
+                  <div className="col-span-3 sm:col-span-2 text-right sm:text-center font-mono text-[10px] sm:text-xs font-tabular">
                     <span
                       className={`truncate block ${
                         d.isWinner
-                          ? 'text-[#FFD60A] font-bold text-[11px] sm:text-xs'
+                          ? 'text-[#FFD60A] font-bold text-[10px] sm:text-xs'
                           : d.status.toLowerCase().includes('ret') || d.status.toLowerCase().includes('col')
-                          ? 'text-rose-400 font-semibold text-[10px]'
-                          : 'text-zinc-300 text-[11px] sm:text-xs'
+                          ? 'text-rose-400 font-semibold text-[9px] sm:text-[10px]'
+                          : 'text-zinc-300 text-[10px] sm:text-xs'
                       }`}
                     >
                       {d.timeOrStatus}
@@ -571,10 +571,10 @@ export const LastRaceView: React.FC = () => {
                   </div>
 
                   {/* Points Badge (Visible on Mobile & Desktop) */}
-                  <div className="col-span-3 sm:col-span-2 flex items-center justify-end gap-1.5 font-mono text-xs font-tabular">
+                  <div className="col-span-3 sm:col-span-2 flex items-center justify-end gap-1.5 font-mono text-[10px] sm:text-xs font-tabular">
                     {d.points > 0 ? (
                       <span
-                        className={`px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold whitespace-nowrap shrink-0 ${
+                        className={`px-1 sm:px-2 py-0.2 sm:py-0.5 rounded text-[8px] sm:text-[10px] font-bold whitespace-nowrap shrink-0 ${
                           d.isFastestLap && isPointsZone
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
                             : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
@@ -583,7 +583,7 @@ export const LastRaceView: React.FC = () => {
                         +{d.points} PTS
                       </span>
                     ) : (
-                      <span className="text-zinc-600 text-[10px] sm:text-[11px] whitespace-nowrap shrink-0">0 PTS</span>
+                      <span className="text-zinc-600 dark:text-zinc-500 text-[9px] sm:text-[10px] pr-1">-</span>
                     )}
 
                     <div className="text-zinc-500 shrink-0">

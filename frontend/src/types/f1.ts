@@ -122,6 +122,17 @@ export interface HistorySnapshot {
   weather?: TrackWeather | null;
 }
 
+export interface TeamRadioCapture {
+  id: string;
+  utc: string;
+  driverNumber: number;
+  driverCode: string;
+  driverName: string;
+  teamName: string;
+  teamColor: string;
+  audioUrl: string;
+}
+
 export interface LiveSnapshot {
   session: SessionLive;
   weather?: TrackWeather | null;
@@ -129,6 +140,7 @@ export interface LiveSnapshot {
   drivers: DriverLive[];
   circuitTrack?: TrackOutline | null;
   history?: HistorySnapshot[];
+  teamRadios?: TeamRadioCapture[];
 }
 
 export interface JolpicaRace {

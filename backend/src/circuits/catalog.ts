@@ -188,45 +188,124 @@ export const OFFICIAL_2026_CIRCUITS: Record<string, CircuitData> = {
   },
 };
 
-// 2026 Circuit Search Aliases Mapping
+// 2026 Circuit Search Aliases Mapping (Bilingual English & Spanish)
 export const CIRCUIT_ALIASES: Record<string, string> = {
+  // Madrid / Spain
+  madrid: 'madrid',
   madring: 'madrid',
   ifema: 'madrid',
   valdebebas: 'madrid',
+  espana: 'madrid',
+  spain: 'madrid',
+  // Australia
   australia: 'albert_park',
   melbourne: 'albert_park',
+  albert_park: 'albert_park',
+  // China
   china: 'shanghai',
+  shanghai: 'shanghai',
+  // Japan
   japan: 'suzuka',
+  japon: 'suzuka',
+  suzuka: 'suzuka',
+  // Bahrain
   bahrain: 'sakhir',
+  barein: 'sakhir',
+  sakhir: 'sakhir',
+  // Saudi Arabia
   saudi: 'jeddah',
+  saudi_arabia: 'jeddah',
+  arabia: 'jeddah',
+  arabia_saudita: 'jeddah',
+  jeddah: 'jeddah',
+  // Miami
   miami: 'miami',
+  // Imola
+  imola: 'imola',
+  emilia: 'imola',
+  romagna: 'imola',
   emilia_romagna: 'imola',
+  // Monaco
+  monaco: 'monaco',
   monte_carlo: 'monaco',
+  // Catalunya
+  catalunya: 'catalunya',
   barcelona: 'catalunya',
   montmelo: 'catalunya',
-  montreal: 'villeneuve',
+  // Canada
   canada: 'villeneuve',
+  canad: 'villeneuve',
+  montreal: 'villeneuve',
+  villeneuve: 'villeneuve',
+  // Austria
   austria: 'red_bull_ring',
   spielberg: 'red_bull_ring',
+  red_bull_ring: 'red_bull_ring',
+  // Great Britain
   britain: 'silverstone',
   great_britain: 'silverstone',
+  gran_bretana: 'silverstone',
+  silverstone: 'silverstone',
+  // Belgium
   belgium: 'spa',
+  belgica: 'spa',
+  spa: 'spa',
+  francorchamps: 'spa',
+  // Hungary
   hungary: 'hungaroring',
+  hungria: 'hungaroring',
   budapest: 'hungaroring',
+  hungaroring: 'hungaroring',
+  // Netherlands
   netherlands: 'zandvoort',
+  paises_bajos: 'zandvoort',
+  holanda: 'zandvoort',
   dutch: 'zandvoort',
+  zandvoort: 'zandvoort',
+  // Italy
   monza: 'monza',
   italy: 'monza',
+  italia: 'monza',
+  // Azerbaijan / Baku
+  baku: 'baku',
   azerbaijan: 'baku',
+  azerbaiyan: 'baku',
+  baku_city: 'baku',
+  baku_city_circuit: 'baku',
+  // Malaysia
   malaysia: 'sepang',
+  malasia: 'sepang',
+  sepang: 'sepang',
+  // Singapore
+  singapore: 'singapore',
+  singapur: 'singapore',
   marina_bay: 'singapore',
+  // USA / Austin
   cota: 'austin',
+  austin: 'austin',
   americas: 'austin',
   united_states: 'austin',
+  estados_unidos: 'austin',
+  // Mexico
+  mexico: 'mexico',
   rodriguez: 'mexico',
+  hermanos_rodriguez: 'mexico',
+  // Brazil
   brazil: 'interlagos',
+  brasil: 'interlagos',
   sao_paulo: 'interlagos',
+  interlagos: 'interlagos',
+  // Las Vegas
   las_vegas: 'vegas',
+  vegas: 'vegas',
+  // Qatar
   qatar: 'losail',
+  catar: 'losail',
+  losail: 'losail',
+  lusail: 'losail',
+  // Abu Dhabi
   abu_dhabi: 'yas_marina',
+  abu_dabi: 'yas_marina',
+  yas_marina: 'yas_marina',
 };
+
