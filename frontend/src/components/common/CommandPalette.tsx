@@ -522,19 +522,30 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             }
             className="flex-1 bg-transparent text-sm sm:text-base text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none font-mono"
           />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-white cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          ) : (
+          <div className="flex items-center gap-1.5 shrink-0">
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-white cursor-pointer"
+                title={lang === 'es' ? 'Limpiar' : 'Clear'}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
             <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.08] text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">
               ESC
             </kbd>
-          )}
+            {/* Mobile-only close button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="sm:hidden p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-white cursor-pointer"
+              title={lang === 'es' ? 'Cerrar' : 'Close'}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Results List */}
@@ -592,7 +603,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
         {/* Footer shortcuts */}
         <div className="px-4 py-2 bg-zinc-50 dark:bg-[#0B0E14] border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-zinc-500 dark:text-zinc-400 select-none">
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 text-[10px] font-bold">↑↓</kbd>{' '}
               {lang === 'es' ? 'Navegar' : 'Navigate'}
@@ -602,6 +613,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               {lang === 'es' ? 'Seleccionar' : 'Select'}
             </span>
           </div>
+          <span className="sm:hidden text-[10px] text-zinc-400 font-mono">
+            {lang === 'es' ? 'Toca para seleccionar' : 'Tap to select'}
+          </span>
           <span className="font-bold text-zinc-400 text-[10px]">DELTA SEARCH</span>
         </div>
       </div>

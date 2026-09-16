@@ -32,39 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { lang, toggleLang, t } = useLanguage();
   const { series, setSeries, theme } = useSeries();
-  const navRef = React.useRef<HTMLElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
-  const [canScrollRight, setCanScrollRight] = React.useState(false);
 
-  const checkScroll = React.useCallback(() => {
-    if (navRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = navRef.current;
-      setCanScrollLeft(scrollLeft > 6);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 6);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    const el = navRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener('scroll', checkScroll, { passive: true });
-    window.addEventListener('resize', checkScroll);
-    return () => {
-      el.removeEventListener('scroll', checkScroll);
-      window.removeEventListener('resize', checkScroll);
-    };
-  }, [checkScroll, series, activeTab]);
-
-  React.useEffect(() => {
-    if (navRef.current) {
-      const activeEl = navRef.current.querySelector<HTMLElement>('[data-active="true"]');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-      setTimeout(checkScroll, 350);
-    }
-  }, [activeTab, checkScroll]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
@@ -135,11 +103,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onOpenSearch}
-                title={lang === 'es' ? 'Buscador' : 'Search'}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
+                title={lang === 'es' ? 'Buscar' : 'Search'}
+                className="w-7 h-7 sm:w-auto flex items-center justify-center sm:gap-1.5 px-0 sm:px-2.5 py-0 sm:py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
               >
-                <Search className="w-3.5 h-3.5" />
-                <span>{lang === 'es' ? 'Buscar' : 'Search'}</span>
+                <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">{lang === 'es' ? 'Buscar' : 'Search'}</span>
               </button>
             )}
 
@@ -203,31 +171,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Tab Navigation */}
         <div className="relative">
-          {/* Subtle scroll edge indicators for mobile horizontal scroll */}
-          <div
-            className={`pointer-events-none absolute left-0 top-0 bottom-0 w-4 nav-scroll-left z-10 sm:hidden transition-opacity duration-200 ${
-              canScrollLeft ? 'opacity-100' : 'opacity-0'
-            }`}
-            aria-hidden="true"
-          />
-          <div
-            className={`pointer-events-none absolute right-0 top-0 bottom-0 w-5 nav-scroll-right z-10 sm:hidden transition-opacity duration-200 ${
-              canScrollRight ? 'opacity-100' : 'opacity-0'
-            }`}
-            aria-hidden="true"
-          />
-
-          <nav
-            ref={navRef}
-            className="flex items-center gap-1 sm:gap-6 md:gap-8 border-t border-white/[0.08] -mx-3 px-3 pr-8 sm:mx-0 sm:px-1 sm:pr-1 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x"
-          >
+          <nav className="flex items-center justify-between sm:justify-start sm:gap-6 md:gap-8 border-t border-white/[0.08] w-full">
             {/* Live telemetry only for F1 */}
             {series === 'f1' && (
               <button
                 type="button"
                 data-active={activeTab === 'live'}
                 onClick={() => setActiveTab('live')}
-                className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 flex items-center gap-1.5 shrink-0 ${
+                className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center gap-1 text-center whitespace-nowrap cursor-pointer ${
                   activeTab === 'live'
                     ? 'text-zinc-100'
                     : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -236,9 +187,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <span>{t.nav.live}</span>
                 {isLiveActive && isLiveConnected && (
-                  <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#39B54A] animate-pulse" />
-                    <span>LIVE</span>
+                    <span className="hidden sm:inline">LIVE</span>
                   </span>
                 )}
               </button>
@@ -248,7 +199,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               data-active={activeTab === 'last-race'}
               onClick={() => setActiveTab('last-race')}
-              className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+              className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                 activeTab === 'last-race'
                   ? 'text-zinc-100'
                   : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -264,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 data-active={activeTab === 'qualy'}
                 onClick={() => setActiveTab('qualy')}
-                className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+                className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                   activeTab === 'qualy'
                     ? 'text-zinc-100'
                     : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -280,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               data-active={activeTab === 'schedule'}
               onClick={() => setActiveTab('schedule')}
-              className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+              className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                 activeTab === 'schedule'
                   ? 'text-zinc-100'
                   : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -294,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               data-active={activeTab === 'standings'}
               onClick={() => setActiveTab('standings')}
-              className={`px-2 sm:px-3 py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 shrink-0 ${
+              className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                 activeTab === 'standings'
                   ? 'text-zinc-100'
                   : 'text-zinc-400 hover:text-zinc-100 border-transparent'
@@ -303,9 +254,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>{t.nav.standings}</span>
             </button>
-
-            {/* Trailing spacer so POSICIONES has generous breathing room and is never obscured */}
-            <div className="w-5 shrink-0 sm:hidden pointer-events-none" aria-hidden="true" />
           </nav>
         </div>
       </div>
