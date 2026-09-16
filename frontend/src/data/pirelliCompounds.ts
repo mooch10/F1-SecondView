@@ -66,6 +66,8 @@ export const PIRELLI_CIRCUIT_COMPOUNDS: Record<string, PirelliCompoundSet> = {
   'las vegas': { hard: 'C3', medium: 'C4', soft: 'C5', category: 'Low Degradation / Street', categoryEs: 'Baja Degradación / Urbano' },
   'yas marina': { hard: 'C3', medium: 'C4', soft: 'C5', category: 'Low Degradation / Street', categoryEs: 'Baja Degradación / Urbano' },
   'abu dhabi': { hard: 'C3', medium: 'C4', soft: 'C5', category: 'Low Degradation / Street', categoryEs: 'Baja Degradación / Urbano' },
+  'sepang': { hard: 'C1', medium: 'C2', soft: 'C3', category: 'High Degradation', categoryEs: 'Alta Degradación' },
+  'malaysia': { hard: 'C1', medium: 'C2', soft: 'C3', category: 'High Degradation', categoryEs: 'Alta Degradación' },
 };
 
 export const DEFAULT_PIRELLI_COMPOUNDS: PirelliCompoundSet = {
@@ -79,15 +81,31 @@ export const DEFAULT_PIRELLI_COMPOUNDS: PirelliCompoundSet = {
 export function getPirelliCompounds(circuitName?: string, country?: string, raceName?: string): PirelliCompoundSet {
   const normalize = (s?: string) => (s ? s.toLowerCase().trim() : '');
 
-  const terms = [
-    normalize(circuitName),
-    normalize(country),
-    normalize(raceName),
-  ].filter(Boolean);
-
-  for (const term of terms) {
+  // 1. Highest priority: Circuit Name
+  const cName = normalize(circuitName);
+  if (cName) {
     for (const [key, value] of Object.entries(PIRELLI_CIRCUIT_COMPOUNDS)) {
-      if (term.includes(key) || key.includes(term)) {
+      if (cName.includes(key) || key.includes(cName)) {
+        return value;
+      }
+    }
+  }
+
+  // 2. Second priority: Race Name
+  const rName = normalize(raceName);
+  if (rName) {
+    for (const [key, value] of Object.entries(PIRELLI_CIRCUIT_COMPOUNDS)) {
+      if (rName.includes(key) || key.includes(rName)) {
+        return value;
+      }
+    }
+  }
+
+  // 3. Fallback: Country
+  const ctry = normalize(country);
+  if (ctry) {
+    for (const [key, value] of Object.entries(PIRELLI_CIRCUIT_COMPOUNDS)) {
+      if (ctry.includes(key) || key.includes(ctry)) {
         return value;
       }
     }

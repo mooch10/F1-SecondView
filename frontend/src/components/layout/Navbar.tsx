@@ -112,14 +112,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onOpenSearch}
-                title={lang === 'es' ? 'Buscador rápido (Ctrl+K)' : 'Quick Search (Ctrl+K)'}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
+                title={lang === 'es' ? 'Buscador' : 'Search'}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
               >
                 <Search className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">{lang === 'es' ? 'Buscar' : 'Search'}</span>
-                <kbd className="hidden md:inline-flex px-1 py-0.2 rounded bg-zinc-200 dark:bg-white/10 text-[9px] font-bold">
-                  ⌘K
-                </kbd>
+                <span>{lang === 'es' ? 'Buscar' : 'Search'}</span>
               </button>
             )}
 
@@ -128,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onToggleTvMode}
-                title={lang === 'es' ? 'Modo TV Focus (Tecla F)' : 'TV Focus Mode (Key F)'}
+                title={lang === 'es' ? 'Modo TV Focus' : 'TV Focus Mode'}
                 className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer border ${
                   isTvMode
                     ? 'bg-amber-400 text-black border-amber-300'

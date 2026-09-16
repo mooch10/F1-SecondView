@@ -94,6 +94,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     setIsH2HOpen(true);
   };
 
+  const openH2HWithTeammate = (driverNumber: number, teammateNumber: number) => {
+    setH2hDriverA(driverNumber);
+    setH2hDriverB(teammateNumber);
+    setIsH2HOpen(true);
+  };
+
   const openGeneralH2H = () => {
     if (pinnedDriverNumber && drivers.some((d) => d.driverNumber === pinnedDriverNumber)) {
       openH2HWithDriver(pinnedDriverNumber);
@@ -852,6 +858,33 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       <span>{t.live.h2hBtn}</span>
                     </button>
 
+                    {(() => {
+                      const teammate = drivers.find(
+                        (other) =>
+                          other.driverNumber !== d.driverNumber &&
+                          other.teamName &&
+                          d.teamName &&
+                          (other.teamName.toLowerCase() === d.teamName.toLowerCase() ||
+                            other.teamName.toLowerCase().includes(d.teamName.toLowerCase()) ||
+                            d.teamName.toLowerCase().includes(other.teamName.toLowerCase()))
+                      );
+                      if (!teammate) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openH2HWithTeammate(d.driverNumber, teammate.driverNumber);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-amber-400/30 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title={lang === 'es' ? `Comparar duelo directo con su compañero ${teammate.fullName || teammate.code}` : `Direct duel vs teammate ${teammate.fullName || teammate.code}`}
+                        >
+                          <Swords className="w-3 h-3 text-amber-400" />
+                          <span>{lang === 'es' ? `vs Compañero (${teammate.code})` : `vs Teammate (${teammate.code})`}</span>
+                        </button>
+                      );
+                    })()}
+
                     <button
                       type="button"
                       onClick={(e) => {
@@ -1108,9 +1141,13 @@ export const TimingTable: React.FC<TimingTableProps> = ({
         profile={selectedProfile}
         isPinned={selectedProfile ? pinnedDriverNumber === selectedProfile.number : false}
         onTogglePin={(num) => togglePin(num)}
-        onCompare={(num) => {
+        onCompare={(num, teammateNum) => {
           setIsProfileOpen(false);
-          openH2HWithDriver(num);
+          if (teammateNum) {
+            openH2HWithTeammate(num, teammateNum);
+          } else {
+            openH2HWithDriver(num);
+          }
         }}
       />
     </div>

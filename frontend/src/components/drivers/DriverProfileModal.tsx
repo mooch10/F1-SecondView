@@ -12,7 +12,7 @@ interface DriverProfileModalProps {
   profile: F1DriverProfile | null;
   onTogglePin?: (driverNumber: number) => void;
   isPinned?: boolean;
-  onCompare?: (driverNumber: number) => void;
+  onCompare?: (driverNumber: number, teammateNumber?: number) => void;
 }
 
 const F1_BIOS_EN: Record<string, string> = {
@@ -378,9 +378,21 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                     {lang === 'en' ? 'Teammate Duel (H2H)' : 'Duelo de Compañeros (H2H)'}
                   </span>
                 </div>
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold">
-                  vs {analytics.h2h.teammateName} ({analytics.h2h.teammateCode})
-                </span>
+                {onCompare && activeProfile ? (
+                  <button
+                    type="button"
+                    onClick={() => onCompare(activeProfile.number, analytics.h2h.teammateNumber)}
+                    className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    title={lang === 'en' ? `Open 1 vs 1 duel with ${analytics.h2h.teammateName}` : `Abrir duelo 1 vs 1 con ${analytics.h2h.teammateName}`}
+                  >
+                    <span>vs {analytics.h2h.teammateName} ({analytics.h2h.teammateCode})</span>
+                    <span className="text-[10px]">⚔️</span>
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold">
+                    vs {analytics.h2h.teammateName} ({analytics.h2h.teammateCode})
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
@@ -558,8 +570,20 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                 onClick={() => onCompare(activeProfile.number)}
                 className="py-2.5 px-4 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/10 dark:text-white dark:border-white/15 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer active:scale-98"
               >
-                <Swords className="w-4 h-4 text-zinc-300" />
+                <Swords className="w-4 h-4 text-zinc-400" />
                 <span>{t.driverProfile.compareBtn}</span>
+              </button>
+            )}
+
+            {onCompare && analytics.h2h.teammateNumber > 0 && activeProfile && (
+              <button
+                type="button"
+                onClick={() => onCompare(activeProfile.number, analytics.h2h.teammateNumber)}
+                className="py-2.5 px-4 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 text-amber-600 dark:text-amber-400 border border-amber-400/40 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-98"
+                title={lang === 'en' ? `Compare with teammate ${analytics.h2h.teammateName}` : `Comparar con su compañero ${analytics.h2h.teammateName}`}
+              >
+                <Swords className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>{lang === 'en' ? `vs ${analytics.h2h.teammateCode}` : `vs ${analytics.h2h.teammateCode}`}</span>
               </button>
             )}
           </div>

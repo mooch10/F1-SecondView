@@ -15,6 +15,7 @@ import { StandingsView } from './components/standings/StandingsView';
 import { HeroView } from './components/hero/HeroView';
 import { CommandPalette } from './components/common/CommandPalette';
 import { DriverProfileModal } from './components/drivers/DriverProfileModal';
+import { HeadToHeadModal } from './components/live/HeadToHeadModal';
 import { getDriverProfile, type F1DriverProfile } from './data/f1DriversData';
 import { useLanguage } from './hooks/useLanguage';
 import { useLiveTelemetry } from './hooks/useLiveTelemetry';
@@ -32,6 +33,9 @@ function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+  const [isH2HOpen, setIsH2HOpen] = useState<boolean>(false);
+  const [h2hDriverA, setH2hDriverA] = useState<number | null>(null);
+  const [h2hDriverB, setH2hDriverB] = useState<number | null>(null);
   const [historicalYear, setHistoricalYear] = useState<number>(2026);
   const { isDarkMode, toggleTheme } = useTheme();
   const { lang, t } = useLanguage();
@@ -127,6 +131,30 @@ function App() {
     }
   };
 
+  const handleOpenH2H = (driverA: number, driverB?: number) => {
+    setIsProfileOpen(false);
+    setH2hDriverA(driverA);
+    if (driverB && driverB !== driverA) {
+      setH2hDriverB(driverB);
+    } else {
+      const current = drivers.find((d) => d.driverNumber === driverA);
+      const teammate = current
+        ? drivers.find(
+            (d) =>
+              d.driverNumber !== driverA &&
+              d.teamName &&
+              current.teamName &&
+              (d.teamName.toLowerCase() === current.teamName.toLowerCase() ||
+                d.teamName.toLowerCase().includes(current.teamName.toLowerCase()) ||
+                current.teamName.toLowerCase().includes(d.teamName.toLowerCase()))
+          )
+        : null;
+      const other = drivers.find((d) => d.driverNumber !== driverA);
+      setH2hDriverB(teammate ? teammate.driverNumber : (other ? other.driverNumber : null));
+    }
+    setIsH2HOpen(true);
+  };
+
   const handleSelectHistoricalYear = (year: number) => {
     setHistoricalYear(year);
     setActiveTab('standings');
@@ -186,13 +214,10 @@ function App() {
           type="button"
           onClick={() => setIsTvMode(false)}
           className="fixed top-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-black text-amber-400 hover:text-amber-300 border border-amber-400/40 shadow-xl backdrop-blur-md text-xs font-mono font-bold uppercase transition-all cursor-pointer select-none group active:scale-95"
-          title={lang === 'es' ? 'Salir del modo TV (F o ESC)' : 'Exit TV Mode (F or ESC)'}
+          title={lang === 'es' ? 'Salir del modo TV' : 'Exit TV Mode'}
         >
           <Tv className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
           <span>{lang === 'es' ? 'Salir TV' : 'Exit TV'}</span>
-          <kbd className="hidden sm:inline-block px-1 py-0.2 rounded bg-white/10 text-[9px] text-zinc-300">
-            ESC
-          </kbd>
         </button>
       )}
 
@@ -375,6 +400,18 @@ function App() {
             isOpen={isProfileOpen}
             onClose={() => setIsProfileOpen(false)}
             profile={selectedProfile}
+            onCompare={handleOpenH2H}
+          />
+
+          {/* Global Head to Head Modal */}
+          <HeadToHeadModal
+            isOpen={isH2HOpen}
+            onClose={() => setIsH2HOpen(false)}
+            drivers={drivers}
+            driverAId={h2hDriverA}
+            driverBId={h2hDriverB}
+            onSelectDriverA={setH2hDriverA}
+            onSelectDriverB={setH2hDriverB}
           />
     </div>
   );

@@ -130,7 +130,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       {
         id: 'cmd-tv',
         title: lang === 'es' ? 'Modo TV Companion (Pantalla Completa)' : 'TV Focus Mode (Fullscreen)',
-        subtitle: lang === 'es' ? 'Atajo rápido: Tecla F' : 'Quick shortcut: Key F',
+        subtitle: lang === 'es' ? 'Segunda pantalla sin distracciones' : 'Second screen without distractions',
         category: 'command',
         categoryLabel: 'COMMAND',
         categoryLabelEs: 'COMANDO',

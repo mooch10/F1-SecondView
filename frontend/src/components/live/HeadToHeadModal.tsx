@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   ArrowLeftRight,
@@ -9,6 +9,7 @@ import type { DriverLive } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { SectorPill } from '../qualy/SectorPill';
 import { TyreBadge } from '../common/TyreBadge';
+import { F1_DRIVERS_DATA } from '../../data/f1DriversData';
 
 interface HeadToHeadModalProps {
   isOpen: boolean;
@@ -32,14 +33,58 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
   const { lang, t } = useLanguage();
   const [selectingTarget, setSelectingTarget] = useState<'A' | 'B' | null>(null);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  const driverA = drivers.find((d) => d.driverNumber === driverAId) || drivers[0] || null;
+  const effectiveDrivers: DriverLive[] =
+    drivers && drivers.length > 0
+      ? drivers
+      : Object.values(F1_DRIVERS_DATA).map((p, idx) => ({
+          pos: idx + 1,
+          posChange: 0,
+          driverNumber: p.number,
+          code: p.code,
+          fullName: p.fullName,
+          teamName: p.team,
+          teamColor: p.teamColor,
+          gap: '+0.000',
+          interval: '+0.000',
+          isDrsZone: false,
+          lastLapTime: '--:--.---',
+          isFastestLap: false,
+          tyre: { compound: 'MEDIUM', laps: 12 },
+          pitStops: 1,
+          inPit: false,
+          status: 'ACTIVE' as const,
+        }));
+
+  const driverA = effectiveDrivers.find((d) => d.driverNumber === driverAId) || effectiveDrivers[0] || null;
   const driverB =
-    drivers.find((d) => d.driverNumber === driverBId) ||
-    drivers.find((d) => d.driverNumber !== driverA?.driverNumber) ||
-    drivers[1] ||
+    (driverBId !== driverA?.driverNumber && effectiveDrivers.find((d) => d.driverNumber === driverBId)) ||
+    effectiveDrivers.find((d) => d.driverNumber !== driverA?.driverNumber) ||
     null;
+
+  const teammateOfA = driverA
+    ? effectiveDrivers.find(
+        (d) =>
+          d.driverNumber !== driverA.driverNumber &&
+          d.teamName &&
+          driverA.teamName &&
+          (d.teamName.toLowerCase() === driverA.teamName.toLowerCase() ||
+            d.teamName.toLowerCase().includes(driverA.teamName.toLowerCase()) ||
+            driverA.teamName.toLowerCase().includes(d.teamName.toLowerCase()))
+      )
+    : null;
 
   const handleSwap = () => {
     if (driverA && driverB) {
@@ -139,6 +184,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             onClick={onClose}
             className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
             aria-label={t.live.h2h.close}
+            title={t.live.h2h.close}
           >
             <X className="w-4 h-4" />
           </button>
@@ -160,40 +206,79 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
               </button>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
-              {drivers.map((d) => (
-                <button
-                  key={d.driverNumber}
-                  type="button"
-                  onClick={() => {
-                    if (selectingTarget === 'A') {
-                      onSelectDriverA(d.driverNumber);
-                    } else {
-                      onSelectDriverB(d.driverNumber);
-                    }
-                    setSelectingTarget(null);
-                  }}
-                  className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-colors cursor-pointer text-xs font-mono ${
-                    (selectingTarget === 'A' ? driverA?.driverNumber : driverB?.driverNumber) ===
-                    d.driverNumber
-                      ? 'bg-white/10 border-white/30 text-white'
-                      : 'bg-white/[0.02] border-white/[0.06] text-zinc-300 hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <span
-                    className="w-1.5 h-4 rounded-full shrink-0"
-                    style={{ backgroundColor: d.teamColor || '#888' }}
-                  />
-                  <span className="font-black text-white">{d.pos ? `P${d.pos}` : ''}</span>
-                  <span className="font-bold truncate">{d.code}</span>
-                  <span className="text-[10px] text-zinc-500 ml-auto">#{d.driverNumber}</span>
-                </button>
-              ))}
+              {effectiveDrivers
+                .filter((d) =>
+                  selectingTarget === 'A'
+                    ? d.driverNumber !== driverB?.driverNumber
+                    : d.driverNumber !== driverA?.driverNumber
+                )
+                .map((d) => (
+                  <button
+                    key={d.driverNumber}
+                    type="button"
+                    onClick={() => {
+                      if (selectingTarget === 'A') {
+                        onSelectDriverA(d.driverNumber);
+                      } else {
+                        onSelectDriverB(d.driverNumber);
+                      }
+                      setSelectingTarget(null);
+                    }}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-colors cursor-pointer text-xs font-mono ${
+                      (selectingTarget === 'A' ? driverA?.driverNumber : driverB?.driverNumber) ===
+                      d.driverNumber
+                        ? 'bg-white/10 border-white/30 text-white'
+                        : 'bg-white/[0.02] border-white/[0.06] text-zinc-300 hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <span
+                      className="w-1.5 h-4 rounded-full shrink-0"
+                      style={{ backgroundColor: d.teamColor || '#888' }}
+                    />
+                    <span className="font-black text-white">{d.pos ? `P${d.pos}` : ''}</span>
+                    <span className="font-bold truncate">{d.code}</span>
+                    <span className="text-[10px] text-zinc-500 ml-auto">#{d.driverNumber}</span>
+                  </button>
+                ))}
             </div>
           </div>
         )}
 
         {/* Main Content Area (Scrollable) */}
         <div className="p-4 pb-12 space-y-3.5 overflow-y-auto overscroll-contain">
+          {/* Quick Teammate Duel Shortcut */}
+          {teammateOfA && (
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-400/10 border border-amber-400/25">
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="text-amber-400 font-bold">
+                  {lang === 'es' ? 'Compañero de equipo:' : 'Teammate:'}
+                </span>
+                <span className="text-white font-bold">
+                  {teammateOfA.fullName || teammateOfA.code} (#{teammateOfA.driverNumber})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectDriverB(teammateOfA.driverNumber);
+                  setSelectingTarget(null);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+                  driverB?.driverNumber === teammateOfA.driverNumber
+                    ? 'bg-amber-400 text-black shadow-sm font-black'
+                    : 'bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-400/30'
+                }`}
+              >
+                <span>⚔️</span>
+                <span>
+                  {driverB?.driverNumber === teammateOfA.driverNumber
+                    ? (lang === 'es' ? 'Duelo Activo' : 'Duel Active')
+                    : (lang === 'es' ? 'Duelo vs Compañero' : 'Teammate Duel')}
+                </span>
+              </button>
+            </div>
+          )}
+
           {/* Driver Selector Row with Swap */}
           <div className="grid grid-cols-11 gap-1.5 items-center">
             {/* Driver A Card */}
