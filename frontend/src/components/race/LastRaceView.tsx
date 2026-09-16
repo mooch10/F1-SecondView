@@ -18,6 +18,7 @@ import { TyreStintBar, type StintItem } from '../common/TyreStintBar';
 import { LapEvolutionChart } from './LapEvolutionChart';
 import { PitStopLeaderboard } from './PitStopLeaderboard';
 import { TyreStrategyGrid } from './TyreStrategyGrid';
+import { TyreAllocationGrid } from './TyreAllocationGrid';
 
 export const LastRaceView: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -26,7 +27,7 @@ export const LastRaceView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
   const [selectedSession, setSelectedSession] = useState<'feature' | 'sprint'>('feature');
-  const [analysisTab, setAnalysisTab] = useState<'results' | 'stints' | 'lapChart' | 'pitStops'>('results');
+  const [analysisTab, setAnalysisTab] = useState<'results' | 'stints' | 'lapChart' | 'pitStops' | 'tyreSets'>('results');
 
   // 👤 Driver Profile Modal
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
@@ -404,6 +405,17 @@ export const LastRaceView: React.FC = () => {
           >
             ⏱️ {t.lastRace.subTabs?.pitStops || 'Pit Stops'}
           </button>
+          <button
+            type="button"
+            onClick={() => setAnalysisTab('tyreSets')}
+            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+              analysisTab === 'tyreSets'
+                ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            🛞 {t.lastRace.subTabs?.tyreSets || 'Sets Disponibles'}
+          </button>
         </div>
       )}
 
@@ -411,6 +423,7 @@ export const LastRaceView: React.FC = () => {
       {series === 'f1' && analysisTab === 'stints' && <TyreStrategyGrid />}
       {series === 'f1' && analysisTab === 'lapChart' && <LapEvolutionChart />}
       {series === 'f1' && analysisTab === 'pitStops' && <PitStopLeaderboard />}
+      {series === 'f1' && analysisTab === 'tyreSets' && <TyreAllocationGrid />}
 
       {/* Main Race Classification Table */}
       {(analysisTab === 'results' || series !== 'f1') && (

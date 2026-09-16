@@ -10,6 +10,7 @@ import { getDriverProfile, enrichDriverProfileWithSeason, type F1DriverProfile }
 import { DRIVER_ACADEMY_MAP, F1_ACADEMIES } from '../../data/juniorGraduatesData';
 import { JuniorGraduatesView } from './JuniorGraduatesView';
 import { JuniorTechSpecsModal } from './JuniorTechSpecsModal';
+import { PowerUnitTracker } from './PowerUnitTracker';
 
 interface StandingsViewProps {
   liveDrivers?: DriverLive[];
@@ -61,7 +62,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const [data, setData] = useState<StandingsData | null>(null);
   const [driverChanges, setDriverChanges] = useState<DriverChangeAlert[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
+  const [subTab, setSubTab] = useState<'drivers' | 'constructors' | 'pu-tracker'>('drivers');
   const [juniorTab, setJuniorTab] = useState<'standings' | 'graduates'>('standings');
   const [selectedSeasonYear, setSelectedSeasonYear] = useState<number>(initialSeasonYear || 2026);
   const [selectedAcademyFilter, setSelectedAcademyFilter] = useState<string>('all');
@@ -547,6 +548,23 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 <span className="sm:hidden">{lang === 'es' ? 'CONSTRUCTORES' : 'CONSTRUCTORS'}</span>
                 <span className="hidden sm:inline">{t.standings.constructorsTab}</span>
               </button>
+
+              {series === 'f1' && (
+                <button
+                  type="button"
+                  onClick={() => setSubTab('pu-tracker')}
+                  className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                    subTab === 'pu-tracker'
+                      ? 'text-zinc-900 dark:text-white'
+                      : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
+                  }`}
+                  style={subTab === 'pu-tracker' ? { borderColor: theme.primary } : undefined}
+                >
+                  <Zap className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
+                  <span className="sm:hidden">{lang === 'es' ? 'MOTORES' : 'PU'}</span>
+                  <span className="hidden sm:inline">{lang === 'es' ? 'Motores & Sanciones' : 'Power Unit Tracker'}</span>
+                </button>
+              )}
             </div>
 
             {series === 'f1' && selectedSeasonYear === 2026 && isLiveActive && liveDrivers && liveDrivers.length > 0 && (
@@ -861,6 +879,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* POWER UNIT TRACKER (F1 Only) */}
+          {series === 'f1' && subTab === 'pu-tracker' && (
+            <PowerUnitTracker onSelectDriver={(code) => handleDriverClick({ code })} />
           )}
         </>
       )}
