@@ -101,7 +101,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       <div className="bg-[#131722] border border-white/[0.08] border-l-4 border-l-zinc-500 rounded-xl px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono shadow-sm">
         <div className="flex items-center gap-2 text-zinc-400 min-w-0">
           <Flag className="w-4 h-4 text-zinc-400 shrink-0" />
-          <span className="font-semibold uppercase tracking-wider text-[10px] sm:text-xs truncate">
+          <span className="font-semibold uppercase tracking-wider text-[10px] sm:text-xs leading-tight">
             {lang === 'es'
               ? 'MODO ENTRE CARRERAS • SIN ACTIVIDAD EN PISTA'
               : 'BETWEEN RACES MODE • NO ACTIVE TRACK SESSION'}
@@ -260,7 +260,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                       <span className="font-bold text-xs text-white">
                         {p.code}
                       </span>
-                      <span className="text-[10px] text-zinc-400 truncate max-w-[110px]">
+                      <span className="text-[10px] text-zinc-400 break-words leading-tight">
                         {p.teamName}
                       </span>
                     </div>

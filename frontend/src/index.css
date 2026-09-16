@@ -384,3 +384,19 @@ html.light .f1-range-slider::-moz-range-track {
   background: #E5E7EB;
   border-color: #D1D5DB;
 }
+
+/* Navbar mobile scroll edge indicators */
+.nav-scroll-left {
+  background: linear-gradient(to right, rgba(11, 14, 20, 0.95), rgba(11, 14, 20, 0)) !important;
+}
+.nav-scroll-right {
+  background: linear-gradient(to left, rgba(11, 14, 20, 0.95), rgba(11, 14, 20, 0)) !important;
+}
+
+html.light .nav-scroll-left {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0)) !important;
+}
+html.light .nav-scroll-right {
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0)) !important;
+}
+

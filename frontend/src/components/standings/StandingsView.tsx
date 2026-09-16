@@ -753,7 +753,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono sm:hidden block truncate">
+                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono sm:hidden block break-words leading-tight">
                             {d.team}
                           </span>
                         </div>

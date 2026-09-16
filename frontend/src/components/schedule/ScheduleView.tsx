@@ -348,7 +348,7 @@ export const ScheduleView: React.FC = () => {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0">
-                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase truncate">
+                        <span className="text-xs sm:text-sm font-bold text-white tracking-tight uppercase break-words leading-tight">
                           {r.raceName}
                         </span>
                         <div className="flex items-center gap-1 flex-nowrap shrink-0">
@@ -384,7 +384,7 @@ export const ScheduleView: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono break-words leading-tight">
                           {r.circuitName} • {r.country}
                         </span>
                         {series === 'f1' && (

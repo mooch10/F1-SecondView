@@ -33,6 +33,28 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { lang, toggleLang, t } = useLanguage();
   const { series, setSeries, theme } = useSeries();
   const navRef = React.useRef<HTMLElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  const checkScroll = React.useCallback(() => {
+    if (navRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = navRef.current;
+      setCanScrollLeft(scrollLeft > 6);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 6);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener('scroll', checkScroll, { passive: true });
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [checkScroll, series, activeTab]);
 
   React.useEffect(() => {
     if (navRef.current) {
@@ -40,8 +62,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (activeEl) {
         activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
+      setTimeout(checkScroll, 350);
     }
-  }, [activeTab]);
+  }, [activeTab, checkScroll]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
@@ -180,13 +203,23 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Tab Navigation */}
         <div className="relative">
-          {/* Subtle gradient indicators for mobile horizontal scroll */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-[#0B0E14] to-transparent z-10 sm:hidden" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#0B0E14] to-transparent z-10 sm:hidden" />
+          {/* Subtle scroll edge indicators for mobile horizontal scroll */}
+          <div
+            className={`pointer-events-none absolute left-0 top-0 bottom-0 w-4 nav-scroll-left z-10 sm:hidden transition-opacity duration-200 ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-hidden="true"
+          />
+          <div
+            className={`pointer-events-none absolute right-0 top-0 bottom-0 w-5 nav-scroll-right z-10 sm:hidden transition-opacity duration-200 ${
+              canScrollRight ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-hidden="true"
+          />
 
           <nav
             ref={navRef}
-            className="flex items-center gap-1 sm:gap-6 md:gap-8 border-t border-white/[0.08] -mx-3 px-3 sm:mx-0 sm:px-1 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x"
+            className="flex items-center gap-1 sm:gap-6 md:gap-8 border-t border-white/[0.08] -mx-3 px-3 pr-8 sm:mx-0 sm:px-1 sm:pr-1 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x"
           >
             {/* Live telemetry only for F1 */}
             {series === 'f1' && (
@@ -270,6 +303,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>{t.nav.standings}</span>
             </button>
+
+            {/* Trailing spacer so POSICIONES has generous breathing room and is never obscured */}
+            <div className="w-5 shrink-0 sm:hidden pointer-events-none" aria-hidden="true" />
           </nav>
         </div>
       </div>
