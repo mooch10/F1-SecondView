@@ -198,7 +198,7 @@ export const ScheduleView: React.FC = () => {
             </div>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+          <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight uppercase">
             {nextRace.raceName}
           </h2>
           <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
@@ -219,39 +219,39 @@ export const ScheduleView: React.FC = () => {
 
           {/* Countdown Clock Digital Boxes */}
           {timeLeft && (
-            <div className="grid grid-cols-4 gap-2 mt-4 max-w-sm">
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-bold text-white font-mono tabular-nums">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mt-3 sm:mt-4 max-w-xs sm:max-w-sm">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {timeLeft.days}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.schedule.countdown.days}
                 </span>
               </div>
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-bold text-white font-mono tabular-nums">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.schedule.countdown.hours}
                 </span>
               </div>
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-lg sm:text-2xl font-bold text-white font-mono tabular-nums">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.schedule.countdown.minutes}
                 </span>
               </div>
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
                 <span
                   className="text-lg sm:text-2xl font-bold font-mono tabular-nums"
                   style={{ color: theme.primary }}
                 >
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.schedule.countdown.seconds}
                 </span>
               </div>

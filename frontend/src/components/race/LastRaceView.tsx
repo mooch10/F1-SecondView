@@ -217,7 +217,7 @@ export const LastRaceView: React.FC = () => {
                 {formatDisplayDate(raceDetail.date)}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+            <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight uppercase">
               {raceDetail.raceName}
             </h2>
             <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 font-mono">
@@ -229,10 +229,10 @@ export const LastRaceView: React.FC = () => {
           {/* Winner Showcase Card */}
           {winner && (
             <div
-              className="bg-[#0B0E14] border border-[#FFD60A]/30 rounded-xl p-3 sm:min-w-[240px] flex items-center gap-3"
+              className="bg-[#0B0E14] border border-[#FFD60A]/30 rounded-xl p-2 sm:p-3 sm:min-w-[240px] flex items-center gap-2.5 sm:gap-3"
             >
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg text-black font-mono shadow-sm shrink-0"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-black text-base sm:text-lg text-black font-mono shadow-sm shrink-0"
                 style={{ backgroundColor: winner.teamColor || '#FFD60A' }}
               >
                 1
@@ -271,7 +271,7 @@ export const LastRaceView: React.FC = () => {
         </div>
 
         {/* Podium Recap & Fastest Lap Banner */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-white/[0.08] pt-3">
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-1.5 sm:gap-2 border-t border-white/[0.08] pt-2 sm:pt-3">
           {podium.map((p) => {
             const medalBorder =
               p.pos === 1
@@ -290,16 +290,16 @@ export const LastRaceView: React.FC = () => {
             return (
               <div
                 key={p.driverNumber}
-                className={`p-2.5 rounded-lg border flex items-center justify-between font-mono text-xs ${medalBorder}`}
+                className={`p-1.5 sm:p-2.5 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between font-mono text-[10px] sm:text-xs min-w-0 ${medalBorder}`}
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                   <span
-                    className={`w-5 h-5 rounded-full font-black text-[10px] flex items-center justify-center shrink-0 ${medalBadge}`}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full font-black text-[9px] sm:text-[10px] flex items-center justify-center shrink-0 ${medalBadge}`}
                   >
                     {p.pos}
                   </span>
                   <div className="flex flex-col leading-tight truncate">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5 sm:gap-1">
                       {p.code ? (
                         <button
                           type="button"
@@ -307,24 +307,24 @@ export const LastRaceView: React.FC = () => {
                             e.stopPropagation();
                             openDriverProfile(undefined, p.code, p.fullName);
                           }}
-                          className="font-bold text-white text-xs hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
+                          className="font-bold text-white text-[11px] sm:text-xs hover:text-[#FFD60A] hover:underline cursor-pointer transition-colors"
                           title={lang === 'es' ? 'Ver ficha del piloto' : 'View driver profile'}
                         >
                           {p.code}
                         </button>
                       ) : (
-                        <span className="font-bold text-white text-xs">{p.code}</span>
+                        <span className="font-bold text-white text-[11px] sm:text-xs">{p.code}</span>
                       )}
-                      <span className="text-xs text-zinc-300 truncate">
+                      <span className="text-[10px] sm:text-xs text-zinc-300 truncate hidden sm:inline">
                         • {p.familyName}
                       </span>
                     </div>
-                    <span className="text-[10px] text-zinc-400 truncate">
+                    <span className="text-[9px] sm:text-[10px] text-zinc-400 truncate hidden sm:inline">
                       {p.teamName}
                     </span>
                   </div>
                 </div>
-                <span className="text-[11px] text-zinc-300 font-bold shrink-0 ml-1">
+                <span className="text-[9px] sm:text-[11px] text-zinc-300 font-bold shrink-0 mt-0.5 sm:mt-0 sm:ml-1">
                   {p.timeOrStatus}
                 </span>
               </div>
@@ -360,11 +360,11 @@ export const LastRaceView: React.FC = () => {
 
       {/* Sub-navigation Analysis Tabs (F1 only) */}
       {series === 'f1' && (
-        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-x-auto no-scrollbar font-mono text-xs">
+        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-x-auto no-scrollbar font-mono text-[11px] sm:text-xs">
           <button
             type="button"
             onClick={() => setAnalysisTab('results')}
-            className={`flex-1 min-w-[90px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
               analysisTab === 'results'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -375,7 +375,7 @@ export const LastRaceView: React.FC = () => {
           <button
             type="button"
             onClick={() => setAnalysisTab('stints')}
-            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
               analysisTab === 'stints'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -386,7 +386,7 @@ export const LastRaceView: React.FC = () => {
           <button
             type="button"
             onClick={() => setAnalysisTab('lapChart')}
-            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
               analysisTab === 'lapChart'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -397,7 +397,7 @@ export const LastRaceView: React.FC = () => {
           <button
             type="button"
             onClick={() => setAnalysisTab('pitStops')}
-            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
               analysisTab === 'pitStops'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -408,7 +408,7 @@ export const LastRaceView: React.FC = () => {
           <button
             type="button"
             onClick={() => setAnalysisTab('tyreSets')}
-            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
               analysisTab === 'tyreSets'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'

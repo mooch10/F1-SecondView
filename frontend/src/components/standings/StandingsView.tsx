@@ -518,11 +518,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
 
           {/* Broadcast Style Sub-Tabs with Live Virtual Toggle */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 dark:border-white/[0.08] pb-1 px-1">
-            <div className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar">
+            <div className="flex gap-3 sm:gap-6 overflow-x-auto no-scrollbar">
               <button
                 type="button"
                 onClick={() => setSubTab('drivers')}
-                className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                className={`flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   subTab === 'drivers'
                     ? 'text-zinc-900 dark:text-white'
                     : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
@@ -537,7 +537,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSubTab('constructors')}
-                className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                className={`flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   subTab === 'constructors'
                     ? 'text-zinc-900 dark:text-white'
                     : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
@@ -553,7 +553,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setSubTab('pu-tracker')}
-                  className={`flex items-center gap-1.5 sm:gap-2 py-2 text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
                     subTab === 'pu-tracker'
                       ? 'text-zinc-900 dark:text-white'
                       : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
@@ -695,7 +695,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   return (
                     <div
                       key={`${d.code}-${d.virtualPos}`}
-                      className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
+                      className={`grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 items-center transition-colors ${
                         d.virtualPos === 1
                           ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
                           : d.virtualPos <= 3
@@ -833,7 +833,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   {processedConstructors.map((c, index) => (
                     <div
                       key={c.name}
-                      className={`grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors ${
+                      className={`grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 items-center transition-colors ${
                         c.virtualPos === 1
                           ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.08]'
                           : c.virtualPos <= 3

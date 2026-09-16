@@ -41,7 +41,7 @@ export const TyreAllocationGrid: React.FC = () => {
 
     return (
       <div
-        className={`p-2 rounded-xl border transition-all flex flex-col items-center justify-center font-mono ${
+        className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl border transition-all flex flex-col items-center justify-center font-mono ${
           isHighlighted
             ? 'bg-zinc-50 dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.08]'
             : 'opacity-40 bg-transparent border-transparent'
@@ -87,7 +87,7 @@ export const TyreAllocationGrid: React.FC = () => {
   return (
     <div className="space-y-4 animate-fadeIn">
       {/* Header Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-sm">
+      <div className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -99,10 +99,10 @@ export const TyreAllocationGrid: React.FC = () => {
                 13 {lang === 'es' ? 'Sets de Seco por Piloto' : 'Dry Sets per Driver'}
               </span>
             </div>
-            <h2 className="text-lg sm:text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+            <h2 className="text-base sm:text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
               {t.tyreAllocation.title}
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 max-w-2xl font-sans">
+            <p className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 sm:mt-1 max-w-2xl font-sans">
               {t.tyreAllocation.subtitle}
             </p>
           </div>
@@ -125,8 +125,8 @@ export const TyreAllocationGrid: React.FC = () => {
         </div>
 
         {/* Strategy Intel Callout */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-zinc-100 dark:border-white/[0.06] font-mono text-xs">
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-3 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-zinc-100 dark:border-white/[0.06] font-mono text-[11px] sm:text-xs">
+          <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 flex items-start gap-2 sm:gap-2.5">
             <Sparkles className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
             <div>
               <span className="font-bold uppercase tracking-wider block text-[10px]">
@@ -138,7 +138,7 @@ export const TyreAllocationGrid: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 flex items-start gap-2.5">
+          <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 flex items-start gap-2 sm:gap-2.5">
             <Clock className="w-4 h-4 shrink-0 mt-0.5 text-blue-500" />
             <div>
               <span className="font-bold uppercase tracking-wider block text-[10px]">
@@ -150,7 +150,7 @@ export const TyreAllocationGrid: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5">
+          <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-start gap-2 sm:gap-2.5">
             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
             <div>
               <span className="font-bold uppercase tracking-wider block text-[10px]">
@@ -165,7 +165,7 @@ export const TyreAllocationGrid: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 p-2 sm:p-3 rounded-xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-xs">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -257,7 +257,7 @@ export const TyreAllocationGrid: React.FC = () => {
           return (
             <div
               key={d.driverNumber}
-              className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-sm hover:border-zinc-300 dark:hover:border-white/20 transition-all flex flex-col justify-between gap-3"
+              className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-sm hover:border-zinc-300 dark:hover:border-white/20 transition-all flex flex-col justify-between gap-2 sm:gap-3"
             >
               {/* Driver Top Row */}
               <div className="flex items-center justify-between gap-2">

@@ -68,15 +68,15 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
 
     return (
       <div
-        className={`flex flex-col items-center justify-center p-1.5 rounded-lg border text-center font-mono ${badgeClass}`}
+        className={`flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-md sm:rounded-lg border text-center font-mono ${badgeClass}`}
         title={`${fullName}: ${used}/${limit} ${lang === 'es' ? 'usados' : 'used'}`}
       >
-        <span className="text-[10px] uppercase tracking-wider font-semibold opacity-80">
+        <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-semibold opacity-80">
           {label}
         </span>
-        <span className={`text-xs ${countClass}`}>
+        <span className={`text-[11px] sm:text-xs ${countClass}`}>
           {used}
-          <span className="text-[10px] font-normal opacity-60">/{limit}</span>
+          <span className="text-[9px] sm:text-[10px] font-normal opacity-60">/{limit}</span>
         </span>
       </div>
     );
@@ -110,7 +110,7 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
   return (
     <div className="space-y-4 animate-fadeIn">
       {/* Header Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-sm">
+      <div className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -122,10 +122,10 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
                 {lang === 'es' ? 'R14 España • R15 Azerbaiyán' : 'R14 Spain • R15 Azerbaijan'}
               </span>
             </div>
-            <h2 className="text-lg sm:text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+            <h2 className="text-base sm:text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
               {t.puTracker.title}
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 max-w-2xl font-sans">
+            <p className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 sm:mt-1 max-w-2xl font-sans">
               {t.puTracker.subtitle}
             </p>
           </div>
@@ -141,65 +141,65 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
         </div>
 
         {/* 2026 PU Regulation Limit Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mt-4 pt-4 border-t border-zinc-100 dark:border-white/[0.06]">
-          <div className="p-2 rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-zinc-100 dark:border-white/[0.06]">
+          <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
               ICE (1.6L V6)
             </span>
-            <span className="text-base font-black text-zinc-900 dark:text-white">
+            <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
               {PU_LIMITS_2026.ice}
             </span>
-            <span className="text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
+            <span className="text-[8px] sm:text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block">
+          <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
               TC (Turbo)
             </span>
-            <span className="text-base font-black text-zinc-900 dark:text-white">
+            <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
               {PU_LIMITS_2026.tc}
             </span>
-            <span className="text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
+            <span className="text-[8px] sm:text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block">
+          <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
               MGU-K (350kW)
             </span>
-            <span className="text-base font-black text-zinc-900 dark:text-white">
+            <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
               {PU_LIMITS_2026.mguk}
             </span>
-            <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold block">50% Pot. Elec.</span>
+            <span className="text-[8px] sm:text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold block">50% Pot.</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block">
+          <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
               ES (Batería)
             </span>
-            <span className="text-base font-black text-zinc-900 dark:text-white">
+            <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
               {PU_LIMITS_2026.es}
             </span>
-            <span className="text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
+            <span className="text-[8px] sm:text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block">
+          <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
               CE (Centralita)
             </span>
-            <span className="text-base font-black text-zinc-900 dark:text-white">
+            <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
               {PU_LIMITS_2026.ce}
             </span>
-            <span className="text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
+            <span className="text-[8px] sm:text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
           </div>
 
-          <div className="p-2 rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block">
+          <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
               GBX (Caja)
             </span>
-            <span className="text-base font-black text-zinc-900 dark:text-white">
+            <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
               {PU_LIMITS_2026.gbx}
             </span>
-            <span className="text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
+            <span className="text-[8px] sm:text-[9px] text-zinc-400 block">{lang === 'es' ? 'máx temp.' : 'max season'}</span>
           </div>
         </div>
 
@@ -229,7 +229,7 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
       </div>
 
       {/* Interactive Filters Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2.5 p-2 sm:p-3 rounded-xl bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] shadow-xs">
         {/* Status Filters */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           <button
@@ -309,7 +309,7 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
             return (
               <div
                 key={d.driverNumber}
-                className="p-3.5 sm:p-4 hover:bg-zinc-50/80 dark:hover:bg-white/[0.02] transition-colors"
+                className="p-2.5 sm:p-4 hover:bg-zinc-50/80 dark:hover:bg-white/[0.02] transition-colors"
               >
                 {/* Desktop View */}
                 <div className="hidden lg:grid grid-cols-12 gap-2 items-center font-mono">

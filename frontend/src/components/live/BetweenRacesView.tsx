@@ -125,16 +125,22 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
       {/* Next GP Countdown Hero Card */}
       {nextRace && (
         <div className="bg-[#131722] border border-white/[0.08] border-t-2 border-t-[#E10600] rounded-xl p-4 sm:p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit whitespace-nowrap shrink-0">
-              {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
-            </span>
-            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div className="flex items-center justify-between gap-2 w-full sm:w-auto">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit whitespace-nowrap shrink-0">
+                {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
+              </span>
+              <div className="sm:hidden shrink-0">
+                <TrackTimeToggle />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-auto shrink-0">
               {onOpenH2H && (
                 <button
                   type="button"
                   onClick={onOpenH2H}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-xs font-mono font-semibold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer shrink-0"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-[11px] sm:text-xs font-mono font-semibold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer shrink-0"
                   title={lang === 'es' ? 'Comparador 1 vs 1 y Telemetría' : '1 vs 1 Comparator & Telemetry'}
                 >
                   <span>⚔️</span>
@@ -144,19 +150,16 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCircuitModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-mono font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-[11px] sm:text-xs font-mono font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer shrink-0"
                 title={lang === 'es' ? 'Ver Ficha Técnica del Circuito' : 'View Track Intel'}
               >
                 <span>📐</span>
                 <span>{lang === 'es' ? 'Ficha Técnica' : 'Track Intel'}</span>
               </button>
-              <div className="sm:hidden">
-                <TrackTimeToggle />
-              </div>
             </div>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+          <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight uppercase">
             {nextRace.raceName}
           </h2>
           <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
@@ -177,36 +180,36 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
 
           {/* Countdown Clock Digital Boxes */}
           {timeLeft && (
-            <div className="grid grid-cols-4 gap-2 mt-4 max-w-sm">
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono tabular-nums">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mt-3 sm:mt-4 max-w-xs sm:max-w-sm">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {timeLeft.days}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.betweenRaces.countdown.days}
                 </span>
               </div>
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono tabular-nums">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.betweenRaces.countdown.hours}
                 </span>
               </div>
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono tabular-nums">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-white font-mono tabular-nums">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.betweenRaces.countdown.minutes}
                 </span>
               </div>
-              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-2 text-center">
-                <span className="text-xl sm:text-2xl font-bold text-[#E10600] font-mono tabular-nums">
+              <div className="bg-[#0B0E14] border border-white/[0.08] rounded-lg p-1.5 sm:p-2 text-center">
+                <span className="text-base sm:text-2xl font-bold text-[#E10600] font-mono tabular-nums">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
+                <span className="text-[8px] sm:text-[9px] text-zinc-400 uppercase tracking-wider block font-mono">
                   {t.betweenRaces.countdown.seconds}
                 </span>
               </div>
@@ -223,7 +226,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                 {nextRace.sessions.map((s, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono gap-2 ${
+                    className={`flex items-center justify-between p-1.5 sm:p-2 rounded-lg border text-[11px] sm:text-xs font-mono gap-1.5 sm:gap-2 ${
                       s.name.toLowerCase().includes('carrera') || s.name.toLowerCase().includes('race')
                         ? 'bg-[#1C2230] border-l-2 border-l-[#E10600] border-t border-b border-r border-white/[0.08] text-white font-bold'
                         : 'bg-[#0B0E14] border border-white/[0.08] text-zinc-400'
