@@ -461,12 +461,15 @@ export class F1LiveCdnClient {
       const i1Speed = timing.Speeds?.I1?.Value ? Number.parseFloat(timing.Speeds.I1.Value) : null;
       const i2Speed = timing.Speeds?.I2?.Value ? Number.parseFloat(timing.Speeds.I2.Value) : null;
 
-      // Track location coordinate
+      // Track location coordinate: only during active live session, NEVER when finalised
       const outlineLen = circuitMeta.outline.length;
       const stepOffset = outlineLen > 0 ? (((pos * 7) % outlineLen) + outlineLen) % outlineLen : 0;
-      const location = circuitMeta.outline[stepOffset]
+      const location = !isFinalised && circuitMeta.outline[stepOffset]
         ? { x: circuitMeta.outline[stepOffset][0], y: circuitMeta.outline[stepOffset][1] }
         : null;
+
+      const intervalSec = typeof interval === 'string' ? parseFloat(interval.replace('+', '').replace('s', '')) : NaN;
+      const isOvertakeZone = !isQualy && !isLeader && !isNaN(intervalSec) && intervalSec > 0 && intervalSec <= 1.0;
 
       parsedDrivers.push({
         pos,
@@ -479,7 +482,7 @@ export class F1LiveCdnClient {
         teamColor,
         gap,
         interval,
-        isOvertakeZone: false,
+        isOvertakeZone,
         lastLapTime: timing.LastLapTime?.Value || '',
         bestLapTime: timing.BestLapTime?.Value || '',
         isFastestLap: Boolean(

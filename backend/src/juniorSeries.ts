@@ -4,11 +4,85 @@ import type {
   JolpicaRace,
   JolpicaRaceResult,
 } from './jolpica.js';
-import { F2_AUTHENTIC_ROUNDS, F3_AUTHENTIC_ROUNDS } from './juniorRoundsData.js';
 import type { DriverChangeAlert, JuniorRaceDetail, JuniorSessionResult } from './types.js';
 
-const F2_UUID = 'a217f31e-70a6-40d1-9848-6aa2239bfb01';
-const F3_UUID = '08ad7230-eb99-43e3-b158-405b49e994c6';
+const FOM_BASE_URL = 'https://api.formula1.com/v2/core-fom-results';
+const FOM_API_KEYS: Record<'f2' | 'f3', string> = {
+  f2: 'MsEALPOPbzgjZIWE6GmU2O69VKY8zZpi',
+  f3: 'gGX8kMJ7NQmaRfrltWE0xrGgHaEfv1Cn',
+};
+
+interface FomSession {
+  session: string;
+  shortName: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  gmtOffset?: string;
+  sessionType: string;
+  sessionNumber: number;
+  state: string;
+}
+
+interface FomMeeting {
+  circuitOfficialName?: string;
+  meetingCountryName: string;
+  meetingCountryCode?: string;
+  meetingEndDate: string;
+  meetingKey: string | number;
+  meetingLocation: string;
+  meetingName: string;
+  meetingOfficialName: string;
+  meetingStartDate: string;
+  season: string;
+  meetingSessions?: FomSession[];
+}
+
+interface FomRaceResult {
+  completionStatusCode: string;
+  racePoints: number;
+  version?: string;
+  gapToLeader: string;
+  gapToPrevious?: string | null;
+  lapsBehindLeader?: string;
+  positionValue: string;
+  positionNumber: string;
+  lapsCompleted: string | number;
+  raceTime: string;
+  racingNumber: string | number;
+  driverFirstName: string;
+  driverLastName: string;
+  driverShortName?: string;
+  driverReference?: string;
+  driverTLA: string;
+  teamName: string;
+  displayPosition: string;
+  displayTeamName?: string;
+  displayTime: string;
+  teamColourCode?: string;
+}
+
+interface FomDriverStanding {
+  position: string;
+  displayPosition: string;
+  championshipPoints: number;
+  driverReference: string;
+  driverTLA: string;
+  driverFirstName: string;
+  driverLastName: string;
+  driverShortName: string;
+  points?: Array<Array<number | null>>;
+}
+
+interface FomConstructorStanding {
+  position: string;
+  displayPosition: string;
+  championshipPoints: number;
+  teamName: string;
+  teamKey: string;
+  teamColourCode?: string;
+  points?: Array<Array<number | null>>;
+}
 
 export const F2_TEAM_COLORS: Record<string, string> = {
   invicta: '#FFE000',
@@ -3798,7 +3872,6 @@ const F3_HISTORICAL_STANDINGS: Record<
 };
 
 export class JuniorSeriesClient {
-  private msBaseUrl = 'https://motorsportstats.com/api';
   private timeoutMs = 6000;
 
   private scheduleCache = new Map<string, { timestamp: number; data: JolpicaRace[] }>();
@@ -3843,15 +3916,14 @@ export class JuniorSeriesClient {
     return updated;
   }
 
-  private async fetchMotorsportStats<T>(path: string): Promise<T | null> {
+  private async fetchFom<T>(series: 'f2' | 'f3', path: string): Promise<T | null> {
+    const apiKey = FOM_API_KEYS[series];
     try {
-      const res = await fetch(`${this.msBaseUrl}${path}`, {
+      const res = await fetch(`${FOM_BASE_URL}/${series}${path}`, {
         headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          apikey: apiKey,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           Accept: 'application/json',
-          Referer: 'https://motorsportstats.com/',
-          Origin: 'https://motorsportstats.com',
         },
         signal: AbortSignal.timeout(this.timeoutMs),
       });
@@ -3874,35 +3946,29 @@ export class JuniorSeriesClient {
       return this.computeDynamicSchedule(cached.data);
     }
 
-    const uuid = series === 'f2' ? F2_UUID : F3_UUID;
     const fallback = series === 'f2' ? F2_FALLBACK_SCHEDULE : F3_FALLBACK_SCHEDULE;
 
     try {
-      const path = `/advanced-search?entity=events&size=50&filterIds=${uuid}&filterIds=${year}`;
-      const res = await this.fetchMotorsportStats<{
-        content: Array<{
-          name: string;
-          uuid: string;
-          startDate?: number;
-          endDate?: number;
-          venue?: { name?: string };
-        }>;
-      }>(path);
+      const res = await this.fetchFom<{ meetings: FomMeeting[] }>(series, `/meetings?season=${year}`);
+      if (res?.meetings && res.meetings.length > 0) {
+        const races: JolpicaRace[] = res.meetings.map((m, idx) => {
+          const featureSession = m.meetingSessions?.find(
+            (s) => s.sessionNumber === 2 || s.shortName === 'Feature Race',
+          );
+          const startDate = featureSession?.startTime || m.meetingStartDate || '';
+          const sessions = (m.meetingSessions || []).map((s) => ({
+            name: s.shortName || s.session,
+            dateTime: s.startTime || '',
+          }));
 
-      // Prefer curated 2026 official calendar with exact sessions and dates
-      if (res?.content && res.content.length >= fallback.length) {
-        const races: JolpicaRace[] = res.content.map((ev, idx) => {
-          const fb = fallback[idx];
-          const startDate =
-            fb?.raceDateTime || (ev.startDate ? new Date(ev.startDate * 1000).toISOString() : '');
           return {
             round: idx + 1,
-            raceName: fb?.raceName || `${ev.name} Grand Prix (${series.toUpperCase()})`,
-            circuitName: fb?.circuitName || ev.venue?.name || `${ev.name} Circuit`,
-            locality: fb?.locality || ev.name,
-            country: fb?.country || ev.name,
+            raceName: `${m.meetingName} (${series.toUpperCase()})`,
+            circuitName: m.circuitOfficialName || `${m.meetingLocation} Circuit`,
+            locality: m.meetingLocation,
+            country: m.meetingCountryName,
             raceDateTime: startDate,
-            sessions: fb?.sessions || [
+            sessions: sessions.length > 0 ? sessions : [
               { name: 'Sprint Race', dateTime: startDate },
               { name: 'Feature Race', dateTime: startDate },
             ],
@@ -3944,7 +4010,59 @@ export class JuniorSeriesClient {
     let drivers = series === 'f2' ? F2_FALLBACK_DRIVERS : F3_FALLBACK_DRIVERS;
     let constructors = series === 'f2' ? F2_FALLBACK_CONSTRUCTORS : F3_FALLBACK_CONSTRUCTORS;
 
-    if (series === 'f2') {
+    if (year === 2026) {
+      try {
+        const [dRes, cRes] = await Promise.all([
+          this.fetchFom<{ standings: FomDriverStanding[] }>(
+            series,
+            `/driver-standings-breakdown?season=${year}`,
+          ),
+          this.fetchFom<{ standings: FomConstructorStanding[] }>(
+            series,
+            `/constructor-standings-breakdown?season=${year}`,
+          ),
+        ]);
+
+        if (dRes?.standings && dRes.standings.length > 0) {
+          const fallbackList = series === 'f2' ? F2_FALLBACK_DRIVERS : F3_FALLBACK_DRIVERS;
+          drivers = dRes.standings.map((d, idx) => {
+            const pos = Number(d.displayPosition || d.position?.replace(/\D/g, '') || idx + 1);
+            const fullName = `${d.driverFirstName} ${d.driverLastName}`.trim();
+            const fallbackDriver = fallbackList.find((fd) => fd.code === d.driverTLA);
+            const team = fallbackDriver?.team || 'Junior Team';
+            const teamColor = fallbackDriver?.teamColor || getTeamColor(team, series);
+
+            return {
+              pos,
+              points: Number(d.championshipPoints || 0),
+              wins: 0,
+              code: d.driverTLA,
+              name: fullName,
+              nationality: fallbackDriver?.nationality || 'Internacional',
+              team,
+              teamColor,
+            };
+          });
+        }
+
+        if (cRes?.standings && cRes.standings.length > 0) {
+          constructors = cRes.standings.map((c, idx) => {
+            const pos = Number(c.displayPosition || c.position?.replace(/\D/g, '') || idx + 1);
+            const teamColor = c.teamColourCode ? `#${c.teamColourCode}` : getTeamColor(c.teamName, series);
+
+            return {
+              pos,
+              points: Number(c.championshipPoints || 0),
+              wins: 0,
+              name: c.teamName,
+              teamColor,
+            };
+          });
+        }
+      } catch (err) {
+        console.warn(`[JuniorSeries] Failed to fetch FOM standings for ${series}:`, err);
+      }
+    } else if (series === 'f2') {
       if (year === 2025) {
         drivers = F2_2025_DRIVERS;
         constructors = F2_2025_CONSTRUCTORS;
@@ -3985,16 +4103,34 @@ export class JuniorSeriesClient {
     const schedule = await this.getSchedule(series, year);
     if (!schedule || schedule.length === 0) return null;
 
-    const nowMs = Date.now();
-    let targetRound = 1;
+    let fomMeetings: FomMeeting[] = [];
+    try {
+      const meetRes = await this.fetchFom<{ meetings: FomMeeting[] }>(
+        series,
+        `/meetings?season=${year}`,
+      );
+      if (meetRes?.meetings) {
+        fomMeetings = meetRes.meetings;
+      }
+    } catch {
+      // ignore
+    }
 
+    let targetRound = 1;
     if (roundParam === 'last') {
-      // Find latest round whose main race (Feature Race) has already concluded
-      const completedRounds = schedule.filter((r) => new Date(r.raceDateTime).getTime() <= nowMs);
-      if (completedRounds.length > 0) {
-        targetRound = completedRounds[completedRounds.length - 1].round;
+      if (fomMeetings.length > 0) {
+        let lastCompleted = 1;
+        fomMeetings.forEach((m, idx) => {
+          const isComp = m.meetingSessions?.some(
+            (s) => s.state === 'completed' && (s.sessionNumber === 2 || s.sessionNumber === 1),
+          );
+          if (isComp) lastCompleted = idx + 1;
+        });
+        targetRound = lastCompleted;
       } else {
-        targetRound = 1;
+        const nowMs = Date.now();
+        const completedRounds = schedule.filter((r) => new Date(r.raceDateTime).getTime() <= nowMs);
+        targetRound = completedRounds.length > 0 ? completedRounds[completedRounds.length - 1].round : 1;
       }
     } else {
       const parsed = Number.parseInt(roundParam, 10);
@@ -4013,345 +4149,148 @@ export class JuniorSeriesClient {
       return cached.data;
     }
 
-    const detail = this.buildAuthenticRoundDetail(
-      series,
-      targetRound,
-      raceEvent,
-      year,
-      roundParam === 'last',
-    );
+    const targetMeeting = fomMeetings[targetRound - 1];
+    if (targetMeeting) {
+      const meetingKey = targetMeeting.meetingKey;
+      try {
+        const [featureRes, sprintRes] = await Promise.all([
+          this.fetchFom<{ sessionResults?: { results?: FomRaceResult[]; state?: string; startTime?: string } }>(
+            series,
+            `/race?meeting=${meetingKey}&session=2`,
+          ),
+          this.fetchFom<{ sessionResults?: { results?: FomRaceResult[]; state?: string; startTime?: string } }>(
+            series,
+            `/race?meeting=${meetingKey}&session=1`,
+          ),
+        ]);
+
+        const featureResults = featureRes?.sessionResults?.results || [];
+        const sprintResults = sprintRes?.sessionResults?.results || [];
+
+        if (featureResults.length > 0 || sprintResults.length > 0) {
+          const detail = this.buildFomRaceDetail(
+            series,
+            targetRound,
+            raceEvent,
+            year,
+            featureRes?.sessionResults,
+            sprintRes?.sessionResults,
+          );
+          this.raceDetailCache.set(cacheKey, { timestamp: Date.now(), data: detail });
+          return detail;
+        }
+      } catch (err) {
+        console.warn(`[JuniorSeries] Failed to fetch FOM race results for ${series} r${targetRound}:`, err);
+      }
+    }
+
+    // Pending/Scheduled round fallback (strictly real, NO fake times)
+    const detail = this.buildPendingRoundDetail(series, targetRound, raceEvent, year);
     this.raceDetailCache.set(cacheKey, { timestamp: Date.now(), data: detail });
     return detail;
   }
 
-  private buildAuthenticRoundDetail(
+  private buildFomRaceDetail(
     series: 'f2' | 'f3',
     targetRound: number,
     raceEvent: JolpicaRace,
     year: number,
-    isLastRound = false,
+    featureSessionData?: { results?: FomRaceResult[]; state?: string; startTime?: string },
+    sprintSessionData?: { results?: FomRaceResult[]; state?: string; startTime?: string },
   ): JuniorRaceDetail {
-    const allDrivers = series === 'f2' ? F2_FALLBACK_DRIVERS : F3_FALLBACK_DRIVERS;
-    const numMap = series === 'f2' ? F2_DRIVER_NUMBERS : F3_DRIVER_NUMBERS;
-    const roundConfig =
-      series === 'f2' ? F2_AUTHENTIC_ROUNDS[targetRound] : F3_AUTHENTIC_ROUNDS[targetRound];
+    const totalFeatureLaps = series === 'f2' ? 32 : 24;
+    const totalSprintLaps = series === 'f2' ? 24 : 18;
 
-    // Helper to find driver or build fallback driver
-    const getDriver = (code: string) => {
-      const found = allDrivers.find((d) => d.code === code);
-      if (found) return found;
+    const mapResult = (
+      r: FomRaceResult,
+      idx: number,
+      totalLaps: number,
+      isSprint: boolean,
+    ): JolpicaRaceResult => {
+      const pos = Number(r.positionValue || r.positionNumber || idx + 1);
+      const isDnf =
+        r.completionStatusCode === 'DNF' ||
+        r.completionStatusCode === 'Retired' ||
+        r.completionStatusCode === 'NC';
+      const isWinner = pos === 1 && !isDnf;
+      const displayTime = r.displayTime || r.raceTime || (isWinner ? 'Winner' : r.gapToLeader);
+      const timeOrStatus = isDnf
+        ? 'DNF'
+        : displayTime && displayTime !== '0'
+          ? displayTime
+          : isWinner
+            ? 'Winner'
+            : '- - -';
+
+      // Detect fastest lap bonus point (Feature: P1-P10, Sprint: P1-P8/P10)
+      const basePoints = isSprint
+        ? (series === 'f2' ? [10, 8, 6, 5, 4, 3, 2, 1] : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1])[pos - 1] || 0
+        : [25, 18, 15, 12, 10, 8, 6, 4, 2, 1][pos - 1] || 0;
+      const isFastestLap = Number(r.racePoints || 0) > basePoints;
+
       return {
-        pos: 99,
-        points: 0,
-        wins: 0,
-        code,
-        name: code,
-        nationality: 'Internacional',
-        team: 'Junior Team',
-        teamColor: '#71717A',
+        pos: Number.isNaN(pos) ? idx + 1 : pos,
+        driverNumber: Number(r.racingNumber || 0),
+        code: r.driverTLA || r.driverLastName?.slice(0, 3).toUpperCase() || 'DRV',
+        fullName: `${r.driverFirstName || ''} ${r.driverLastName || ''}`.trim(),
+        familyName: r.driverLastName || '',
+        teamName: r.teamName || 'Junior Team',
+        teamColor: r.teamColourCode ? `#${r.teamColourCode}` : getTeamColor(r.teamName || '', series),
+        points: Number(r.racePoints || 0),
+        grid: pos,
+        posChange: 0,
+        laps: Number(r.lapsCompleted || totalLaps),
+        status: isDnf ? 'DNF' : (r.completionStatusCode === 'OK' ? 'Finished' : (r.completionStatusCode || 'Finished')),
+        timeOrStatus,
+        isWinner,
+        isPodium: pos <= 3 && !isDnf,
+        isFastestLap,
       };
     };
 
-    // 1. Qualifying Grid
-    let qualyCodes: string[];
-    if (roundConfig && roundConfig.qualy.length > 0) {
-      qualyCodes = roundConfig.qualy;
-    } else {
-      const offset = (targetRound * 5) % allDrivers.length;
-      qualyCodes = [...allDrivers.slice(offset), ...allDrivers.slice(0, offset)].map((d) => d.code);
-    }
-    const qualyDrivers = qualyCodes.map(getDriver);
+    const rawFeature = featureSessionData?.results || [];
+    const mappedFeature: JolpicaRaceResult[] = rawFeature.map((r, idx) =>
+      mapResult(r, idx, totalFeatureLaps, false),
+    );
 
-    const featureGridMap = new Map<string, number>();
-    qualyDrivers.forEach((d, idx) => featureGridMap.set(d.code, idx + 1));
+    const rawSprint = sprintSessionData?.results || [];
+    const mappedSprint: JolpicaRaceResult[] = rawSprint.map((r, idx) =>
+      mapResult(r, idx, totalSprintLaps, true),
+    );
 
-    // 2. Feature Race
-    const nowMs = Date.now();
-    const eventTime = new Date(raceEvent.raceDateTime).getTime();
-    const isFeaturePending = isLastRound
-      ? false
-      : roundConfig && roundConfig.feature.finish.length > 0 && !roundConfig.feature.isPending
-        ? false
-        : roundConfig?.feature.isPending
-          ? true
-          : !Number.isNaN(eventTime) && eventTime > nowMs;
-
-    const totalFeatureLaps = series === 'f2' ? 32 : 24;
-    const featurePoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
-
-    let featureResults: JolpicaRaceResult[];
-
-    if (isFeaturePending) {
-      // Race has not happened yet -> confirmed starting grid from Qualifying
-      featureResults = qualyDrivers.slice(0, 20).map((d, idx) => {
-        const grid = idx + 1;
-        const parts = d.name.split(' ');
-        const familyName = parts.slice(1).join(' ') || d.name;
-        const carNumber = numMap[d.code] || idx + 1;
-
-        return {
-          pos: grid,
-          driverNumber: carNumber,
-          code: d.code,
-          fullName: d.name,
-          familyName,
-          teamName: d.team,
-          teamColor: d.teamColor,
-          points: 0,
-          grid,
-          posChange: 0,
-          laps: 0,
-          status: 'Parrilla confirmada',
-          timeOrStatus: 'Parrilla confirmada',
-          isWinner: false,
-          isPodium: false,
-          isFastestLap: false,
-        };
-      });
-    } else {
-      let featureFinishCodes: string[];
-      if (roundConfig && roundConfig.feature.finish.length > 0) {
-        featureFinishCodes = roundConfig.feature.finish;
-      } else {
-        featureFinishCodes = qualyCodes;
-      }
-      const featureFinishDrivers = featureFinishCodes.map(getDriver);
-
-      const dnfMap = new Map<string, { status: string; lap: number }>();
-      if (roundConfig?.feature.dnfs) {
-        for (const dnf of roundConfig.feature.dnfs) {
-          dnfMap.set(dnf.code, dnf);
-        }
-      }
-
-      const flCode =
-        roundConfig?.feature.fastestLap.code || featureFinishCodes[1] || featureFinishCodes[0];
-      const flTime =
-        roundConfig?.feature.fastestLap.time || (series === 'f2' ? '1:32.410' : '1:38.105');
-
-      featureResults = featureFinishDrivers.slice(0, 20).map((d, idx) => {
-        const pos = idx + 1;
-        const grid = featureGridMap.get(d.code) || pos;
-        const posChange = grid - pos;
-        const parts = d.name.split(' ');
-        const familyName = parts.slice(1).join(' ') || d.name;
-        const isWinner = pos === 1;
-        const carNumber = numMap[d.code] || idx + 1;
-        const dnf = dnfMap.get(d.code);
-
-        let status = 'Finished';
-        let laps = totalFeatureLaps;
-        let timeOrStatus = '';
-
-        if (dnf) {
-          status = dnf.status;
-          laps = dnf.lap;
-          timeOrStatus = 'DNF';
-        } else if (isWinner) {
-          timeOrStatus = roundConfig?.feature.time || (series === 'f2' ? '51:42.894' : '38:45.120');
-        } else {
-          timeOrStatus =
-            roundConfig?.feature.gaps[pos - 2] || `+${(idx * 2.315 + (idx % 3) * 0.4).toFixed(3)}s`;
-        }
-
-        const isFastestLap = d.code === flCode;
-        const fastestLapTime = isFastestLap ? flTime : undefined;
-        const points =
-          (dnf ? 0 : featurePoints[idx] || 0) +
-          (isFastestLap && pos <= 10 ? 1 : 0) +
-          (grid === 1 ? 2 : 0);
-
-        return {
-          pos,
-          driverNumber: carNumber,
-          code: d.code,
-          fullName: d.name,
-          familyName,
-          teamName: d.team,
-          teamColor: d.teamColor,
-          points,
-          grid,
-          posChange,
-          laps,
-          status,
-          timeOrStatus,
-          isWinner,
-          isPodium: pos <= 3 && !dnf,
-          isFastestLap,
-          fastestLapTime,
-        };
-      });
-    }
-
-    // 3. Sprint Race Simulation
-    // Reverse top 10 (F2) or top 12 (F3) from Qualifying
-    const reverseCount = series === 'f2' ? 10 : 12;
-    const sprintStartingGridCodes = [
-      ...qualyCodes.slice(0, reverseCount).reverse(),
-      ...qualyCodes.slice(reverseCount),
-    ];
-    const sprintStartingGridDrivers = sprintStartingGridCodes.map(getDriver);
-
-    const sprintGridMap = new Map<string, number>();
-    sprintStartingGridDrivers.forEach((d, idx) => sprintGridMap.set(d.code, idx + 1));
-
-    const totalSprintLaps = series === 'f2' ? 24 : 18;
-    const sprintPoints =
-      series === 'f2'
-        ? [10, 8, 6, 5, 4, 3, 2, 1] // Top 8 in F2
-        : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; // Top 10 in F3
-
-    // Check if Sprint is pending (e.g. for future rounds)
-    const sprintSessionDate = raceEvent.sessions?.find((s) =>
-      s.name.toLowerCase().includes('sprint'),
-    )?.dateTime;
-    const sprintTimeMs = sprintSessionDate
-      ? new Date(sprintSessionDate).getTime()
-      : eventTime - 24 * 3600 * 1000;
-    const isSprintPending = isLastRound
-      ? false
-      : roundConfig && roundConfig.sprint.finish.length > 0 && !roundConfig.sprint.isPending
-        ? false
-        : roundConfig?.sprint.isPending
-          ? true
-          : !Number.isNaN(sprintTimeMs) && sprintTimeMs > nowMs;
-
-    let sprintResults: JolpicaRaceResult[];
-
-    if (isSprintPending) {
-      sprintResults = sprintStartingGridDrivers.slice(0, 20).map((d, idx) => {
-        const grid = idx + 1;
-        const parts = d.name.split(' ');
-        const familyName = parts.slice(1).join(' ') || d.name;
-        const carNumber = numMap[d.code] || idx + 1;
-
-        return {
-          pos: grid,
-          driverNumber: carNumber,
-          code: d.code,
-          fullName: d.name,
-          familyName,
-          teamName: d.team,
-          teamColor: d.teamColor,
-          points: 0,
-          grid,
-          posChange: 0,
-          laps: 0,
-          status: 'Parrilla confirmada',
-          timeOrStatus: 'Parrilla confirmada',
-          isWinner: false,
-          isPodium: false,
-          isFastestLap: false,
-        };
-      });
-    } else {
-      let sprintFinishCodes: string[];
-      if (roundConfig && roundConfig.sprint.finish.length > 0) {
-        sprintFinishCodes = roundConfig.sprint.finish;
-      } else {
-        sprintFinishCodes = sprintStartingGridCodes;
-      }
-      const sprintFinishDrivers = sprintFinishCodes.map(getDriver);
-
-      const sprintDnfMap = new Map<string, { status: string; lap: number }>();
-      if (roundConfig?.sprint.dnfs) {
-        for (const dnf of roundConfig.sprint.dnfs) {
-          sprintDnfMap.set(dnf.code, dnf);
-        }
-      }
-
-      const flCode = roundConfig?.sprint.fastestLap.code || sprintFinishCodes[0];
-      const flTime =
-        roundConfig?.sprint.fastestLap.time || (series === 'f2' ? '1:33.205' : '1:39.020');
-      const sprintPtsCutoff = series === 'f2' ? 8 : 10;
-
-      sprintResults = sprintFinishDrivers.slice(0, 20).map((d, idx) => {
-        const pos = idx + 1;
-        const grid = sprintGridMap.get(d.code) || pos;
-        const posChange = grid - pos;
-        const parts = d.name.split(' ');
-        const familyName = parts.slice(1).join(' ') || d.name;
-        const isWinner = pos === 1;
-        const carNumber = numMap[d.code] || idx + 1;
-        const dnf = sprintDnfMap.get(d.code);
-
-        let status = 'Finished';
-        let laps = totalSprintLaps;
-        let timeOrStatus = '';
-
-        if (dnf) {
-          status = dnf.status;
-          laps = dnf.lap;
-          timeOrStatus = 'DNF';
-        } else if (isWinner) {
-          timeOrStatus = roundConfig?.sprint.time || (series === 'f2' ? '35:28.014' : '26:14.305');
-        } else {
-          timeOrStatus =
-            roundConfig?.sprint.gaps[pos - 2] || `+${(idx * 1.52 + (idx % 3) * 0.3).toFixed(3)}s`;
-        }
-
-        const isFastestLap = d.code === flCode;
-        const fastestLapTime = isFastestLap ? flTime : undefined;
-        const points =
-          (dnf ? 0 : sprintPoints[idx] || 0) + (isFastestLap && pos <= sprintPtsCutoff ? 1 : 0);
-
-        return {
-          pos,
-          driverNumber: carNumber,
-          code: d.code,
-          fullName: d.name,
-          familyName,
-          teamName: d.team,
-          teamColor: d.teamColor,
-          points,
-          grid,
-          posChange,
-          laps,
-          status,
-          timeOrStatus,
-          isWinner,
-          isPodium: pos <= 3 && !dnf,
-          isFastestLap,
-          fastestLapTime,
-        };
-      });
-    }
-
-    const featureFastest = featureResults.find((r) => r.isFastestLap) || featureResults[0];
-    const sprintFastest = sprintResults.find((r) => r.isFastestLap) || sprintResults[0];
+    const featureWinner = mappedFeature.find((r) => r.isWinner) || mappedFeature[0];
+    const featureFl = mappedFeature.find((r) => r.isFastestLap);
+    const sprintFl = mappedSprint.find((r) => r.isFastestLap);
 
     const sprintSession: JuniorSessionResult = {
       sessionType: 'Sprint',
-      results: sprintResults,
-      fastestLap: {
-        code: sprintFastest.code,
-        driverName: sprintFastest.fullName,
-        teamName: sprintFastest.teamName,
-        time: sprintFastest.fastestLapTime || (series === 'f2' ? '1:33.205' : '1:39.020'),
-        lap: roundConfig?.sprint.fastestLap.lap || 11,
-      },
+      date: sprintSessionData?.startTime || raceEvent.sessions?.find((s) => s.name.includes('Sprint'))?.dateTime,
+      results: mappedSprint,
+      fastestLap: sprintFl
+        ? {
+            code: sprintFl.code,
+            driverName: sprintFl.fullName,
+            teamName: sprintFl.teamName,
+            time: sprintFl.timeOrStatus,
+            lap: sprintFl.laps,
+          }
+        : undefined,
     };
 
     const featureSession: JuniorSessionResult = {
       sessionType: 'Feature',
-      results: featureResults,
-      fastestLap: {
-        code: featureFastest.code,
-        driverName: featureFastest.fullName,
-        teamName: featureFastest.teamName,
-        time: featureFastest.fastestLapTime || (series === 'f2' ? '1:32.410' : '1:38.105'),
-        lap: roundConfig?.feature.fastestLap.lap || 19,
-      },
+      date: featureSessionData?.startTime || raceEvent.raceDateTime,
+      results: mappedFeature,
+      fastestLap: featureFl
+        ? {
+            code: featureFl.code,
+            driverName: featureFl.fullName,
+            teamName: featureFl.teamName,
+            time: featureFl.timeOrStatus,
+            lap: featureFl.laps,
+          }
+        : undefined,
     };
-
-    const winnerDriver = isFeaturePending
-      ? null
-      : {
-          code: featureResults[0].code,
-          fullName: featureResults[0].fullName,
-          teamName: featureResults[0].teamName,
-          time: featureResults[0].timeOrStatus,
-        };
 
     return {
       round: targetRound,
@@ -4361,9 +4300,79 @@ export class JuniorSeriesClient {
       country: raceEvent.country,
       date: raceEvent.raceDateTime,
       series,
-      results: featureResults,
-      winner: winnerDriver,
-      fastestLap: featureSession.fastestLap,
+      results: mappedFeature.length > 0 ? mappedFeature : mappedSprint,
+      winner: featureWinner
+        ? {
+            code: featureWinner.code,
+            fullName: featureWinner.fullName,
+            teamName: featureWinner.teamName,
+            time: featureWinner.timeOrStatus,
+          }
+        : null,
+      fastestLap: featureSession.fastestLap || sprintSession.fastestLap,
+      sprintRace: mappedSprint.length > 0 ? sprintSession : null,
+      featureRace: mappedFeature.length > 0 ? featureSession : null,
+    };
+  }
+
+  private buildPendingRoundDetail(
+    series: 'f2' | 'f3',
+    targetRound: number,
+    raceEvent: JolpicaRace,
+    year: number,
+  ): JuniorRaceDetail {
+    const allDrivers = series === 'f2' ? F2_FALLBACK_DRIVERS : F3_FALLBACK_DRIVERS;
+    const numMap = series === 'f2' ? F2_DRIVER_NUMBERS : F3_DRIVER_NUMBERS;
+
+    // Confirmed entry list / grid: strictly status 'Programada', timeOrStatus '- - -'
+    const pendingResults: JolpicaRaceResult[] = allDrivers.slice(0, 22).map((d, idx) => {
+      const parts = d.name.split(' ');
+      const familyName = parts.slice(1).join(' ') || d.name;
+      const carNumber = numMap[d.code] || idx + 1;
+
+      return {
+        pos: idx + 1,
+        driverNumber: carNumber,
+        code: d.code,
+        fullName: d.name,
+        familyName,
+        teamName: d.team,
+        teamColor: d.teamColor,
+        points: 0,
+        grid: idx + 1,
+        posChange: 0,
+        laps: 0,
+        status: 'Programada',
+        timeOrStatus: '- - -',
+        isWinner: false,
+        isPodium: false,
+        isFastestLap: false,
+      };
+    });
+
+    const sprintSession: JuniorSessionResult = {
+      sessionType: 'Sprint',
+      date: raceEvent.sessions?.find((s) => s.name.includes('Sprint'))?.dateTime,
+      results: pendingResults,
+    };
+
+    const featureSession: JuniorSessionResult = {
+      sessionType: 'Feature',
+      date: raceEvent.raceDateTime,
+      results: pendingResults,
+    };
+
+    return {
+      round: targetRound,
+      season: String(year),
+      raceName: raceEvent.raceName,
+      circuitName: raceEvent.circuitName,
+      country: raceEvent.country,
+      date: raceEvent.raceDateTime,
+      series,
+      results: pendingResults,
+      winner: null,
+      fastestLap: undefined,
       sprintRace: sprintSession,
       featureRace: featureSession,
     };

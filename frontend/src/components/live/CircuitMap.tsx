@@ -33,11 +33,21 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
   sessionName,
   circuitName,
   className = '',
-  defaultExpanded = true,
+  defaultExpanded,
   sessionStatus,
 }) => {
   const { lang } = useLanguage();
-  const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
+  const isFinished = sessionStatus === 'FINISHED';
+  const [isExpanded, setIsExpanded] = useState<boolean>(
+    defaultExpanded !== undefined ? defaultExpanded : !isFinished,
+  );
+
+  // Automatically collapse track map when session finishes
+  React.useEffect(() => {
+    if (isFinished) {
+      setIsExpanded(false);
+    }
+  }, [isFinished]);
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [showSectors, setShowSectors] = useState<boolean>(true);
   const [selectedDriverNumber, setSelectedDriverNumber] = useState<number | null>(null);
@@ -265,7 +275,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
   // Render car coordinates with anti-overlap decluttering based on real GPS and 60 FPS spline animation
   const carRenderData = useMemo(() => {
-    if (!trackGeometry) return [];
+    // When session is finished or track geometry is unavailable, no cars are on track
+    if (!trackGeometry || isFinished) return [];
 
     const activeList = filteredDrivers;
     const coords: Array<{
@@ -279,7 +290,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     }> = [];
 
     // Calculate position for each driver using 60 FPS spline kinematic interpolation
-    activeList.forEach((d, idx) => {
+    activeList.forEach((d) => {
       let x = 0;
       let y = 0;
       let angle = 0;
@@ -296,10 +307,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
         x = gx;
         y = gy;
       } else {
-        // Cars without active GPS coordinates positioned cleanly along grid behind the leader
-        const pt = trackGeometry.getPointAtProgress(0.98 - ((idx * 0.02) % 0.25));
-        x = pt.x;
-        y = pt.y;
+        // Driver has no active GPS position on track - do not invent fake coordinates
+        return;
       }
 
       coords.push({
@@ -350,25 +359,40 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       {/* Circuit Header Bar */}
       <div className="flex flex-wrap items-center justify-between px-3 sm:px-4 py-2.5 bg-[#1C2230] border-b border-white/[0.08] select-none gap-2">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[#E10600]/15 border border-[#E10600]/30 flex items-center justify-center text-[#E10600] shrink-0">
+          <div
+            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+              isFinished
+                ? 'bg-zinc-800/80 border-zinc-700 text-zinc-400'
+                : 'bg-[#E10600]/15 border-[#E10600]/30 text-[#E10600]'
+            }`}
+          >
             <Navigation className="w-4 h-4 rotate-45" />
           </div>
           <div className="flex flex-col leading-tight">
             <div className="flex items-center gap-2">
               <span className="font-bold text-white text-xs sm:text-sm uppercase tracking-wider font-chakra">
-                {lang === 'es' ? 'Mapa de Pista en Vivo' : 'Live Circuit Map'}
+                {lang === 'es' ? 'Mapa de Pista' : 'Circuit Map'}
               </span>
-              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 whitespace-nowrap shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {lang === 'es' ? 'GPS EN VIVO • 60 FPS' : 'LIVE GPS • 60 FPS'}
-              </span>
+              {isFinished ? (
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                  <span className="text-[10px]">🏁</span>
+                  {lang === 'es' ? 'PISTA CERRADA • FINALIZADA' : 'TRACK CLOSED • FINISHED'}
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 whitespace-nowrap shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {lang === 'es' ? 'GPS EN VIVO • 60 FPS' : 'LIVE GPS • 60 FPS'}
+                </span>
+              )}
             </div>
             <span className="text-[10px] text-zinc-400 font-mono">
               {(() => {
                 const raw = circuitName || effectiveTrack?.circuitName || sessionName || 'Circuito';
                 return raw.toLowerCase().includes('madring') ? 'Circuito de Madrid' : raw;
               })()} •{' '}
-              {sortedDrivers.length} {lang === 'es' ? 'autos' : 'cars'}
+              {isFinished
+                ? (lang === 'es' ? 'Parque Cerrado (Parc Fermé)' : 'Parc Fermé')
+                : `${sortedDrivers.length} ${lang === 'es' ? 'autos' : 'cars'}`}
             </span>
           </div>
         </div>
@@ -391,18 +415,20 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
           </button>
 
           {/* Driver Code Labels Toggle */}
-          <button
-            type="button"
-            onClick={() => setShowLabels((prev) => !prev)}
-            title={showLabels ? 'Ocultar nombres' : 'Mostrar nombres'}
-            className={`p-1.5 rounded-lg border cursor-pointer transition-colors ${
-              showLabels
-                ? 'bg-white/10 text-white border-white/20'
-                : 'text-zinc-400 hover:text-white border-transparent'
-            }`}
-          >
-            {showLabels ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-          </button>
+          {!isFinished && (
+            <button
+              type="button"
+              onClick={() => setShowLabels((prev) => !prev)}
+              title={showLabels ? 'Ocultar nombres' : 'Mostrar nombres'}
+              className={`p-1.5 rounded-lg border cursor-pointer transition-colors ${
+                showLabels
+                  ? 'bg-white/10 text-white border-white/20'
+                  : 'text-zinc-400 hover:text-white border-transparent'
+              }`}
+            >
+              {showLabels ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </button>
+          )}
 
           {/* Fullscreen Toggle */}
           <button
@@ -423,7 +449,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
             <button
               type="button"
               onClick={() => setIsExpanded((prev) => !prev)}
-              title={isExpanded ? 'Colapsar' : 'Expandir'}
+              title={isExpanded ? (lang === 'es' ? 'Cerrar pista' : 'Collapse') : (lang === 'es' ? 'Abrir pista' : 'Expand')}
               className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer border border-transparent"
             >
               {isExpanded ? (
@@ -438,38 +464,40 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
       {isExpanded && (
         <div className="flex flex-col flex-1 bg-[#0B0E14] select-none">
-          {/* Interactive Mobile Control Toolbar */}
-          <div className="flex flex-wrap items-center justify-between px-3 py-1.5 bg-[#141923] border-b border-white/[0.06] text-xs gap-2">
-            {/* Filter Pills (All / Top 10 / Top 3 / Leader) */}
-            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-              {(['all', 'top10', 'top3', 'leader'] as FilterMode[]).map((mode) => {
-                const labelMap = {
-                  all: lang === 'es' ? `Todos (${sortedDrivers.length})` : `All (${sortedDrivers.length})`,
-                  top10: 'Top 10',
-                  top3: 'Top 3',
-                  leader: lang === 'es' ? 'Líder' : 'Leader',
-                };
-                const isActive = filterMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setFilterMode(mode)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold whitespace-nowrap transition-colors cursor-pointer border ${
-                      isActive
-                        ? 'bg-white/15 text-white border-white/30'
-                        : 'bg-white/[0.03] text-zinc-400 hover:text-white border-transparent'
-                    }`}
-                  >
-                    {labelMap[mode]}
-                  </button>
-                );
-              })}
+          {/* Interactive Mobile Control Toolbar (Solo durante sesión activa en pista) */}
+          {!isFinished && (
+            <div className="flex flex-wrap items-center justify-between px-3 py-1.5 bg-[#141923] border-b border-white/[0.06] text-xs gap-2">
+              {/* Filter Pills (All / Top 10 / Top 3 / Leader) */}
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+                {(['all', 'top10', 'top3', 'leader'] as FilterMode[]).map((mode) => {
+                  const labelMap = {
+                    all: lang === 'es' ? `Todos (${sortedDrivers.length})` : `All (${sortedDrivers.length})`,
+                    top10: 'Top 10',
+                    top3: 'Top 3',
+                    leader: lang === 'es' ? 'Líder' : 'Leader',
+                  };
+                  const isActive = filterMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setFilterMode(mode)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold whitespace-nowrap transition-colors cursor-pointer border ${
+                        isActive
+                          ? 'bg-white/15 text-white border-white/30'
+                          : 'bg-white/[0.03] text-zinc-400 hover:text-white border-transparent'
+                      }`}
+                    >
+                      {labelMap[mode]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Clustered / Parc Fermé Notice Banner in GPS Mode */}
-          {isGpsClustered && (
+          {!isFinished && isGpsClustered && (
             <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 flex items-center justify-between text-xs text-amber-300">
               <span className="text-[11px] font-mono">
                 {lang === 'es'
@@ -621,6 +649,17 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
                         S2
                       </text>
                     </g>
+
+                    {/* Overtake / DRS Straightaway Zones */}
+                    {trackGeometry.overtakeZones?.map((ot, idx) => (
+                      <g key={idx} transform={`translate(${ot.start.x.toFixed(1)}, ${ot.start.y.toFixed(1)})`}>
+                        <circle r="3" fill="#10B981" />
+                        <rect x="5" y="-5.5" width="24" height="10" rx="2" fill="#064E3B" stroke="#10B981" strokeWidth="0.8" />
+                        <text x="17" y="1.8" textAnchor="middle" fill="#A7F3D0" fontSize="6" fontWeight="bold" fontFamily="monospace">
+                          DRS {idx + 1}
+                        </text>
+                      </g>
+                    ))}
                   </g>
                 )}
 
@@ -766,8 +805,32 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
               </div>
             )}
 
+            {/* Pista Cerrada / Parc Fermé Central Overlay */}
+            {isFinished && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-4 z-20">
+                <div className="bg-[#0B0E14]/92 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-md max-w-sm text-center shadow-2xl flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center text-2xl shadow-inner">
+                    🏁
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-bold text-white uppercase tracking-wider text-xs sm:text-sm font-chakra">
+                      {lang === 'es' ? 'Pista Cerrada • Sesión Finalizada' : 'Track Closed • Session Finished'}
+                    </span>
+                    <p className="text-[11px] text-zinc-400 font-mono leading-relaxed">
+                      {lang === 'es'
+                        ? 'La actividad en pista ha concluido con bandera a cuadros. Los monoplazas se encuentran en Parque Cerrado y Boxes.'
+                        : 'Track activity has concluded with the chequered flag. All cars are in Parc Fermé and Pit Lane.'}
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-zinc-400">
+                    <span>🔒 {lang === 'es' ? 'Régimen de Parque Cerrado' : 'Parc Fermé Regulations'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Floating Driver HUD Detail Card (Tapped Driver) */}
-            {selectedDriver && (
+            {!isFinished && selectedDriver && (
               <div className="absolute bottom-2 left-2 right-2 sm:left-auto sm:right-4 sm:bottom-4 bg-[#131722]/98 border border-white/[0.15] rounded-xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2 max-w-sm font-mono text-xs z-30">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -833,36 +896,38 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
             )}
           </div>
 
-          {/* Bottom Driver Selector Carousel (Horizontal Scroll for Mobile) */}
-          <div className="px-2.5 py-2 bg-[#141923] border-t border-white/[0.06] overflow-x-auto no-scrollbar flex items-center gap-1.5 select-none">
-            <span className="text-[10px] text-zinc-500 font-mono font-bold uppercase shrink-0 px-1">
-              {lang === 'es' ? 'Pilotos:' : 'Drivers:'}
-            </span>
-            {sortedDrivers.map((d) => {
-              const isSelected = selectedDriverNumber === d.driverNumber;
-              const teamColor = d.teamColor || '#E10600';
+          {/* Bottom Driver Selector Carousel (Solo durante sesión activa en pista) */}
+          {!isFinished && (
+            <div className="px-2.5 py-2 bg-[#141923] border-t border-white/[0.06] overflow-x-auto no-scrollbar flex items-center gap-1.5 select-none">
+              <span className="text-[10px] text-zinc-500 font-mono font-bold uppercase shrink-0 px-1">
+                {lang === 'es' ? 'Pilotos:' : 'Drivers:'}
+              </span>
+              {sortedDrivers.map((d) => {
+                const isSelected = selectedDriverNumber === d.driverNumber;
+                const teamColor = d.teamColor || '#E10600';
 
-              return (
-                <button
-                  key={d.driverNumber}
-                  type="button"
-                  onClick={() => handleDriverSelect(d.driverNumber)}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer border ${
-                    isSelected
-                      ? 'bg-white/20 text-white border-white shadow-md'
-                      : 'bg-[#0B0E14] text-zinc-400 hover:text-white border-white/[0.08] hover:border-white/20'
-                  }`}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: teamColor }}
-                  />
-                  <span className="text-zinc-500 text-[10px]">P{d.pos}</span>
-                  <span className="text-white text-[11px]">{d.code}</span>
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={d.driverNumber}
+                    type="button"
+                    onClick={() => handleDriverSelect(d.driverNumber)}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-white/20 text-white border-white shadow-md'
+                        : 'bg-[#0B0E14] text-zinc-400 hover:text-white border-white/[0.08] hover:border-white/20'
+                    }`}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: teamColor }}
+                    />
+                    <span className="text-zinc-500 text-[10px]">P{d.pos}</span>
+                    <span className="text-white text-[11px]">{d.code}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

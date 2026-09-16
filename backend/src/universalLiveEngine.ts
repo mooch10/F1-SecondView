@@ -421,16 +421,6 @@ function formatLapSeconds(sec: number): string {
   return `${m}:${s.padStart(6, '0')}`;
 }
 
-function generateMiniSegments(status: SectorStatus): MiniSectorStatus[] {
-  if (status === 'purple') {
-    return ['purple', 'purple', 'green', 'purple', 'green'];
-  }
-  if (status === 'green') {
-    return ['green', 'green', 'green', 'green', 'yellow'];
-  }
-  return ['yellow', 'green', 'yellow', 'yellow', 'green'];
-}
-
 /**
  * Universal Live Telemetry Generator:
  * Generates live telemetry for ANY Grand Prix, ANY circuit, ANY session.
@@ -447,6 +437,12 @@ export function generateUniversalLiveSnapshot(
 
   const isQualy = activeSession.sessionType === 'Qualifying';
   const isNotStarted = activeSession.status === 'NOT_STARTED';
+  const hasLiveTiming = Boolean(
+    liveSession &&
+      liveSession.drivers.length > 0 &&
+      liveSession.status !== 'NOT_STARTED' &&
+      liveSession.drivers.some((d) => d.gapToLeaderSec > 0),
+  );
 
   const rawSourceDrivers =
     liveSession && liveSession.drivers.length > 0
@@ -468,11 +464,7 @@ export function generateUniversalLiveSnapshot(
           order: i + 1,
           status: isNotStarted ? ('GARAGE' as const) : ('ON_TRACK' as const),
           statusText: isNotStarted ? 'En Grilla' : 'En Pista',
-          lapsCompleted: isNotStarted
-            ? 0
-            : ([19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10][
-                i
-              ] ?? 18),
+          lapsCompleted: 0,
         }));
 
   // Ensure strict uniqueness of driverNumber to avoid duplicates
@@ -522,7 +514,7 @@ export function generateUniversalLiveSnapshot(
     const isPole = idx === 0;
     const { driverLapDuration, s1, s2, s3 } = precomputedSectors[idx];
     const diffSec = d.performanceBias;
-    const gap = isNotStarted
+    const gap = isNotStarted || !hasLiveTiming
       ? `P${d.order}`
       : isPole
         ? isQualy
@@ -533,7 +525,7 @@ export function generateUniversalLiveSnapshot(
     const prevDuration =
       idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
     const intervalDiff = driverLapDuration - prevDuration;
-    const interval = isNotStarted
+    const interval = isNotStarted || !hasLiveTiming
       ? '- - -'
       : isPole
         ? isQualy
@@ -611,14 +603,14 @@ export function generateUniversalLiveSnapshot(
       teamColor: d.teamColor,
       gap,
       interval,
-      isDrsZone: !isNotStarted && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      isOvertakeZone: !isNotStarted && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      lastLapTime: isNotStarted ? '--:--.---' : effectiveBestStr,
-      bestLapTime: isNotStarted ? undefined : effectiveBestStr,
-      bestLapDuration: isNotStarted ? null : effectiveBestDur,
-      isPole: !isNotStarted && isQualy && isPole,
-      isFastestLap: !isNotStarted && !isQualy && isPole,
-      eliminatedPhase: isNotStarted ? null : eliminatedPhase,
+      isDrsZone: !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      isOvertakeZone: !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      lastLapTime: isNotStarted || !hasLiveTiming ? '--:--.---' : effectiveBestStr,
+      bestLapTime: isNotStarted || !hasLiveTiming ? undefined : effectiveBestStr,
+      bestLapDuration: isNotStarted || !hasLiveTiming ? null : effectiveBestDur,
+      isPole: !isNotStarted && hasLiveTiming && isQualy && isPole,
+      isFastestLap: !isNotStarted && hasLiveTiming && !isQualy && isPole,
+      eliminatedPhase: isNotStarted || !hasLiveTiming ? null : eliminatedPhase,
       tyre: {
         compound: tyreCompound,
         laps: tyreLaps,
@@ -626,7 +618,7 @@ export function generateUniversalLiveSnapshot(
       pitStops,
       inPit: isNotStarted ? false : d.status === 'PIT' || d.status === 'GARAGE',
       status: 'ACTIVE',
-      sectors: isNotStarted
+      sectors: isNotStarted || !hasLiveTiming
         ? {
             s1: null,
             s2: null,
@@ -648,9 +640,9 @@ export function generateUniversalLiveSnapshot(
             s2Status,
             s3Status,
             segments: {
-              s1: generateMiniSegments(s1Status),
-              s2: generateMiniSegments(s2Status),
-              s3: generateMiniSegments(s3Status),
+              s1: Array(5).fill(s1Status) as MiniSectorStatus[],
+              s2: Array(5).fill(s2Status) as MiniSectorStatus[],
+              s3: Array(5).fill(s3Status) as MiniSectorStatus[],
             },
           },
       speedTrap: isNotStarted ? null : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
@@ -785,9 +777,11 @@ export function generateUniversalQualifyingSession(
   race: JolpicaRace,
   liveSession?: LiveStreamSession | null,
 ): JolpicaQualifyingSession {
-  const circuit = getCircuitData(race.circuitName, race.locality, race.country);
-  const benchmarkLap = circuit.benchmarkLapSec;
-  const poleTimeStr = formatLapSeconds(benchmarkLap);
+  const hasLiveTiming = Boolean(
+    liveSession &&
+      liveSession.drivers.length > 0 &&
+      liveSession.drivers.some((d) => d.gapToLeaderSec > 0),
+  );
 
   const sourceDrivers =
     liveSession && liveSession.drivers.length > 0
@@ -803,16 +797,9 @@ export function generateUniversalQualifyingSession(
       : DRIVERS_GRID_2026;
 
   const results: JolpicaQualifyingResult[] = sourceDrivers.map((d, idx) => {
-    const isPole = idx === 0;
+    const isPole = idx === 0 && hasLiveTiming;
     const diff = d.performanceBias;
-    const gap = isPole ? 'POLE' : `+${diff.toFixed(3)}s`;
-    const driverLap = benchmarkLap + d.performanceBias;
-
-    const q1 = formatLapSeconds(driverLap + (idx < 10 ? 0.75 : idx < 15 ? 0.45 : 0.25));
-    const q2 = idx < 15 ? formatLapSeconds(driverLap + (idx < 10 ? 0.28 : 0.12)) : undefined;
-    const q3 = idx < 10 ? formatLapSeconds(driverLap) : undefined;
-    const bestLap = q3 || q2 || q1;
-
+    const gap = hasLiveTiming ? (isPole ? 'POLE' : `+${diff.toFixed(3)}s`) : 'Programada';
     const eliminatedPhase: 'Q1' | 'Q2' | null = idx >= 15 ? 'Q1' : idx >= 10 ? 'Q2' : null;
 
     return {
@@ -823,10 +810,8 @@ export function generateUniversalQualifyingSession(
       familyName: d.familyName,
       teamName: d.teamName,
       teamColor: d.teamColor,
-      q1,
-      q2,
-      q3,
-      bestLap,
+      q1: hasLiveTiming ? gap : '- - -',
+      bestLap: hasLiveTiming ? gap : '- - -',
       gap,
       eliminatedPhase,
       isPole,
@@ -842,7 +827,7 @@ export function generateUniversalQualifyingSession(
       code: results[0].code,
       fullName: results[0].fullName,
       teamName: results[0].teamName,
-      time: poleTimeStr,
+      time: hasLiveTiming ? 'POLE' : 'Programada',
     },
     results,
   };

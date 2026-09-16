@@ -66,13 +66,19 @@ export function useTrackAnimation({
 
   // 1. Sync telemetry packets when new data arrives from polling/websocket
   useEffect(() => {
-    if (!trackGeometry) return;
+    if (!trackGeometry || sessionStatus === 'FINISHED') {
+      if (sessionStatus === 'FINISHED') {
+        setAnimatedCoords(new Map());
+        kinematicsMapRef.current.clear();
+      }
+      return;
+    }
 
     const now = performance.now();
     const kinematicsMap = kinematicsMapRef.current;
     const currentActiveNumbers = new Set<number>();
 
-    drivers.forEach((driver, idx) => {
+    drivers.forEach((driver) => {
       const num = driver.driverNumber;
       currentActiveNumbers.add(num);
 
@@ -88,10 +94,8 @@ export function useTrackAnimation({
         targetX = gx;
         targetY = gy;
       } else {
-        // Fallback for cars without active GPS: position cleanly along starting grid
-        const pt = trackGeometry.getPointAtProgress(0.98 - ((idx * 0.02) % 0.25));
-        targetX = pt.x;
-        targetY = pt.y;
+        // Driver has no active GPS position on track - do not invent fake coordinates
+        return;
       }
 
       // Project onto track spline

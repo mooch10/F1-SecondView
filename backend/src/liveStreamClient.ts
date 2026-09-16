@@ -199,39 +199,14 @@ export class LiveStreamClient {
         else if (statusDetail.includes('GARAGE')) trackStatus = 'GARAGE';
         else if (statusDetail.includes('OUT') || statusDetail.includes('DNF')) trackStatus = 'OUT';
 
-        // Official 2026 Madrid Qualifying Gap Curve and Laps
-        const OFFICIAL_GAP_CURVE = [
-          0.0,
-          0.011,
-          0.14,
-          0.189,
-          0.195,
-          0.325,
-          0.47,
-          0.492,
-          1.079,
-          1.217, // Q3 (P1-P10: NOR, ANT, VER, HAM, LEC, RUS, PIA, LAW, COL, LIN)
-          1.326,
-          1.396,
-          1.516,
-          1.586,
-          1.696, // Q2 (P11-P15: ALO, SAI, GAS, TSU, ALB)
-          2.066,
-          2.196,
-          2.326,
-          2.456,
-          2.626, // Q1 (P16-P20: HUL, BOR, BEA, OCO, STR)
-        ];
+        // Extract authentic gaps and laps from statistics if provided by scoreboard
+        const statGap = c.statistics?.find((s) => s.name === 'gapToLeader' || s.name === 'behind')?.value;
+        const statInterval = c.statistics?.find((s) => s.name === 'interval')?.value;
+        const statLaps = c.statistics?.find((s) => s.name === 'lapsCompleted' || s.name === 'laps')?.value;
 
-        const OFFICIAL_LAPS = [
-          19, 20, 18, 21, 21, 22, 22, 18, 17, 21, 19, 18, 17, 18, 16, 12, 13, 11, 12, 10,
-        ];
-
-        const gapToLeaderSec = OFFICIAL_GAP_CURVE[i] ?? Number((i * 0.16).toFixed(3));
-        const prevGap = i > 0 ? (OFFICIAL_GAP_CURVE[i - 1] ?? (i - 1) * 0.16) : 0;
-        const intervalSec = Number((gapToLeaderSec - prevGap).toFixed(3));
-        const lapsCompleted =
-          c.statistics?.find((s) => s.name === 'lapsCompleted')?.value ?? OFFICIAL_LAPS[i] ?? 18;
+        const gapToLeaderSec = typeof statGap === 'number' ? statGap : 0;
+        const intervalSec = typeof statInterval === 'number' ? statInterval : 0;
+        const lapsCompleted = typeof statLaps === 'number' ? statLaps : 0;
 
         drivers.push({
           order,
