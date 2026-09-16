@@ -259,7 +259,14 @@ function App() {
                 </div>
 
                 {liveSubView === 'betweenRaces' ? (
-                  <BetweenRacesView onSwitchToLiveTiming={() => setUserSubView('timing')} />
+                  <BetweenRacesView
+                    onSwitchToLiveTiming={() => setUserSubView('timing')}
+                    onOpenH2H={() => {
+                      setH2hDriverA(43); // Franco Colapinto default
+                      setH2hDriverB(10); // Pierre Gasly teammate
+                      setIsH2HOpen(true);
+                    }}
+                  />
                 ) : isLoading ? (
                   <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-12 text-center text-zinc-500 font-mono text-xs">
                     <span>{t.live.loadingTelemetry}</span>

@@ -13,19 +13,23 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { translateSessionName } from '../../utils/sessionTranslation';
 import { useTimezone } from '../../hooks/useTimezone';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
+import { CircuitProfileModal } from '../schedule/CircuitProfileModal';
 
 interface BetweenRacesViewProps {
   onSwitchToLiveTiming?: () => void;
+  onOpenH2H?: () => void;
 }
 
 export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
   onSwitchToLiveTiming,
+  onOpenH2H,
 }) => {
   const { lang, t } = useLanguage();
   const { mode, setTrackCircuit, formatSessionDate, formatSessionTime } = useTimezone();
   const [nextRace, setNextRace] = useState<JolpicaRace | null>(null);
   const [lastRace, setLastRace] = useState<LastRacePodium | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isCircuitModalOpen, setIsCircuitModalOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -125,8 +129,30 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest w-fit whitespace-nowrap shrink-0">
               {t.betweenRaces.nextGp} • {t.betweenRaces.round} {nextRace.round}
             </span>
-            <div className="flex items-center self-end sm:self-auto gap-2 shrink-0 sm:hidden">
-              <TrackTimeToggle />
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              {onOpenH2H && (
+                <button
+                  type="button"
+                  onClick={onOpenH2H}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-xs font-mono font-semibold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer shrink-0"
+                  title={lang === 'es' ? 'Comparador 1 vs 1 y Telemetría' : '1 vs 1 Comparator & Telemetry'}
+                >
+                  <span>⚔️</span>
+                  <span>1 vs 1</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsCircuitModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-mono font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer shrink-0"
+                title={lang === 'es' ? 'Ver Ficha Técnica del Circuito' : 'View Track Intel'}
+              >
+                <span>📐</span>
+                <span>{lang === 'es' ? 'Ficha Técnica' : 'Track Intel'}</span>
+              </button>
+              <div className="sm:hidden">
+                <TrackTimeToggle />
+              </div>
             </div>
           </div>
 
@@ -273,6 +299,15 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
             })}
           </div>
         </div>
+      )}
+
+      {/* Circuit Technical Profile Modal */}
+      {nextRace && (
+        <CircuitProfileModal
+          isOpen={isCircuitModalOpen}
+          onClose={() => setIsCircuitModalOpen(false)}
+          circuitIdOrName={nextRace.circuitName || nextRace.country}
+        />
       )}
     </div>
   );

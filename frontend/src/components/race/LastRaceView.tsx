@@ -15,6 +15,9 @@ import { useSeries } from '../../hooks/useSeries';
 import { DriverProfileModal } from '../drivers/DriverProfileModal';
 import { getDriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 import { TyreStintBar, type StintItem } from '../common/TyreStintBar';
+import { LapEvolutionChart } from './LapEvolutionChart';
+import { PitStopLeaderboard } from './PitStopLeaderboard';
+import { TyreStrategyGrid } from './TyreStrategyGrid';
 
 export const LastRaceView: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -23,6 +26,7 @@ export const LastRaceView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
   const [selectedSession, setSelectedSession] = useState<'feature' | 'sprint'>('feature');
+  const [analysisTab, setAnalysisTab] = useState<'results' | 'stints' | 'lapChart' | 'pitStops'>('results');
 
   // 👤 Driver Profile Modal
   const [selectedProfile, setSelectedProfile] = useState<F1DriverProfile | null>(null);
@@ -353,8 +357,64 @@ export const LastRaceView: React.FC = () => {
         )}
       </div>
 
+      {/* Sub-navigation Analysis Tabs (F1 only) */}
+      {series === 'f1' && (
+        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-x-auto no-scrollbar font-mono text-xs">
+          <button
+            type="button"
+            onClick={() => setAnalysisTab('results')}
+            className={`flex-1 min-w-[90px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+              analysisTab === 'results'
+                ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            🏁 {t.lastRace.subTabs?.results || 'Clasificación'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnalysisTab('stints')}
+            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+              analysisTab === 'stints'
+                ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            🍩 {t.lastRace.subTabs?.stints || 'Stints'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnalysisTab('lapChart')}
+            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+              analysisTab === 'lapChart'
+                ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            📈 {t.lastRace.subTabs?.lapChart || 'Gráfico'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnalysisTab('pitStops')}
+            className={`flex-1 min-w-[120px] py-1.5 px-3 rounded-lg font-bold text-center transition-all cursor-pointer ${
+              analysisTab === 'pitStops'
+                ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            ⏱️ {t.lastRace.subTabs?.pitStops || 'Pit Stops'}
+          </button>
+        </div>
+      )}
+
+      {/* Render Selected View */}
+      {series === 'f1' && analysisTab === 'stints' && <TyreStrategyGrid />}
+      {series === 'f1' && analysisTab === 'lapChart' && <LapEvolutionChart />}
+      {series === 'f1' && analysisTab === 'pitStops' && <PitStopLeaderboard />}
+
       {/* Main Race Classification Table */}
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
+      {(analysisTab === 'results' || series !== 'f1') && (
+        <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-1 px-3 py-2 bg-[#1C2230] border-b border-white/[0.08] text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center whitespace-nowrap">{t.lastRace.headers.pos}</div>
@@ -627,6 +687,7 @@ export const LastRaceView: React.FC = () => {
           })}
         </div>
       </div>
+      )}
 
       {/* Driver Profile Modal */}
       <DriverProfileModal

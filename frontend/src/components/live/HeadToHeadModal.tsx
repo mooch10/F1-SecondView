@@ -4,12 +4,14 @@ import {
   ArrowLeftRight,
   Gauge,
   ChevronDown,
+  Activity,
 } from 'lucide-react';
 import type { DriverLive } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { SectorPill } from '../qualy/SectorPill';
 import { TyreBadge } from '../common/TyreBadge';
 import { F1_DRIVERS_DATA } from '../../data/f1DriversData';
+import { getDriverTelemetry } from '../../data/lastRaceAnalysisData';
 
 interface HeadToHeadModalProps {
   isOpen: boolean;
@@ -158,6 +160,32 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
   const lapsB = driverB?.tyre?.laps ?? 0;
   const tyreDiff = Math.abs(lapsA - lapsB);
   const fresherTyreDriver = lapsA < lapsB ? 'A' : lapsB < lapsA ? 'B' : null;
+
+  // 2026 Telemetry & Season Analysis
+  const telemA = driverA ? getDriverTelemetry(driverA.code || driverA.driverNumber) : null;
+  const telemB = driverB ? getDriverTelemetry(driverB.code || driverB.driverNumber) : null;
+
+  const speedA = driverA?.speedTrap || telemA?.topSpeedKmH || 0;
+  const speedB = driverB?.speedTrap || telemB?.topSpeedKmH || 0;
+  const speedDelta = Math.abs(speedA - speedB);
+  const fasterSpeed = speedA > speedB ? 'A' : speedB > speedA ? 'B' : null;
+
+  const s1A = telemA?.bestSectors.s1 ?? null;
+  const s1B = telemB?.bestSectors.s1 ?? null;
+  const deltaS1 = s1A !== null && s1B !== null ? s1A - s1B : null;
+
+  const s2A = telemA?.bestSectors.s2 ?? null;
+  const s2B = telemB?.bestSectors.s2 ?? null;
+  const deltaS2 = s2A !== null && s2B !== null ? s2A - s2B : null;
+
+  const s3A = telemA?.bestSectors.s3 ?? null;
+  const s3B = telemB?.bestSectors.s3 ?? null;
+  const deltaS3 = s3A !== null && s3B !== null ? s3A - s3B : null;
+
+  const hasLiveSectors = Boolean(
+    (driverA?.sectors?.s1 && driverA.sectors.s1 > 0) ||
+    (driverB?.sectors?.s1 && driverB.sectors.s1 > 0)
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
@@ -493,8 +521,195 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             </div>
           </div>
 
-          {/* Sectors Comparison */}
-          {(driverA?.sectors || driverB?.sectors) && (
+          {/* Telemetría Delta & Rendimiento */}
+          {telemA && telemB && (
+            <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
+                  <Activity className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{t.live.h2h.telemetryDeltaTitle}</span>
+                </div>
+                <span className="text-[9px] font-mono text-zinc-500 uppercase">2026 R14 Madrid GP</span>
+              </div>
+
+              {/* Speed Trap Delta Bar */}
+              <div className="space-y-1.5 font-mono">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-white">{speedA.toFixed(1)} km/h</span>
+                    {fasterSpeed === 'A' && speedDelta > 0 && (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                        +{speedDelta.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <Gauge className="w-3 h-3 text-[#27F4D2]" /> {t.live.h2h.topSpeed}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {fasterSpeed === 'B' && speedDelta > 0 && (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                        +{speedDelta.toFixed(1)}
+                      </span>
+                    )}
+                    <span className="font-bold text-white">{speedB.toFixed(1)} km/h</span>
+                  </div>
+                </div>
+
+                {/* Progress proportion bar */}
+                <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden flex">
+                  <div
+                    className="h-full transition-all duration-300 rounded-l-full"
+                    style={{
+                      width: `${(speedA / (speedA + speedB)) * 100}%`,
+                      backgroundColor: driverA?.teamColor || '#E10600',
+                    }}
+                  />
+                  <div
+                    className="h-full transition-all duration-300 rounded-r-full"
+                    style={{
+                      width: `${(speedB / (speedA + speedB)) * 100}%`,
+                      backgroundColor: driverB?.teamColor || '#3671C6',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Sector Micro-Deltas */}
+              <div className="space-y-1.5 pt-1">
+                <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-wider text-center">
+                  {lang === 'es' ? 'Micro-Deltas por Sector (Mejor Vuelta)' : 'Sector Micro-Deltas (Best Lap)'}
+                </div>
+                <div className="grid grid-cols-3 gap-1.5 font-mono text-center">
+                  {/* S1 */}
+                  <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-1.5">
+                    <span className="text-[9px] text-zinc-500 block font-bold">S1</span>
+                    <div className="flex items-center justify-between text-[11px] mt-0.5 text-zinc-300">
+                      <span>{s1A?.toFixed(3)}</span>
+                      <span>{s1B?.toFixed(3)}</span>
+                    </div>
+                    {deltaS1 !== null && (
+                      <div className={`text-[9px] font-bold mt-1 px-1 py-0.5 rounded ${
+                        deltaS1 < 0
+                          ? 'text-emerald-400 bg-emerald-500/10'
+                          : deltaS1 > 0
+                          ? 'text-amber-400 bg-amber-500/10'
+                          : 'text-zinc-400'
+                      }`}>
+                        {deltaS1 < 0
+                          ? `◄ ${(Math.abs(deltaS1)).toFixed(3)}s`
+                          : deltaS1 > 0
+                          ? `${(Math.abs(deltaS1)).toFixed(3)}s ►`
+                          : '= 0.000s'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* S2 */}
+                  <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-1.5">
+                    <span className="text-[9px] text-zinc-500 block font-bold">S2</span>
+                    <div className="flex items-center justify-between text-[11px] mt-0.5 text-zinc-300">
+                      <span>{s2A?.toFixed(3)}</span>
+                      <span>{s2B?.toFixed(3)}</span>
+                    </div>
+                    {deltaS2 !== null && (
+                      <div className={`text-[9px] font-bold mt-1 px-1 py-0.5 rounded ${
+                        deltaS2 < 0
+                          ? 'text-emerald-400 bg-emerald-500/10'
+                          : deltaS2 > 0
+                          ? 'text-amber-400 bg-amber-500/10'
+                          : 'text-zinc-400'
+                      }`}>
+                        {deltaS2 < 0
+                          ? `◄ ${(Math.abs(deltaS2)).toFixed(3)}s`
+                          : deltaS2 > 0
+                          ? `${(Math.abs(deltaS2)).toFixed(3)}s ►`
+                          : '= 0.000s'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* S3 */}
+                  <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-1.5">
+                    <span className="text-[9px] text-zinc-500 block font-bold">S3</span>
+                    <div className="flex items-center justify-between text-[11px] mt-0.5 text-zinc-300">
+                      <span>{s3A?.toFixed(3)}</span>
+                      <span>{s3B?.toFixed(3)}</span>
+                    </div>
+                    {deltaS3 !== null && (
+                      <div className={`text-[9px] font-bold mt-1 px-1 py-0.5 rounded ${
+                        deltaS3 < 0
+                          ? 'text-emerald-400 bg-emerald-500/10'
+                          : deltaS3 > 0
+                          ? 'text-amber-400 bg-amber-500/10'
+                          : 'text-zinc-400'
+                      }`}>
+                        {deltaS3 < 0
+                          ? `◄ ${(Math.abs(deltaS3)).toFixed(3)}s`
+                          : deltaS3 > 0
+                          ? `${(Math.abs(deltaS3)).toFixed(3)}s ►`
+                          : '= 0.000s'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2026 Championship Head-to-Head Grid */}
+              <div className="pt-2 border-t border-white/[0.06] space-y-1 font-mono text-[11px]">
+                {/* Laps Led */}
+                <div className="flex items-center justify-between py-0.5 px-2 rounded bg-black/20">
+                  <span className={`font-bold tabular-nums ${telemA.lapsLedSeason > telemB.lapsLedSeason ? 'text-amber-400' : 'text-zinc-300'}`}>
+                    {telemA.lapsLedSeason}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 uppercase font-medium">{t.live.h2h.lapsLed}</span>
+                  <span className={`font-bold tabular-nums ${telemB.lapsLedSeason > telemA.lapsLedSeason ? 'text-amber-400' : 'text-zinc-300'}`}>
+                    {telemB.lapsLedSeason}
+                  </span>
+                </div>
+
+                {/* Podiums & Wins */}
+                <div className="flex items-center justify-between py-0.5 px-2 rounded bg-black/20">
+                  <span className="font-bold text-zinc-300 tabular-nums">
+                    {telemA.podiumsSeason} <span className="text-[9px] text-zinc-500">({telemA.winsSeason} W)</span>
+                  </span>
+                  <span className="text-[10px] text-zinc-400 uppercase font-medium">
+                    {t.live.h2h.podiums} / {t.live.h2h.wins}
+                  </span>
+                  <span className="font-bold text-zinc-300 tabular-nums">
+                    {telemB.podiumsSeason} <span className="text-[9px] text-zinc-500">({telemB.winsSeason} W)</span>
+                  </span>
+                </div>
+
+                {/* Qualy / Finish Avg */}
+                <div className="flex items-center justify-between py-0.5 px-2 rounded bg-black/20">
+                  <span className="font-bold text-zinc-300 tabular-nums">
+                    P{telemA.avgQualyPos.toFixed(1)} / P{telemA.avgFinishPos.toFixed(1)}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 uppercase font-medium">
+                    {t.live.h2h.avgQualy} / {t.live.h2h.avgFinish}
+                  </span>
+                  <span className="font-bold text-zinc-300 tabular-nums">
+                    P{telemB.avgQualyPos.toFixed(1)} / P{telemB.avgFinishPos.toFixed(1)}
+                  </span>
+                </div>
+
+                {/* Championship Points */}
+                <div className="flex items-center justify-between py-0.5 px-2 rounded bg-black/20">
+                  <span className={`font-bold tabular-nums ${telemA.pointsSeason > telemB.pointsSeason ? 'text-amber-400' : 'text-zinc-300'}`}>
+                    {telemA.pointsSeason} pts
+                  </span>
+                  <span className="text-[10px] text-zinc-400 uppercase font-medium">{t.live.h2h.seasonPoints}</span>
+                  <span className={`font-bold tabular-nums ${telemB.pointsSeason > telemA.pointsSeason ? 'text-amber-400' : 'text-zinc-300'}`}>
+                    {telemB.pointsSeason} pts
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sectors Comparison (Only if active live sectors available) */}
+          {hasLiveSectors && (
             <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3">
               <div className="text-[10px] font-mono uppercase font-bold text-zinc-400 tracking-wider mb-2">
                 {t.live.h2h.sectorsTitle}
@@ -566,46 +781,22 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             </div>
           )}
 
-          {/* Speed Trap & Pit Stops */}
-          <div className="grid grid-cols-2 gap-2">
-            {/* Speed Trap */}
-            <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
-              <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-center gap-1">
-                <Gauge className="w-3 h-3 text-[#27F4D2]" /> Speed Trap
-              </div>
-              <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-xs">
-                <div>
-                  <span className="text-[10px] text-zinc-500">{driverA?.code}</span>
-                  <div className="font-bold text-zinc-200">
-                    {driverA?.speedTrap ? `${driverA.speedTrap} km/h` : '---'}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500">{driverB?.code}</span>
-                  <div className="font-bold text-zinc-200">
-                    {driverB?.speedTrap ? `${driverB.speedTrap} km/h` : '---'}
-                  </div>
-                </div>
-              </div>
+          {/* Pit Stops */}
+          <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
+            <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+              {t.live.h2h.pitStops}
             </div>
-
-            {/* Pit Stops */}
-            <div className="bg-[#171C28] border border-white/[0.08] rounded-xl p-3 text-center">
-              <div className="text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
-                {t.live.h2h.pitStops}
-              </div>
-              <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-xs">
-                <div>
-                  <span className="text-[10px] text-zinc-500">{driverA?.code}</span>
-                  <div className="font-bold text-zinc-200">
-                    {driverA?.pitStops ?? 0} {driverA?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
-                  </div>
+            <div className="grid grid-cols-2 gap-2 mt-2 font-mono text-xs">
+              <div>
+                <span className="text-[10px] text-zinc-500">{driverA?.code}</span>
+                <div className="font-bold text-zinc-200">
+                  {driverA?.pitStops ?? 0} {driverA?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500">{driverB?.code}</span>
-                  <div className="font-bold text-zinc-200">
-                    {driverB?.pitStops ?? 0} {driverB?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
-                  </div>
+              </div>
+              <div>
+                <span className="text-[10px] text-zinc-500">{driverB?.code}</span>
+                <div className="font-bold text-zinc-200">
+                  {driverB?.pitStops ?? 0} {driverB?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
                 </div>
               </div>
             </div>

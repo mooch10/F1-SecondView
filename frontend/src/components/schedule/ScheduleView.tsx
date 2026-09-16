@@ -18,11 +18,13 @@ import { translateSessionName } from '../../utils/sessionTranslation';
 import { useTimezone } from '../../hooks/useTimezone';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
 import { getCircuitTimezone } from '../../utils/circuitTimezones';
+import { CircuitProfileModal } from './CircuitProfileModal';
 
 export const ScheduleView: React.FC = () => {
   const { lang, t } = useLanguage();
   const { series, theme } = useSeries();
   const { mode, setTrackCircuit, formatSessionDate, formatSessionTime } = useTimezone();
+  const [selectedCircuitModal, setSelectedCircuitModal] = useState<string | null>(null);
   const [races, setRaces] = useState<JolpicaRace[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [expandedRound, setExpandedRound] = useState<number | null>(null);
@@ -406,6 +408,20 @@ export const ScheduleView: React.FC = () => {
                             </span>
                           </div>
                         )}
+                        {series === 'f1' && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCircuitModal(r.circuitName || r.country);
+                            }}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.12] border border-zinc-200 dark:border-white/[0.08] text-[9px] font-mono text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                            title={lang === 'es' ? 'Ver Ficha Técnica y Trazado Vectorial' : 'View Track Profile & Map'}
+                          >
+                            <span>📐</span>
+                            <span>{lang === 'es' ? 'Ficha Técnica' : 'Track Profile'}</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -786,6 +802,13 @@ export const ScheduleView: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Circuit Technical Profile Modal */}
+      <CircuitProfileModal
+        isOpen={!!selectedCircuitModal}
+        onClose={() => setSelectedCircuitModal(null)}
+        circuitIdOrName={selectedCircuitModal || undefined}
+      />
     </div>
   );
 };
