@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Search, Sun, Tv } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries, SERIES_THEMES } from '../../hooks/useSeries';
@@ -13,6 +13,9 @@ interface NavbarProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   onReturnToHero?: () => void;
+  onOpenSearch?: () => void;
+  onToggleTvMode?: () => void;
+  isTvMode?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,6 +26,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   isDarkMode,
   onToggleTheme,
   onReturnToHero,
+  onOpenSearch,
+  onToggleTvMode,
+  isTvMode = false,
 }) => {
   const { lang, toggleLang, t } = useLanguage();
   const { series, setSeries, theme } = useSeries();
@@ -100,6 +106,38 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Dual Clock Track Time Widget (My Time vs Track Time) */}
             <TrackTimeToggle className="hidden sm:inline-flex" />
+
+            {/* Quick Command Palette Search Button */}
+            {onOpenSearch && (
+              <button
+                type="button"
+                onClick={onOpenSearch}
+                title={lang === 'es' ? 'Buscador rápido (Ctrl+K)' : 'Quick Search (Ctrl+K)'}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">{lang === 'es' ? 'Buscar' : 'Search'}</span>
+                <kbd className="hidden md:inline-flex px-1 py-0.2 rounded bg-zinc-200 dark:bg-white/10 text-[9px] font-bold">
+                  ⌘K
+                </kbd>
+              </button>
+            )}
+
+            {/* TV Focus Mode Toggle */}
+            {onToggleTvMode && (
+              <button
+                type="button"
+                onClick={onToggleTvMode}
+                title={lang === 'es' ? 'Modo TV Focus (Tecla F)' : 'TV Focus Mode (Key F)'}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer border ${
+                  isTvMode
+                    ? 'bg-amber-400 text-black border-amber-300'
+                    : 'text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-[#131722] border-transparent hover:border-zinc-200 dark:hover:border-white/[0.08]'
+                }`}
+              >
+                <Tv className="w-4 h-4" />
+              </button>
+            )}
 
             {/* Language Switcher Button: [ ES | EN ] */}
             <button

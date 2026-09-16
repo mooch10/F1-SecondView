@@ -10,6 +10,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { fetchRaceResultsByRound, fetchSchedule } from '../../services/api';
+import { getPirelliCompounds } from '../../data/pirelliCompounds';
 import type { JolpicaRace, JolpicaRaceDetail } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
@@ -331,6 +332,7 @@ export const ScheduleView: React.FC = () => {
             const detail = roundResults[r.round];
             const isLoadingDetail = loadingResultRound === r.round;
             const showFull = showFullGridRound[r.round] || false;
+            const pirelli = getPirelliCompounds(r.circuitName, r.country, r.raceName);
 
             return (
               <div key={r.round} className="flex flex-col">
@@ -381,9 +383,30 @@ export const ScheduleView: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <span className="text-[11px] text-zinc-400 font-mono truncate block mt-0.5">
-                        {r.circuitName} • {r.country}
-                      </span>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                          {r.circuitName} • {r.country}
+                        </span>
+                        {series === 'f1' && (
+                          <div
+                            className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] text-[9px] font-mono shrink-0"
+                            title={`Pirelli: ${pirelli.hard} (Duro) / ${pirelli.medium} (Medio) / ${pirelli.soft} (Blando) • ${lang === 'es' ? pirelli.categoryEs : pirelli.category}`}
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full border border-zinc-400 dark:border-white/80 bg-white text-zinc-900 font-black text-[7px] flex items-center justify-center">
+                              {pirelli.hard.replace('C', '')}
+                            </span>
+                            <span className="w-2.5 h-2.5 rounded-full border border-amber-400 bg-amber-400 text-black font-black text-[7px] flex items-center justify-center">
+                              {pirelli.medium.replace('C', '')}
+                            </span>
+                            <span className="w-2.5 h-2.5 rounded-full border border-rose-500 bg-rose-500 text-white font-black text-[7px] flex items-center justify-center">
+                              {pirelli.soft.replace('C', '')}
+                            </span>
+                            <span className="text-zinc-500 dark:text-zinc-400 text-[8px] font-bold hidden sm:inline ml-0.5">
+                              {pirelli.hard}/{pirelli.medium}/{pirelli.soft}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -666,6 +689,42 @@ export const ScheduleView: React.FC = () => {
                               <TrackTimeToggle className="scale-90 origin-right shrink-0" />
                             </div>
                           </div>
+
+                          {series === 'f1' && (
+                            <div className="flex items-center justify-between gap-2 mb-2.5 px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] text-[10px] font-mono text-zinc-700 dark:text-zinc-300">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-zinc-900 dark:text-white uppercase shrink-0">
+                                  {lang === 'es' ? 'Compuestos Pirelli:' : 'Pirelli Tires:'}
+                                </span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="inline-flex items-center gap-1 font-bold">
+                                    <span className="w-2.5 h-2.5 rounded-full border border-zinc-400 dark:border-white/80 bg-white text-zinc-900 font-black text-[7px] flex items-center justify-center">
+                                      {pirelli.hard.replace('C', '')}
+                                    </span>
+                                    {pirelli.hard} {lang === 'es' ? 'Duro' : 'Hard'}
+                                  </span>
+                                  <span className="text-zinc-400">•</span>
+                                  <span className="inline-flex items-center gap-1 font-bold">
+                                    <span className="w-2.5 h-2.5 rounded-full border border-amber-400 bg-amber-400 text-black font-black text-[7px] flex items-center justify-center">
+                                      {pirelli.medium.replace('C', '')}
+                                    </span>
+                                    {pirelli.medium} {lang === 'es' ? 'Medio' : 'Medium'}
+                                  </span>
+                                  <span className="text-zinc-400">•</span>
+                                  <span className="inline-flex items-center gap-1 font-bold">
+                                    <span className="w-2.5 h-2.5 rounded-full border border-rose-500 bg-rose-500 text-white font-black text-[7px] flex items-center justify-center">
+                                      {pirelli.soft.replace('C', '')}
+                                    </span>
+                                    {pirelli.soft} {lang === 'es' ? 'Blando' : 'Soft'}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-zinc-500 dark:text-zinc-400 text-[9px] hidden sm:inline">
+                                {lang === 'es' ? pirelli.categoryEs : pirelli.category}
+                              </span>
+                            </div>
+                          )}
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             {r.sessions?.map((s, idx) => {
                               const isSprint = s.name.toLowerCase().includes('sprint');

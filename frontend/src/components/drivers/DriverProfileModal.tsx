@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Calendar, MapPin, Star, Swords, Trophy, X } from 'lucide-react';
+import { Award, Calendar, MapPin, Star, Swords, Trophy, X, TrendingUp, ShieldCheck } from 'lucide-react';
 import { calculateAge, enrichDriverProfileWithSeason, type F1DriverProfile } from '../../data/f1DriversData';
+import { getDriverAnalytics } from '../../data/driverAnalytics';
 import { fetchStandings } from '../../services/api';
 import type { StandingsData } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -160,6 +161,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
       ? activeProfile.biographyEn || F1_BIOS_EN[activeProfile.code] || activeProfile.biography
       : activeProfile.biography;
   const localizedFinish = getLocalizedHighestFinish(activeProfile.careerStats.highestFinish, lang);
+  const analytics = getDriverAnalytics(activeProfile.code || activeProfile.number);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 select-none">
@@ -335,6 +337,120 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
               </div>
             </div>
           )}
+
+          {/* Recent Form (Last 5 Races) */}
+          <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-mono shadow-sm">
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-zinc-800 dark:text-zinc-200">
+              <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+              <span>{lang === 'en' ? 'Recent Form (Last 5 GPs)' : 'Forma Reciente (Últimos 5 GP)'}</span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {analytics.form.map((f, idx) => {
+                const badgeStyle =
+                  f.type === 'podium'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30'
+                    : f.type === 'points'
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30'
+                    : f.type === 'dnf'
+                    ? 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/30'
+                    : 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-white/[0.04] dark:text-zinc-400 dark:border-white/[0.08]';
+                return (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border transition-all ${badgeStyle}`}
+                    title={`${f.race}: ${f.pos}`}
+                  >
+                    <span className="opacity-70 text-[9px] uppercase">{f.race}</span>
+                    <span>{f.pos}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Head-to-Head Teammate Duel */}
+          {activeProfile.series !== 'f2' && activeProfile.series !== 'f3' && analytics.h2h.teammateNumber > 0 && (
+            <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl p-3.5 space-y-2.5 shadow-sm">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] pb-2 font-mono">
+                <div className="flex items-center gap-2">
+                  <Swords className="w-4 h-4 text-rose-500" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                    {lang === 'en' ? 'Teammate Duel (H2H)' : 'Duelo de Compañeros (H2H)'}
+                  </span>
+                </div>
+                <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold">
+                  vs {analytics.h2h.teammateName} ({analytics.h2h.teammateCode})
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
+                  <span className="text-xs sm:text-sm font-black text-zinc-900 dark:text-white block">
+                    {analytics.h2h.qualy[0]} - {analytics.h2h.qualy[1]}
+                  </span>
+                  <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
+                    {lang === 'en' ? 'Qualy Battle' : 'Clasificación'}
+                  </span>
+                </div>
+
+                <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
+                  <span className="text-xs sm:text-sm font-black text-zinc-900 dark:text-white block">
+                    {analytics.h2h.race[0]} - {analytics.h2h.race[1]}
+                  </span>
+                  <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
+                    {lang === 'en' ? 'Race Head-to-Head' : 'Carrera'}
+                  </span>
+                </div>
+
+                <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
+                  <span className="text-xs sm:text-sm font-black text-amber-600 dark:text-[#FFD60A] block">
+                    {analytics.h2h.points[0]} - {analytics.h2h.points[1]}
+                  </span>
+                  <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
+                    {lang === 'en' ? 'Points Battle' : 'Puntos'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FIA Super License Status & Penalty Points */}
+          <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-mono text-xs shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 block">
+                  {lang === 'en' ? 'FIA Super License' : 'Superlicencia FIA'}
+                </span>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  {lang === 'en' ? analytics.superLicense.status : analytics.superLicense.statusEs}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+              <div className="flex flex-col items-end">
+                <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-200">
+                  {analytics.superLicense.points} / {analytics.superLicense.maxPoints} pts
+                </span>
+                <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                  {lang === 'en' ? 'Penalty Points (12m)' : 'Penalizaciones (12m)'}
+                </span>
+              </div>
+              <div className="w-16 h-2 rounded-full bg-zinc-200 dark:bg-white/10 overflow-hidden shrink-0">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    analytics.superLicense.points >= 8
+                      ? 'bg-rose-500'
+                      : analytics.superLicense.points >= 4
+                      ? 'bg-amber-400'
+                      : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${Math.max(8, (analytics.superLicense.points / 12) * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Career Stats Grid */}
           <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3.5 space-y-2.5">

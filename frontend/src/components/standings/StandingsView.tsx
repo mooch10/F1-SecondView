@@ -14,6 +14,7 @@ import { JuniorTechSpecsModal } from './JuniorTechSpecsModal';
 interface StandingsViewProps {
   liveDrivers?: DriverLive[];
   isLiveActive?: boolean;
+  initialSeasonYear?: number;
 }
 
 const F1_POINTS_SYSTEM = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -53,6 +54,7 @@ const matchConstructorTeam = (liveTeam: string, constrName: string): boolean => 
 export const StandingsView: React.FC<StandingsViewProps> = ({
   liveDrivers = [],
   isLiveActive = false,
+  initialSeasonYear,
 }) => {
   const { t, lang } = useLanguage();
   const { series, theme } = useSeries();
@@ -61,7 +63,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [subTab, setSubTab] = useState<'drivers' | 'constructors'>('drivers');
   const [juniorTab, setJuniorTab] = useState<'standings' | 'graduates'>('standings');
-  const [selectedSeasonYear, setSelectedSeasonYear] = useState<number>(2026);
+  const [selectedSeasonYear, setSelectedSeasonYear] = useState<number>(initialSeasonYear || 2026);
   const [selectedAcademyFilter, setSelectedAcademyFilter] = useState<string>('all');
   const [isTechSpecsOpen, setIsTechSpecsOpen] = useState<boolean>(false);
   const [isLiveVirtual, setIsLiveVirtual] = useState<boolean>(false);
