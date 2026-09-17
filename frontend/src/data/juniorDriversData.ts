@@ -585,21 +585,50 @@ export const F2_DRIVERS_DATA: Record<string, JuniorDriverProfile> = {
     flag: '🇦🇷',
     birthDate: '2000-12-05',
     birthPlace: 'Ingeniero Maschwitz, Argentina',
-    team: 'AIX Racing',
-    teamColor: '#0284C7',
+    team: 'Van Amersfoort Racing',
+    teamColor: '#EA580C',
     headshotUrl:
       'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/vanamersfoortracing/nicvar01/2026vanamersfoortracingnicvar01right.webp',
     biography:
-      'Ganador de las 24 Horas de Le Mans y campeón mundial FIA WEC. La estrella argentina combina su brillante experiencia en resistencia internacional con monoplazas en F2.',
+      'Ganador de las 24 Horas de Le Mans y campeón mundial FIA WEC. Disputó la temporada de F2 con Van Amersfoort Racing hasta su acuerdo mutuo de desvinculación previo a Bakú.',
     biographyEn:
-      '24 Hours of Le Mans winner and FIA WEC World Endurance Champion. The Argentine star brings immense championship-winning racecraft into the Formula 2 arena.',
+      '24 Hours of Le Mans winner and FIA WEC World Endurance Champion. Competed in F2 with Van Amersfoort Racing up until a mutual departure prior to Baku.',
     careerStats: {
       grandsPrix: 22,
       podiums: 1,
       victories: 0,
       worldChampionships: 1,
-      highestFinish: 'P4',
+      highestFinish: 'P6',
       highestGrid: 'P5',
+    },
+  },
+  YAM: {
+    series: 'f2',
+    number: 26,
+    code: 'YAM',
+    firstName: 'Hiyu',
+    lastName: 'Yamakoshi',
+    fullName: 'Hiyu Yamakoshi',
+    nationality: 'Japón',
+    countryCode: 'JP',
+    flag: '🇯🇵',
+    birthDate: '2006-10-14',
+    birthPlace: 'Tokio, Japón',
+    team: 'Van Amersfoort Racing',
+    teamColor: '#EA580C',
+    headshotUrl:
+      'https://res.cloudinary.com/prod-f2f3/d_common:f2:fallback.webp/c_fill,w_720/q_auto/v1770000000/common/f2/2026/vanamersfoortracing/hiyyam01/2026vanamersfoorthiyyam01right.webp',
+    biography:
+      'Joven talento japonés promovido desde F3 por Van Amersfoort Racing para disputar las rondas finales de F2 2026 tras la salida de Nico Varrone.',
+    biographyEn:
+      'Young Japanese talent promoted from F3 by Van Amersfoort Racing to contest the final rounds of 2026 following the departure of Nico Varrone.',
+    careerStats: {
+      grandsPrix: 0,
+      podiums: 0,
+      victories: 0,
+      worldChampionships: 0,
+      highestFinish: '- - -',
+      highestGrid: '- - -',
     },
   },
   BOY: {

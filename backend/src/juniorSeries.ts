@@ -132,7 +132,8 @@ export const F2_DRIVER_NUMBERS: Record<string, number> = {
   MIY: 22, // Hitech
   HER: 23, // Hitech
   GOE: 24, // MP
-  VAR: 26, // AIX
+  VAR: 26, // VAR
+  YAM: 26, // VAR
   SHI: 27, // AIX
 };
 
@@ -248,6 +249,19 @@ const KNOWN_F2_DRIVER_CHANGES: DriverChangeAlert[] = [
     effectiveRound: 1,
     roundName: 'Melbourne',
     reason: 'Graduación oficial a Fórmula 1 como piloto titular de Racing Bulls para 2026.',
+  },
+  {
+    id: 'f2-2026-yamakoshi-var',
+    series: 'f2',
+    team: 'Van Amersfoort Racing',
+    teamColor: '#EA580C',
+    carNumber: 26,
+    originalDriver: 'Nico Varrone',
+    newDriver: 'Hiyu Yamakoshi',
+    effectiveRound: 12,
+    roundName: 'Bakú',
+    reason:
+      'Acuerdo mutuo de desvinculación con VAR; Hiyu Yamakoshi asciende desde F3 para completar la temporada 2026.',
   },
 ];
 
