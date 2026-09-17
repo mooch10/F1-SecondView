@@ -1,10 +1,47 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { TeamRadioCapture } from './types.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+interface StoredTranscript {
+  transcript: string;
+  category?: TeamRadioCapture['category'];
+  driverNumber?: number;
+  driverCode?: string;
+  driverName?: string;
+}
 
 // In-memory transcript cache to avoid redundant processing
 const transcriptCache = new Map<
   string,
   { transcript: string; category?: TeamRadioCapture['category'] }
 >();
+
+function loadTranscriptsDatabase(): Record<string, StoredTranscript> {
+  const possiblePaths = [
+    path.join(__dirname, 'data', 'radio_transcripts.json'),
+    path.join(__dirname, '..', 'src', 'data', 'radio_transcripts.json'),
+    path.join(process.cwd(), 'src', 'data', 'radio_transcripts.json'),
+    path.join(process.cwd(), 'backend', 'src', 'data', 'radio_transcripts.json'),
+  ];
+
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const raw = fs.readFileSync(p, 'utf-8');
+        return JSON.parse(raw);
+      } catch (err) {
+        console.warn(`[RadioTranscription] Error reading ${p}:`, err);
+      }
+    }
+  }
+  return {};
+}
+
+const storedTranscripts: Record<string, StoredTranscript> = loadTranscriptsDatabase();
 
 /**
  * Authentic FOM and FIA broadcast radio transcripts for known sessions & driver callouts.
@@ -76,20 +113,42 @@ const KNOWN_RADIO_TRANSCRIPTS: Record<
 };
 
 /**
- * Heuristic classifier based on driver, race events, and audio metadata.
+ * Match real Whisper transcriptions by filename first, then fallback to heuristics.
  */
 function inferTranscriptAndCategory(radio: TeamRadioCapture): {
   transcript: string;
   category: TeamRadioCapture['category'];
 } {
-  // 1. Direct match by audioUrl or id in known database
+  // 1. Direct match by exact MP3 filename from Whisper transcription database
+  if (radio.audioUrl) {
+    const filename = path.basename(radio.audioUrl.split('?')[0]);
+    const stored = storedTranscripts[filename];
+    if (stored?.transcript) {
+      return {
+        transcript: stored.transcript,
+        category: stored.category || 'GENERAL',
+      };
+    }
+  }
+
+  // 2. Substring match against stored transcripts
+  for (const [key, val] of Object.entries(storedTranscripts)) {
+    if (val.transcript && (radio.audioUrl.includes(key) || radio.id.includes(key))) {
+      return {
+        transcript: val.transcript,
+        category: val.category || 'GENERAL',
+      };
+    }
+  }
+
+  // 3. Fallback to known session signatures
   for (const [key, val] of Object.entries(KNOWN_RADIO_TRANSCRIPTS)) {
     if (radio.audioUrl.toLowerCase().includes(key) || radio.id.toLowerCase().includes(key)) {
       return val;
     }
   }
 
-  // 2. Driver-tailored authentic transcripts
+  // 4. Driver-tailored authentic transcripts
   const dNum = radio.driverNumber;
   const dCode = radio.driverCode?.toUpperCase();
 
@@ -146,7 +205,7 @@ function inferTranscriptAndCategory(radio: TeamRadioCapture): {
     return hamQuotes[index];
   }
 
-  // Generic authentic FOM radio fallbacks based on radio id hash
+  // Generic fallback based on radio id hash
   const genericCaptures = [
     {
       transcript: 'Box box this lap, confirm we are boxing.',

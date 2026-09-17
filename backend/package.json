@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"const fs=require('fs'); fs.mkdirSync('dist/data', {recursive:true}); fs.copyFileSync('src/data/radio_transcripts.json', 'dist/data/radio_transcripts.json');\"",
     "start": "node dist/index.js",
     "check": "biome check src",
     "format": "biome format --write src"
