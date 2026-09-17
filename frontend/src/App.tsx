@@ -17,6 +17,9 @@ import { useSeries } from './hooks/useSeries';
 import { useTheme } from './hooks/useTheme';
 import { useWakeLock } from './hooks/useWakeLock';
 import { useTimezone } from './hooks/useTimezone';
+import { useFavoriteDriver } from './hooks/useFavoriteDriver';
+import { useLiveAlerts } from './hooks/useLiveAlerts';
+import { LiveAlertToast } from './components/live/LiveAlertToast';
 import type { ActiveTab } from './types/f1';
 
 // Dynamic / Lazy loaded secondary views and overlays for code-splitting
@@ -86,6 +89,13 @@ function App() {
     isLoading,
     isLiveConnected,
   } = useLiveTelemetry();
+
+  const { favoriteDriverNumber } = useFavoriteDriver();
+  const { alerts, dismissAlert, soundEnabled, toggleSound } = useLiveAlerts(
+    snapshot?.session,
+    drivers,
+    favoriteDriverNumber
+  );
 
   // Sync active track timezone from live snapshot session
   useEffect(() => {
@@ -209,6 +219,14 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-zinc-100 flex flex-col font-chakra antialiased">
+      {/* Live Event Audio & Visual Toasts */}
+      <LiveAlertToast
+        alerts={alerts}
+        onDismiss={dismissAlert}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+      />
+
       {/* Hero Welcome Screen with Franco Colapinto */}
       {!isTvMode && showHero && <HeroView onEnter={handleEnter} />}
 

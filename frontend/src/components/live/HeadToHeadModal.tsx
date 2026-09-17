@@ -12,6 +12,7 @@ import { SectorPill } from '../qualy/SectorPill';
 import { TyreBadge } from '../common/TyreBadge';
 import { F1_DRIVERS_DATA } from '../../data/f1DriversData';
 import { getDriverTelemetry } from '../../data/lastRaceAnalysisData';
+import { SpeedTraceChart } from './SpeedTraceChart';
 
 interface HeadToHeadModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
 }) => {
   const { lang, t } = useLanguage();
   const [selectingTarget, setSelectingTarget] = useState<'A' | 'B' | null>(null);
+  const [h2hTab, setH2hTab] = useState<'speedTrace' | 'stats'>('speedTrace');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -529,10 +531,43 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
                   <Activity className="w-3.5 h-3.5 text-amber-400" />
                   <span>{t.live.h2h.telemetryDeltaTitle}</span>
                 </div>
-                <span className="text-[9px] font-mono text-zinc-500 uppercase">2026 R14 Madrid GP</span>
+                {/* Pill Switcher */}
+                <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/[0.08] text-[10px] font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setH2hTab('speedTrace')}
+                    className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                      h2hTab === 'speedTrace'
+                        ? 'bg-white/20 text-white shadow-xs'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    📉 Speed Trace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setH2hTab('stats')}
+                    className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                      h2hTab === 'stats'
+                        ? 'bg-white/20 text-white shadow-xs'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    📊 {lang === 'es' ? 'Sectores' : 'Sectors'}
+                  </button>
+                </div>
               </div>
 
-              {/* Speed Trap Delta Bar */}
+              {h2hTab === 'speedTrace' && driverA && driverB ? (
+                <SpeedTraceChart
+                  driverA={driverA}
+                  driverB={driverB}
+                  telemA={telemA}
+                  telemB={telemB}
+                />
+              ) : (
+                <>
+                  {/* Speed Trap Delta Bar */}
               <div className="space-y-1.5 font-mono">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
@@ -705,6 +740,8 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
                   </span>
                 </div>
               </div>
+                </>
+              )}
             </div>
           )}
 

@@ -1,9 +1,14 @@
-import React from 'react';
-import { Moon, Search, Sun, Tv } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Download, Moon, Search, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries, SERIES_THEMES } from '../../hooks/useSeries';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { InstallAppModal } from '../common/InstallAppModal';
+import { useFavoriteDriver } from '../../hooks/useFavoriteDriver';
+import { getDriverProfile } from '../../data/f1DriversData';
+import { isAudioAlertsEnabled, setAudioAlertsEnabled } from '../../utils/audioAlerts';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -33,6 +38,28 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { lang, toggleLang, t } = useLanguage();
   const { series, setSeries, theme } = useSeries();
 
+  const { isInstalled, isIOS, promptInstall, isModalOpen, setIsModalOpen } = usePWAInstall();
+  const { favoriteDriverNumber } = useFavoriteDriver();
+  const [soundEnabled, setSoundEnabled] = useState(() => isAudioAlertsEnabled());
+
+  useEffect(() => {
+    const handleAudioChange = (e: Event) => {
+      const custom = e as CustomEvent<{ enabled: boolean }>;
+      setSoundEnabled(custom.detail.enabled);
+    };
+    window.addEventListener('delta_audio_setting_change', handleAudioChange);
+    return () => window.removeEventListener('delta_audio_setting_change', handleAudioChange);
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = !soundEnabled;
+    setAudioAlertsEnabled(next);
+    setSoundEnabled(next);
+  };
+
+  const favoriteProfile = useMemo(() => {
+    return favoriteDriverNumber ? getDriverProfile(favoriteDriverNumber) : null;
+  }, [favoriteDriverNumber]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
@@ -153,6 +180,49 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </button>
 
+            {/* Persistent Favorite Driver Quick Access Badge */}
+            {favoriteProfile && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('live')}
+                title={lang === 'es' ? `Tu Piloto: ${favoriteProfile.fullName}` : `Your Driver: ${favoriteProfile.fullName}`}
+                className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold transition-colors cursor-pointer select-none"
+              >
+                <span>⭐</span>
+                <span>{favoriteProfile.code}</span>
+                <span className="text-[9px] text-amber-300/70">#{favoriteProfile.number}</span>
+              </button>
+            )}
+
+            {/* Live Audio Alerts Sound Toggle */}
+            <button
+              type="button"
+              onClick={handleToggleSound}
+              title={soundEnabled ? (lang === 'es' ? 'Silenciar alertas en vivo' : 'Mute live alerts') : (lang === 'es' ? 'Activar alertas de sonido' : 'Enable sound alerts')}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors cursor-pointer select-none"
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-zinc-500" />
+              )}
+            </button>
+
+            {/* PWA Install App Button (Visible when not yet installed) */}
+            {!isInstalled && (
+              <button
+                type="button"
+                onClick={promptInstall}
+                title={lang === 'es' ? 'Instalar aplicación Delta' : 'Install Delta App'}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-mono bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all cursor-pointer shadow-xs active:scale-95 select-none"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline font-bold">
+                  {lang === 'es' ? 'Instalar' : 'Install'}
+                </span>
+              </button>
+            )}
+
             {/* Theme Toggle Button */}
             <button
               type="button"
@@ -257,6 +327,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
         </div>
       </div>
+      <InstallAppModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        isIOS={isIOS}
+      />
     </header>
   );
 };

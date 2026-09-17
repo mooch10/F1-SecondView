@@ -8,6 +8,7 @@ import { TyreBadge } from '../common/TyreBadge';
 import { TyreStintBar, type StintItem } from '../common/TyreStintBar';
 import { getF1DriverProfile, type F1DriverProfile } from '../../data/f1DriversData';
 import { computeBestSessionSectors, resolveSectorStatus } from '../../utils/sectorUtils';
+import { useFavoriteDriver } from '../../hooks/useFavoriteDriver';
 
 const HeadToHeadModal = lazy(() =>
   import('./HeadToHeadModal').then((m) => ({ default: m.HeadToHeadModal }))
@@ -55,36 +56,13 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     }
   };
 
-  // 📌 Driver Pinning (⭐ TU PILOTO)
-  const [pinnedDriverNumber, setPinnedDriverNumber] = useState<number | null>(() => {
-    try {
-      const saved = localStorage.getItem('f1_pinned_driver');
-      return saved ? parseInt(saved, 10) : null;
-    } catch {
-      return null;
-    }
-  });
+  // ⭐ Favorite Driver Hook (synced with localStorage, Navbar and Live Alerts)
+  const { favoriteDriverNumber: pinnedDriverNumber, toggleFavoriteDriver: togglePin } = useFavoriteDriver();
 
   // ⚔️ 1 vs 1 Head-to-Head Modal state
   const [isH2HOpen, setIsH2HOpen] = useState(false);
   const [h2hDriverA, setH2hDriverA] = useState<number | null>(null);
   const [h2hDriverB, setH2hDriverB] = useState<number | null>(null);
-
-  const togglePin = (driverNumber: number) => {
-    setPinnedDriverNumber((prev) => {
-      const next = prev === driverNumber ? null : driverNumber;
-      try {
-        if (next === null) {
-          localStorage.removeItem('f1_pinned_driver');
-        } else {
-          localStorage.setItem('f1_pinned_driver', String(next));
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      return next;
-    });
-  };
 
   const openH2HWithDriver = (driverNumber: number) => {
     setH2hDriverA(driverNumber);
