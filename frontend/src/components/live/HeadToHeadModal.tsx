@@ -829,12 +829,26 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
                 <div className="font-bold text-zinc-200">
                   {driverA?.pitStops ?? 0} {driverA?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
                 </div>
+                {driverA?.lastPitStopDuration ? (
+                  <div className="text-[10px] text-zinc-400 mt-0.5">
+                    {lang === 'es' ? 'Última: ' : 'Last: '}
+                    <span className="text-white font-bold">{driverA.lastPitStopDuration.toFixed(2)}s</span>
+                    {driverA.lastPitLaneTime ? ` (${driverA.lastPitLaneTime.toFixed(1)}s)` : ''}
+                  </div>
+                ) : null}
               </div>
               <div>
                 <span className="text-[10px] text-zinc-500">{driverB?.code}</span>
                 <div className="font-bold text-zinc-200">
                   {driverB?.pitStops ?? 0} {driverB?.pitStops === 1 ? t.live.h2h.stop : t.live.h2h.stops}
                 </div>
+                {driverB?.lastPitStopDuration ? (
+                  <div className="text-[10px] text-zinc-400 mt-0.5">
+                    {lang === 'es' ? 'Última: ' : 'Last: '}
+                    <span className="text-white font-bold">{driverB.lastPitStopDuration.toFixed(2)}s</span>
+                    {driverB.lastPitLaneTime ? ` (${driverB.lastPitLaneTime.toFixed(1)}s)` : ''}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

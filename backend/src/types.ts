@@ -23,6 +23,15 @@ export interface TrackWeather {
   windDirection: number;
 }
 
+export interface PitStopInfo {
+  stopNumber: number;
+  lap: number;
+  stationaryTimeSec: number;
+  pitLaneDurationSec?: number;
+  tyresIn?: TyreCompound;
+  tyresOut?: TyreCompound;
+}
+
 export interface DriverLive {
   pos: number;
   posChange: number;
@@ -49,6 +58,9 @@ export interface DriverLive {
   } | null;
   pitStops: number;
   inPit: boolean;
+  lastPitStopDuration?: number;
+  lastPitLaneTime?: number;
+  pitHistory?: PitStopInfo[];
   status: DriverStatus;
   retiredLap?: number;
   retirementReason?: string;

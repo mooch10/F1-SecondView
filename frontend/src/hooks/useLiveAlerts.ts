@@ -203,6 +203,12 @@ export function useLiveAlerts(
 
         if (enteredPit || didPitStop) {
           playPitStopSound();
+          const durationStr = fav.lastPitStopDuration
+            ? lang === 'es'
+              ? ` (${fav.lastPitStopDuration.toFixed(1)}s detenido${fav.lastPitLaneTime ? `, ${fav.lastPitLaneTime.toFixed(1)}s calle` : ''})`
+              : ` (${fav.lastPitStopDuration.toFixed(1)}s stop${fav.lastPitLaneTime ? `, ${fav.lastPitLaneTime.toFixed(1)}s lane` : ''})`
+            : '';
+
           pushAlert({
             type: 'PIT',
             title:
@@ -211,8 +217,8 @@ export function useLiveAlerts(
                 : `🏎️ ⭐ ${fav.fullName} IN THE PITS!`,
             subtitle:
               lang === 'es'
-                ? `Parada #${fav.pitStops || 1} • Compuesto: ${fav.tyre?.compound || 'NUEVO'}`
-                : `Pit Stop #${fav.pitStops || 1} • Compound: ${fav.tyre?.compound || 'NEW'}`,
+                ? `Parada #${fav.pitStops || 1}${durationStr} • Compuesto: ${fav.tyre?.compound || 'NUEVO'}`
+                : `Pit Stop #${fav.pitStops || 1}${durationStr} • Compound: ${fav.tyre?.compound || 'NEW'}`,
             color: '#38BDF8',
           });
         }

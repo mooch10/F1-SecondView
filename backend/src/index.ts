@@ -66,6 +66,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
               data.weather,
               data.locations,
               data.trackOutline,
+              data.pits,
             );
           }
         } catch (err) {
@@ -106,6 +107,7 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
             data.weather,
             data.locations,
             data.trackOutline,
+            data.pits,
           );
         }
       } catch (err) {

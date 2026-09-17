@@ -5,6 +5,7 @@ import type {
   DriverLive,
   LiveSnapshot,
   MiniSectorStatus,
+  PitStopInfo,
   RaceControlMessage,
   SectorStatus,
   SessionLive,
@@ -567,9 +568,14 @@ export function generateUniversalLiveSnapshot(
     const effectiveBestStr = formatLapSeconds(effectiveBestDur);
 
     // Realistic dynamic tyre strategy calibrated to current session progress and pit stops
-    const pitStops = isNotStarted || isQualy ? 0 : idx % 4 === 0 ? 2 : 1;
+    const plannedPitStops = isNotStarted || isQualy ? 0 : idx % 4 === 0 ? 2 : 1;
     let tyreCompound: TyreCompound;
     let tyreLaps: number;
+    const pitHistory: PitStopInfo[] = [];
+
+    // Deterministic realistic pit stop stationary duration per driver (2.10s to 3.10s)
+    const baseStopDuration = Math.round((2.15 + ((d.driverNumber * 7) % 11) * 0.08) * 100) / 100;
+    const basePitLaneTime = Math.round((21.2 + ((d.driverNumber * 3) % 9) * 0.18) * 10) / 10;
 
     if (isNotStarted) {
       tyreCompound = isQualy ? 'SOFT' : idx % 2 === 0 ? 'MEDIUM' : 'HARD';
@@ -578,21 +584,50 @@ export function generateUniversalLiveSnapshot(
       tyreCompound = 'SOFT';
       tyreLaps = (idx % 3) + 1; // Qualy runs are on fresh soft tyres (1-3 laps)
     } else {
-      // Race: compute realistic stint wear
-      const firstStopLap = Math.floor(circuit.totalLaps * 0.38);
-      const secondStopLap = Math.floor(circuit.totalLaps * 0.7);
+      // Race: compute realistic stint wear and completed pit stops
+      const firstStopLap = Math.floor(circuit.totalLaps * 0.38) + ((idx % 3) - 1);
+      const secondStopLap = Math.floor(circuit.totalLaps * 0.7) + (idx % 2);
+      const startCompound: TyreCompound = idx % 3 === 0 ? 'HARD' : 'MEDIUM';
 
-      if (pitStops === 2 && calculatedCurrentLap > secondStopLap) {
+      if (plannedPitStops >= 1 && calculatedCurrentLap >= firstStopLap) {
+        pitHistory.push({
+          stopNumber: 1,
+          lap: firstStopLap,
+          stationaryTimeSec: baseStopDuration,
+          pitLaneDurationSec: basePitLaneTime,
+          tyresIn: startCompound,
+          tyresOut: 'HARD',
+        });
+      }
+
+      if (plannedPitStops === 2 && calculatedCurrentLap >= secondStopLap) {
+        const secondStopDuration = Math.round((baseStopDuration + 0.12) * 100) / 100;
+        const secondPitLane = Math.round((basePitLaneTime + 0.3) * 10) / 10;
+        const finalCompound: TyreCompound = idx % 2 === 0 ? 'SOFT' : 'MEDIUM';
+        pitHistory.push({
+          stopNumber: 2,
+          lap: secondStopLap,
+          stationaryTimeSec: secondStopDuration,
+          pitLaneDurationSec: secondPitLane,
+          tyresIn: 'HARD',
+          tyresOut: finalCompound,
+        });
+      }
+
+      if (plannedPitStops === 2 && calculatedCurrentLap > secondStopLap) {
         tyreCompound = idx % 2 === 0 ? 'SOFT' : 'MEDIUM';
         tyreLaps = Math.max(1, calculatedCurrentLap - secondStopLap);
-      } else if (pitStops >= 1 && calculatedCurrentLap > firstStopLap) {
+      } else if (plannedPitStops >= 1 && calculatedCurrentLap > firstStopLap) {
         tyreCompound = 'HARD';
         tyreLaps = Math.max(1, calculatedCurrentLap - firstStopLap);
       } else {
-        tyreCompound = idx % 3 === 0 ? 'HARD' : 'MEDIUM';
+        tyreCompound = startCompound;
         tyreLaps = Math.max(1, calculatedCurrentLap);
       }
     }
+
+    const actualCompletedPits = isQualy || isNotStarted ? 0 : pitHistory.length;
+    const lastPit = pitHistory.length > 0 ? pitHistory[pitHistory.length - 1] : undefined;
 
     return {
       pos: d.order,
@@ -619,8 +654,11 @@ export function generateUniversalLiveSnapshot(
         compound: tyreCompound,
         laps: tyreLaps,
       },
-      pitStops,
+      pitStops: actualCompletedPits,
       inPit: isNotStarted ? false : d.status === 'PIT' || d.status === 'GARAGE',
+      lastPitStopDuration: lastPit?.stationaryTimeSec,
+      lastPitLaneTime: lastPit?.pitLaneDurationSec,
+      pitHistory: pitHistory.length > 0 ? pitHistory : undefined,
       status: 'ACTIVE',
       sectors:
         isNotStarted || !hasLiveTiming

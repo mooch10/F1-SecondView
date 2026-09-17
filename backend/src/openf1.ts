@@ -90,12 +90,23 @@ export interface OpenF1Weather {
   pressure?: number;
 }
 
+export interface OpenF1Pit {
+  date: string;
+  session_key: number;
+  driver_number: number;
+  lap_number: number;
+  pit_duration?: number | null;
+  lane_duration?: number | null;
+  stop_duration?: number | null;
+}
+
 export interface OpenF1LiveSessionResult {
   session: OpenF1Session | null;
   drivers: OpenF1Driver[];
   positions: OpenF1Position[];
   intervals: OpenF1Interval[];
   stints: OpenF1Stint[];
+  pits: OpenF1Pit[];
   laps: OpenF1Lap[];
   raceControl: OpenF1RaceControl[];
   weather: OpenF1Weather[];
@@ -294,6 +305,10 @@ export class OpenF1Client {
     return this.fetchJson<OpenF1Stint>(`/stints?session_key=${sessionKey}`);
   }
 
+  async getPits(sessionKey: number): Promise<OpenF1Pit[]> {
+    return this.fetchJson<OpenF1Pit>(`/pit?session_key=${sessionKey}`);
+  }
+
   async getLaps(sessionKey: number): Promise<OpenF1Lap[]> {
     return this.fetchJson<OpenF1Lap>(`/laps?session_key=${sessionKey}`);
   }
@@ -387,6 +402,7 @@ export class OpenF1Client {
         positions: [],
         intervals: [],
         stints: [],
+        pits: [],
         laps: [],
         raceControl: [],
         weather: [],
@@ -413,6 +429,9 @@ export class OpenF1Client {
     await this.delay(350);
 
     const stints = await this.getStints(sessionKey);
+    await this.delay(350);
+
+    const pits = await this.getPits(sessionKey);
     await this.delay(350);
 
     const laps = await this.getLaps(sessionKey);
@@ -456,6 +475,7 @@ export class OpenF1Client {
       positions,
       intervals,
       stints,
+      pits,
       laps,
       raceControl,
       weather,

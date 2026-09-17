@@ -178,6 +178,26 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     return computeBestSessionSectors(activeDrivers);
   }, [activeDrivers]);
 
+  // Dynamic computation of fastest pit stop in this session
+  const fastestPitStop = useMemo(() => {
+    if (!drivers || drivers.length === 0 || isQualy) return null;
+    let best: { driver: DriverLive; time: number } | null = null;
+    for (const drv of drivers) {
+      if (drv.pitHistory && drv.pitHistory.length > 0) {
+        for (const p of drv.pitHistory) {
+          if (!best || p.stationaryTimeSec < best.time) {
+            best = { driver: drv, time: p.stationaryTimeSec };
+          }
+        }
+      } else if (typeof drv.lastPitStopDuration === 'number' && drv.lastPitStopDuration > 0) {
+        if (!best || drv.lastPitStopDuration < best.time) {
+          best = { driver: drv, time: drv.lastPitStopDuration };
+        }
+      }
+    }
+    return best;
+  }, [drivers, isQualy]);
+
   if (!drivers || drivers.length === 0) {
     return (
       <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-8 text-center text-zinc-500 text-sm">
@@ -192,13 +212,30 @@ export const TimingTable: React.FC<TimingTableProps> = ({
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
       {/* Top Utility / Action Bar */}
       <div className="flex items-center justify-between px-3 py-2 bg-[#171C28] border-b border-white/[0.08] text-xs font-mono select-none">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
             {isQualy ? t.live.qualyProgress : t.live.liveTimes}
           </span>
           {pinnedDriver && (
             <span className="hidden sm:inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20 font-bold">
               <span>⭐</span> {pinnedDriver.code}
+            </span>
+          )}
+          {fastestPitStop && (
+            <span
+              className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold tracking-tight shadow-xs"
+              title={
+                lang === 'es'
+                  ? `Parada más rápida oficial DHL: ${fastestPitStop.driver.fullName} (${fastestPitStop.time.toFixed(2)}s)`
+                  : `DHL Fastest Pit Stop: ${fastestPitStop.driver.fullName} (${fastestPitStop.time.toFixed(2)}s)`
+              }
+            >
+              <span className="text-amber-400">⚡</span>
+              <span className="hidden sm:inline text-zinc-400 font-normal">DHL:</span>
+              <span className="text-white font-black">{fastestPitStop.driver.code}</span>
+              <span className="text-amber-400 font-mono font-black">
+                {fastestPitStop.time.toFixed(2)}s
+              </span>
             </span>
           )}
         </div>
@@ -304,8 +341,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
             </div>
 
             {/* Pit Stop (Hidden on narrow mobile) */}
-            <div className="hidden sm:block sm:col-span-1 text-center font-mono text-xs text-zinc-400">
-              <span className="font-bold text-white">{pinnedDriver.pitStops ?? 0}</span>
+            <div className="hidden sm:flex sm:col-span-1 flex-col items-center justify-center font-mono text-xs text-zinc-400 leading-tight">
+              <span className="font-bold text-white">{pinnedDriver.pitStops ?? 0}P</span>
+              {pinnedDriver.lastPitStopDuration ? (
+                <span
+                  className={`text-[8.5px] mt-0.5 ${
+                    fastestPitStop && fastestPitStop.time === pinnedDriver.lastPitStopDuration
+                      ? 'text-amber-400 font-extrabold'
+                      : 'text-zinc-400 font-medium'
+                  }`}
+                >
+                  {pinnedDriver.lastPitStopDuration.toFixed(1)}s
+                </span>
+              ) : null}
             </div>
 
             {/* Interval & Gap */}
@@ -641,14 +689,16 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           </span>
                         ) : (d.pitStops ?? 0) > 0 ? (
                           <span
-                            className="font-mono text-[8px] font-bold text-zinc-400 bg-[#1C2230] px-1 py-0.2 rounded border border-white/[0.08]"
+                            className="font-mono text-[8px] font-bold text-zinc-300 bg-[#1C2230] px-1 py-0.2 rounded border border-white/[0.08]"
                             title={
-                              lang === 'es'
-                                ? `${d.pitStops} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
-                                : `${d.pitStops} pit ${d.pitStops === 1 ? 'stop' : 'stops'}`
+                              d.lastPitStopDuration
+                                ? lang === 'es'
+                                  ? `${d.pitStops} ${d.pitStops === 1 ? 'parada' : 'paradas'} • Última: ${d.lastPitStopDuration.toFixed(1)}s`
+                                  : `${d.pitStops} pit ${d.pitStops === 1 ? 'stop' : 'stops'} • Last: ${d.lastPitStopDuration.toFixed(1)}s`
+                                : `${d.pitStops}P`
                             }
                           >
-                            {d.pitStops}P
+                            {d.pitStops}P{d.lastPitStopDuration ? ` ${d.lastPitStopDuration.toFixed(1)}s` : ''}
                           </span>
                         ) : null}
                       </div>
@@ -664,20 +714,37 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           {lang === 'es' ? 'BOX' : 'PIT'}
                         </span>
                       ) : (
-                        <span
-                          className={`inline-flex items-center justify-center font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
+                        <div
+                          className={`inline-flex flex-col items-center justify-center font-mono rounded-md px-1.5 py-0.5 border ${
                             (d.pitStops ?? 0) > 0
                               ? 'bg-[#1C2230] text-zinc-200 border-white/[0.12] shadow-xs'
                               : 'bg-[#0B0E14] text-zinc-500 border-white/[0.05]'
                           }`}
                           title={
-                            lang === 'es'
-                              ? `${d.pitStops ?? 0} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
-                              : `${d.pitStops ?? 0} pit ${d.pitStops === 1 ? 'stop' : 'stops'}`
+                            d.lastPitStopDuration
+                              ? lang === 'es'
+                                ? `${d.pitStops ?? 0} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes • Última: ${d.lastPitStopDuration.toFixed(1)}s detenido${d.lastPitLaneTime ? ` (${d.lastPitLaneTime.toFixed(1)}s pit lane)` : ''}`
+                                : `${d.pitStops ?? 0} pit ${d.pitStops === 1 ? 'stop' : 'stops'} • Last: ${d.lastPitStopDuration.toFixed(1)}s stationary${d.lastPitLaneTime ? ` (${d.lastPitLaneTime.toFixed(1)}s pit lane)` : ''}`
+                              : (d.pitStops ?? 0) > 0
+                                ? `${d.pitStops} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes`
+                                : lang === 'es' ? 'Sin paradas en boxes' : '0 pit stops'
                           }
                         >
-                          {d.pitStops ?? 0}P
-                        </span>
+                          <span className="text-[10px] font-bold leading-none">{d.pitStops ?? 0}P</span>
+                          {d.lastPitStopDuration ? (
+                            <span
+                              className={`text-[8px] leading-tight mt-0.5 ${
+                                fastestPitStop && fastestPitStop.time === d.lastPitStopDuration
+                                  ? 'text-amber-400 font-extrabold'
+                                  : d.lastPitStopDuration <= 2.3
+                                  ? 'text-amber-300/90 font-bold'
+                                  : 'text-zinc-400'
+                              }`}
+                            >
+                              {d.lastPitStopDuration.toFixed(1)}s
+                            </span>
+                          ) : null}
+                        </div>
                       )}
                     </div>
 
@@ -955,6 +1022,110 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       />
                     </div>
                   )}
+
+                  {/* Detalle de Paradas en Boxes (Pit Stops Breakdown) */}
+                  {!isQualy &&
+                    ((d.pitHistory && d.pitHistory.length > 0) ||
+                      (typeof d.lastPitStopDuration === 'number' && d.lastPitStopDuration > 0)) && (
+                      <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-2 uppercase font-semibold">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-amber-400">⏱️</span>
+                            <span>
+                              {lang === 'es'
+                                ? 'Detalle de Paradas en Boxes'
+                                : 'Pit Stop Breakdown'}
+                            </span>
+                          </div>
+                          <span className="text-zinc-500">
+                            {(d.pitStops ?? 0) > 0
+                              ? `${d.pitStops} ${d.pitStops === 1 ? (lang === 'es' ? 'parada registrada' : 'stop recorded') : (lang === 'es' ? 'paradas registradas' : 'stops recorded')}`
+                              : ''}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {d.pitHistory && d.pitHistory.length > 0 ? (
+                            d.pitHistory.map((pit) => {
+                              const isFastestInSession =
+                                fastestPitStop && fastestPitStop.time === pit.stationaryTimeSec;
+                              return (
+                                <div
+                                  key={pit.stopNumber}
+                                  className={`flex items-center justify-between p-2 rounded-lg border text-xs font-mono transition-colors ${
+                                    isFastestInSession
+                                      ? 'bg-amber-500/[0.08] border-amber-500/30'
+                                      : 'bg-[#0B0E14] border-white/[0.06]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-white font-black text-[10px]">
+                                      #{pit.stopNumber}
+                                    </span>
+                                    <span className="text-zinc-400 text-[11px]">
+                                      {lang === 'es' ? `Vuelta ${pit.lap}` : `Lap ${pit.lap}`}
+                                    </span>
+                                    {pit.tyresIn && pit.tyresOut && (
+                                      <span className="text-[10px] text-zinc-400 flex items-center gap-1 bg-white/[0.04] px-1.5 py-0.5 rounded">
+                                        <span className="font-bold text-zinc-300">
+                                          {pit.tyresIn[0]}
+                                        </span>
+                                        <span className="text-zinc-500 text-[8px]">➔</span>
+                                        <span className="font-bold text-white">
+                                          {pit.tyresOut[0]}
+                                        </span>
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <span
+                                        className={`font-black text-xs ${
+                                          isFastestInSession ? 'text-amber-400' : 'text-zinc-100'
+                                        }`}
+                                      >
+                                        {pit.stationaryTimeSec.toFixed(2)}s
+                                      </span>
+                                      {isFastestInSession && (
+                                        <span className="text-[8px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 uppercase font-black tracking-wider select-none">
+                                          DHL Best
+                                        </span>
+                                      )}
+                                    </div>
+                                    {pit.pitLaneDurationSec && (
+                                      <span className="text-[9px] text-zinc-500 block">
+                                        {lang === 'es'
+                                          ? `${pit.pitLaneDurationSec.toFixed(1)}s en calle`
+                                          : `${pit.pitLaneDurationSec.toFixed(1)}s lane`}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="flex items-center justify-between p-2 rounded-lg border border-white/[0.06] bg-[#0B0E14] text-xs font-mono">
+                              <span className="text-zinc-400">
+                                {lang === 'es' ? 'Última parada' : 'Last pit stop'}
+                              </span>
+                              <div className="text-right">
+                                <span className="font-black text-white">
+                                  {d.lastPitStopDuration?.toFixed(2)}s
+                                </span>
+                                {d.lastPitLaneTime && (
+                                  <span className="text-[9px] text-zinc-500 block">
+                                    {lang === 'es'
+                                      ? `${d.lastPitLaneTime.toFixed(1)}s en calle`
+                                      : `${d.lastPitLaneTime.toFixed(1)}s lane`}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               )}
             </div>
