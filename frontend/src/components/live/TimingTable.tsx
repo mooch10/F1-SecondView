@@ -682,23 +682,23 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       <div className="sm:hidden">
                         {d.inPit ? (
                           <span
-                            className="px-1 py-0.2 rounded text-[8px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse"
+                            className="px-1 py-0.5 rounded text-[8px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse whitespace-nowrap leading-none"
                             title={lang === 'es' ? 'En calle de boxes' : 'In pit lane'}
                           >
                             {lang === 'es' ? 'BOX' : 'PIT'}
                           </span>
                         ) : (d.pitStops ?? 0) > 0 ? (
                           <span
-                            className="font-mono text-[8px] font-bold text-zinc-300 bg-[#1C2230] px-1 py-0.2 rounded border border-white/[0.08]"
+                            className="font-mono text-[8px] font-bold text-zinc-400 bg-[#1C2230] px-1 py-0.5 rounded border border-white/[0.08] whitespace-nowrap leading-none"
                             title={
                               d.lastPitStopDuration
                                 ? lang === 'es'
-                                  ? `${d.pitStops} ${d.pitStops === 1 ? 'parada' : 'paradas'} • Última: ${d.lastPitStopDuration.toFixed(1)}s`
-                                  : `${d.pitStops} pit ${d.pitStops === 1 ? 'stop' : 'stops'} • Last: ${d.lastPitStopDuration.toFixed(1)}s`
+                                  ? `${d.pitStops} ${d.pitStops === 1 ? 'parada' : 'paradas'} en boxes • Última: ${d.lastPitStopDuration.toFixed(1)}s detenido${d.lastPitLaneTime ? ` (${d.lastPitLaneTime.toFixed(1)}s calle)` : ''}`
+                                  : `${d.pitStops} pit ${d.pitStops === 1 ? 'stop' : 'stops'} • Last: ${d.lastPitStopDuration.toFixed(1)}s stationary${d.lastPitLaneTime ? ` (${d.lastPitLaneTime.toFixed(1)}s lane)` : ''}`
                                 : `${d.pitStops}P`
                             }
                           >
-                            {d.pitStops}P{d.lastPitStopDuration ? ` ${d.lastPitStopDuration.toFixed(1)}s` : ''}
+                            {d.pitStops}P
                           </span>
                         ) : null}
                       </div>

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import type { TyreCompound } from '../../types/f1';
 
 interface TyreBadgeProps {
@@ -20,23 +20,23 @@ export const TyreBadge: React.FC<TyreBadgeProps> = ({
 
   const compound = tyre.compound.toUpperCase();
   let letter = '-';
-  let ringClass = 'border-zinc-600 text-zinc-400 bg-white/5';
+  let color = '#71717A';
 
   if (compound.includes('SOFT')) {
     letter = 'S';
-    ringClass = 'border-[#FF3B30] text-[#FF3B30] bg-[#FF3B30]/10';
+    color = '#FF3B30';
   } else if (compound.includes('MEDIUM')) {
     letter = 'M';
-    ringClass = 'border-[#FFD60A] text-[#FFD60A] bg-[#FFD60A]/10';
+    color = '#FFD60A';
   } else if (compound.includes('HARD')) {
     letter = 'H';
-    ringClass = 'border-white text-white bg-white/10';
+    color = '#FFFFFF';
   } else if (compound.includes('INTER')) {
     letter = 'I';
-    ringClass = 'border-[#34C759] text-[#34C759] bg-[#34C759]/10';
+    color = '#34C759';
   } else if (compound.includes('WET')) {
     letter = 'W';
-    ringClass = 'border-[#007AFF] text-[#007AFF] bg-[#007AFF]/10';
+    color = '#007AFF';
   }
 
   const isSmall = size === 'sm';
@@ -50,13 +50,36 @@ export const TyreBadge: React.FC<TyreBadgeProps> = ({
           : `Pirelli compound ${tyre.compound} (${tyre.laps} laps)`
       }
     >
-      <span
-        className={`rounded-full flex items-center justify-center font-mono font-black leading-none shrink-0 ${
-          isSmall ? 'w-4 h-4 text-[9px] border' : 'w-5 h-5 text-[11px] border-2'
-        } ${ringClass}`}
+      <svg
+        viewBox="0 0 20 20"
+        className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} shrink-0 select-none`}
+        aria-hidden="true"
       >
-        {letter}
-      </span>
+        <circle
+          cx="10"
+          cy="10"
+          r={isSmall ? 8.5 : 8}
+          stroke={color}
+          strokeWidth={isSmall ? 1.5 : 2}
+          fill={color}
+          fillOpacity={0.12}
+        />
+        <text
+          x="10"
+          y="10"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill={color}
+          className="select-none"
+          style={{
+            fontSize: isSmall ? '9.5px' : '11px',
+            fontWeight: 900,
+            fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+          }}
+        >
+          {letter}
+        </text>
+      </svg>
       <span
         className={`font-mono font-bold tabular-nums ${
           isSmall ? 'text-[10px] text-zinc-400' : 'text-xs text-zinc-300'
