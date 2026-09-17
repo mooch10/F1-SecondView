@@ -465,11 +465,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     );
   }, [allItems, query]);
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation and prevent background scrolling
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+    if (!isOpen) return;
 
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
@@ -489,7 +492,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, filteredItems, selectedIndex, onClose]);
 
   if (!isOpen) return null;

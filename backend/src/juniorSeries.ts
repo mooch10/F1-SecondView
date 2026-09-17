@@ -153,13 +153,26 @@ export const F3_DRIVER_NUMBERS: Record<string, number> = {
   CLE: 16, // VAR
   PIN: 17, // MP
   COL: 18, // MP
+  CNG: 18, // MP
   GIU: 19, // MP
   NAK: 20, // Hitech
   WHA: 21, // Hitech
   DAV: 23, // AIX
+  SAG: 24, // AIX
   LAC: 25, // DAMS
   POW: 9, // PREMA
   XIE: 26, // DAMS
+  HO: 27, // DAMS
+  BIL: 27, // Rodin
+  ZAG: 28, // DAMS
+  SHA: 28, // Rodin
+  VOI: 29, // Rodin
+  DOM: 13, // VAR
+  FOR: 1, // Trident
+  BRO: 14, // Hitech
+  TRA: 8, // MP
+  MAN: 23, // ART
+  MEG: 4, // Trident
   DEP: 3, // Trident
 };
 

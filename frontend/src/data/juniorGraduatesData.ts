@@ -143,6 +143,15 @@ export const DRIVER_ACADEMY_MAP: Record<string, string> = {
   POW: 'mercedes',     // Alex Powell (Mercedes Junior Team)
   LE: 'independent',   // Kanato Le
   XIE: 'independent',  // Gerrard Xie
+  DEP: 'independent',  // Matteo De Palo
+  VOI: 'independent',  // Callum Voisin
+  SHA: 'independent',  // Louis Sharp
+  HO: 'independent',   // Christian Ho
+  ZAG: 'independent',  // Matías Zagazeta
+  DOM: 'independent',  // Ivan Domingues
+  SAG: 'independent',  // Javier Sagrera
+  MAN: 'independent',  // Christian Mansell
+  MEG: 'independent',  // Sami Meguetounif
   // Historical F2 & F3 Driver Codes
   POU: 'sauber',       // Théo Pourchaire (Sauber Academy)
   VES: 'mercedes',     // Frederik Vesti (Mercedes Junior Team)

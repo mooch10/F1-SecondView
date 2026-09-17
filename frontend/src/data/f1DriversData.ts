@@ -1,4 +1,4 @@
-import { F2_DRIVERS_DATA, F3_DRIVERS_DATA } from './juniorDriversData';
+import { F2_DRIVERS_DATA, F3_DRIVERS_DATA, type JuniorDriverProfile } from './juniorDriversData';
 
 export interface CareerStats {
   grandsPrix: number;
@@ -649,6 +649,60 @@ export const F1_DRIVERS_DATA: Record<number, F1DriverProfile> = {
  * This completely prevents cross-series code collisions (e.g. COL in F3 -> Mattia Colnaghi vs Franco Colapinto in F1,
  * and STR in F3 -> Noah Strømsted vs Lance Stroll in F1).
  */
+function searchInProfiles(
+  dataset: Record<string | number, F1DriverProfile | JuniorDriverProfile>,
+  identifier: number | string,
+): F1DriverProfile | undefined {
+  const all = Object.values(dataset);
+  if (typeof identifier === 'number') {
+    const direct = (dataset as Record<number, F1DriverProfile | JuniorDriverProfile>)[identifier];
+    if (direct) return direct as F1DriverProfile;
+    const byNum = all.find((d) => d.number === identifier);
+    if (byNum) return byNum as F1DriverProfile;
+  }
+
+  const rawStr = String(identifier).trim();
+  if (!rawStr) return undefined;
+
+  const upper = rawStr.toUpperCase();
+  const directCode = (dataset as Record<string, F1DriverProfile | JuniorDriverProfile>)[upper];
+  if (directCode) return directCode as F1DriverProfile;
+
+  const parsedNum = parseInt(rawStr, 10);
+  if (!Number.isNaN(parsedNum) && String(parsedNum) === rawStr) {
+    const direct = (dataset as Record<number, F1DriverProfile | JuniorDriverProfile>)[parsedNum];
+    if (direct) return direct as F1DriverProfile;
+    const byNum = all.find((d) => d.number === parsedNum);
+    if (byNum) return byNum as F1DriverProfile;
+  }
+
+  const norm = rawStr.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (norm.length === 3) {
+    const byCode = all.find((d) => d.code.toLowerCase() === norm);
+    if (byCode) return byCode as F1DriverProfile;
+  }
+
+  const byName = all.find((d) => {
+    const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const dFirstLast = `${d.firstName} ${d.lastName}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return dLast === norm || dFull === norm || dFirstLast === norm;
+  });
+  if (byName) return byName as F1DriverProfile;
+
+  if (norm.length >= 4) {
+    const bySub = all.find((d) => {
+      const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return dFull.includes(norm) || norm.includes(dLast);
+    });
+    if (bySub) return bySub as F1DriverProfile;
+  }
+
+  return undefined;
+}
+
 export function getDriverProfile(
   identifier: number | string | undefined | null,
   series: 'f1' | 'f2' | 'f3' = 'f1',
@@ -657,134 +711,27 @@ export function getDriverProfile(
     return undefined;
   }
 
-  // --- SERIES F2 ---
-  if (series === 'f2') {
-    const all = Object.values(F2_DRIVERS_DATA);
-    if (typeof identifier === 'number') {
-      const byNum = all.find((d) => d.number === identifier);
-      if (byNum) return byNum as F1DriverProfile;
-    }
-    const rawStr = String(identifier).trim();
-    if (!rawStr) return undefined;
-    const codeMatch = F2_DRIVERS_DATA[rawStr.toUpperCase()];
-    if (codeMatch) return codeMatch as F1DriverProfile;
-
-    const parsedNum = parseInt(rawStr, 10);
-    if (!Number.isNaN(parsedNum) && String(parsedNum) === rawStr) {
-      const byNum = all.find((d) => d.number === parsedNum);
-      if (byNum) return byNum as F1DriverProfile;
-    }
-
-    const norm = rawStr.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const byName = all.find((d) => {
-      const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const dFirstLast = `${d.firstName} ${d.lastName}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return dLast === norm || dFull === norm || dFirstLast === norm;
-    });
-    if (byName) return byName as F1DriverProfile;
-
-    if (norm.length >= 4) {
-      const bySub = all.find((d) => {
-        const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return dFull.includes(norm) || norm.includes(dLast);
-      });
-      if (bySub) return bySub as F1DriverProfile;
-    }
-    return undefined;
-  }
-
-  // --- SERIES F3 ---
   if (series === 'f3') {
-    const all = Object.values(F3_DRIVERS_DATA);
-    if (typeof identifier === 'number') {
-      const byNum = all.find((d) => d.number === identifier);
-      if (byNum) return byNum as F1DriverProfile;
-    }
-    const rawStr = String(identifier).trim();
-    if (!rawStr) return undefined;
-    const codeMatch = F3_DRIVERS_DATA[rawStr.toUpperCase()];
-    if (codeMatch) return codeMatch as F1DriverProfile;
-
-    const parsedNum = parseInt(rawStr, 10);
-    if (!Number.isNaN(parsedNum) && String(parsedNum) === rawStr) {
-      const byNum = all.find((d) => d.number === parsedNum);
-      if (byNum) return byNum as F1DriverProfile;
-    }
-
-    const norm = rawStr.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const byName = all.find((d) => {
-      const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const dFirstLast = `${d.firstName} ${d.lastName}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return dLast === norm || dFull === norm || dFirstLast === norm;
-    });
-    if (byName) return byName as F1DriverProfile;
-
-    if (norm.length >= 4) {
-      const bySub = all.find((d) => {
-        const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return dFull.includes(norm) || norm.includes(dLast);
-      });
-      if (bySub) return bySub as F1DriverProfile;
-    }
-    return undefined;
+    return (
+      searchInProfiles(F3_DRIVERS_DATA, identifier) ||
+      searchInProfiles(F2_DRIVERS_DATA, identifier) ||
+      searchInProfiles(F1_DRIVERS_DATA, identifier)
+    );
   }
 
-  // --- SERIES F1 ---
-  const allDrivers = Object.values(F1_DRIVERS_DATA);
-
-  // 1. Direct number passed as number type
-  if (typeof identifier === 'number') {
-    if (F1_DRIVERS_DATA[identifier]) return F1_DRIVERS_DATA[identifier];
-    const byNum = allDrivers.find((d) => d.number === identifier);
-    if (byNum) return byNum;
+  if (series === 'f2') {
+    return (
+      searchInProfiles(F2_DRIVERS_DATA, identifier) ||
+      searchInProfiles(F1_DRIVERS_DATA, identifier) ||
+      searchInProfiles(F3_DRIVERS_DATA, identifier)
+    );
   }
 
-  const rawStr = String(identifier).trim();
-  if (!rawStr) return undefined;
-
-  const normalized = rawStr
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-
-  // 2. Exact 3-letter code match (VER, NOR, ANT, LIN, COL, etc.)
-  if (normalized.length === 3) {
-    const byCode = allDrivers.find((d) => d.code.toLowerCase() === normalized);
-    if (byCode) return byCode;
-  }
-
-  // 3. Exact full name or last name match
-  const exactName = allDrivers.find((d) => {
-    const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const dFirstLast = `${d.firstName} ${d.lastName}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return dLast === normalized || dFull === normalized || dFirstLast === normalized;
-  });
-  if (exactName) return exactName;
-
-  // 4. Numeric string match (e.g. "43", "12", "41")
-  const parsedNum = parseInt(rawStr, 10);
-  if (!Number.isNaN(parsedNum) && String(parsedNum) === rawStr) {
-    if (F1_DRIVERS_DATA[parsedNum]) return F1_DRIVERS_DATA[parsedNum];
-    const byNum = allDrivers.find((d) => d.number === parsedNum);
-    if (byNum) return byNum;
-  }
-
-  // 5. Smart Substring / Name Match (Only for strings of length >= 4)
-  if (normalized.length >= 4) {
-    const matchContained = allDrivers.find((d) => {
-      const dLast = d.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const dFull = d.fullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return dFull.includes(normalized) || normalized.includes(dLast);
-    });
-    if (matchContained) return matchContained;
-  }
-
-  return undefined;
+  return (
+    searchInProfiles(F1_DRIVERS_DATA, identifier) ||
+    searchInProfiles(F2_DRIVERS_DATA, identifier) ||
+    searchInProfiles(F3_DRIVERS_DATA, identifier)
+  );
 }
 
 export function getF1DriverProfile(

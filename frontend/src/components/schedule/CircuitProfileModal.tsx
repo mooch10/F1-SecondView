@@ -19,11 +19,19 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -84,7 +92,7 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="overflow-y-auto p-4 space-y-4 no-scrollbar">
+        <div className="overflow-y-auto p-4 space-y-4 no-scrollbar overscroll-contain">
           
           {/* Vector Track Visualizer Card */}
           <div className="relative bg-zinc-900 rounded-xl border border-white/[0.08] p-4 flex flex-col items-center justify-center min-h-[210px] overflow-hidden shadow-inner">

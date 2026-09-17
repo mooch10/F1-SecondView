@@ -9,10 +9,17 @@
     --driver-modal-header-end: #0E121A;
   }
 
+  html {
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
   body {
     font-family: var(--font-sans);
     @apply bg-[#0B0E14] text-zinc-100 antialiased selection:bg-[#E10600] selection:text-white min-h-screen;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overscroll-behavior-y: none;
   }
 
   .font-mono {
@@ -26,20 +33,29 @@
 }
 
 @layer components {
-  /* Custom subtle scrollbar */
+  /* Standard W3C Scrollbar (Firefox, modern Chrome & Edge) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  /* Custom subtle floating scrollbar (WebKit & Chromium) */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0B0E14;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #232734;
+    background: rgba(255, 255, 255, 0.18);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #333849;
+    background: rgba(255, 255, 255, 0.35);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   /* Hide scrollbar for Chrome, Safari, Opera */
@@ -50,6 +66,8 @@
   .no-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 }
 
@@ -303,14 +321,17 @@ html.light .text-purple-400 {
 }
 
 /* Scrollbar in Light Mode */
+html.light * {
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent !important;
+}
 html.light ::-webkit-scrollbar-track {
-  background: #F3F4F6 !important;
+  background: transparent !important;
 }
 html.light ::-webkit-scrollbar-thumb {
-  background: #CBD5E1 !important;
+  background: rgba(0, 0, 0, 0.22) !important;
 }
 html.light ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8 !important;
+  background: rgba(0, 0, 0, 0.38) !important;
 }
 
 /* ==========================================================================
