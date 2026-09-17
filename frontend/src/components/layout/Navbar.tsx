@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, MessageSquarePlus, Moon, Search, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
+import { Download, Moon, Search, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries, SERIES_THEMES } from '../../hooks/useSeries';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { InstallAppModal } from '../common/InstallAppModal';
-import { FeedbackModal } from '../common/FeedbackModal';
 import { useFavoriteDriver } from '../../hooks/useFavoriteDriver';
 import { getDriverProfile } from '../../data/f1DriversData';
 import { isAudioAlertsEnabled, setAudioAlertsEnabled } from '../../utils/audioAlerts';
@@ -43,7 +42,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { isInstalled, isIOS, promptInstall, isModalOpen, setIsModalOpen } = usePWAInstall();
   const { favoriteDriverNumber } = useFavoriteDriver();
   const [soundEnabled, setSoundEnabled] = useState(() => isAudioAlertsEnabled());
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const handleTabClick = (tab: ActiveTab) => {
     trackTabChange(tab);
@@ -73,14 +71,14 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-white/[0.08]">
       <div className="max-w-5xl mx-auto px-3 sm:px-4">
         {/* Top Brand, Series Switcher & Right Controls */}
-        <div className="flex items-center justify-between h-12 gap-2">
+        <div className="flex items-center justify-between h-12 gap-1.5 sm:gap-2">
           {/* Left: Brand Identity & Series Switcher (anchored together so switcher NEVER shifts) */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Return to Hero Trigger: Exclusively Logo + 'DELTA' text */}
             <button
               type="button"
               onClick={() => (onReturnToHero ? onReturnToHero() : setActiveTab('live'))}
-              className="inline-flex items-center gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
+              className="inline-flex items-center gap-1.5 sm:gap-2 group cursor-pointer text-left focus:outline-none shrink-0"
               title="Portada / Inicio DELTA"
             >
               <div
@@ -89,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 D
               </div>
-              <span className="font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white text-base uppercase italic font-sans transition-colors">
+              <span className="font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white text-sm sm:text-base uppercase italic font-sans transition-colors">
                 DELTA
               </span>
             </button>
@@ -115,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         handleTabClick('standings');
                       }
                     }}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-bold uppercase transition-all cursor-pointer select-none ${
+                    className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold uppercase transition-all cursor-pointer select-none ${
                       isSelected
                         ? 'text-white shadow-sm font-black keep-white'
                         : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
@@ -130,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Right Status Controls (Constant width & position across F1, F2, F3) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Dual Clock Track Time Widget (My Time vs Track Time) */}
             <TrackTimeToggle className="hidden sm:inline-flex" />
 
@@ -140,10 +138,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={onOpenSearch}
                 title={lang === 'es' ? 'Buscar' : 'Search'}
-                className="w-7 h-7 sm:w-auto flex items-center justify-center sm:gap-1.5 px-0 sm:px-2.5 py-0 sm:py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-900 border border-zinc-200 dark:bg-[#131722] dark:hover:bg-[#1a202c] dark:text-zinc-400 dark:hover:text-white dark:border-white/[0.08] transition-colors cursor-pointer select-none"
               >
-                <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                <span className="hidden sm:inline">{lang === 'es' ? 'Buscar' : 'Search'}</span>
+                <Search className="w-3.5 h-3.5" />
+                <span>{lang === 'es' ? 'Buscar' : 'Search'}</span>
               </button>
             )}
 
@@ -153,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={onToggleTvMode}
                 title={lang === 'es' ? 'Modo TV Focus' : 'TV Focus Mode'}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer border ${
+                className={`hidden sm:flex w-7 h-7 rounded-lg items-center justify-center transition-colors cursor-pointer border ${
                   isTvMode
                     ? 'bg-amber-400 text-black border-amber-300'
                     : 'text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-[#131722] border-transparent hover:border-zinc-200 dark:hover:border-white/[0.08]'
@@ -168,10 +166,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               onClick={toggleLang}
               title={t.nav.langTitle}
-              className="flex items-center px-2 py-1 rounded-lg text-[11px] font-mono bg-[#131722] hover:bg-[#1a202c] border border-white/[0.08] transition-colors cursor-pointer select-none"
+              className="flex items-center px-1.5 sm:px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-mono bg-[#131722] hover:bg-[#1a202c] border border-white/[0.08] transition-colors cursor-pointer select-none"
             >
               <span
-                className={`w-4 text-center transition-colors duration-150 ${
+                className={`w-3.5 sm:w-4 text-center transition-colors duration-150 ${
                   lang === 'es' ? 'font-bold' : 'text-zinc-500 font-medium'
                 }`}
                 style={lang === 'es' ? { color: theme.primary } : undefined}
@@ -180,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
               <span className="text-zinc-600 font-normal mx-0.5">/</span>
               <span
-                className={`w-4 text-center transition-colors duration-150 ${
+                className={`w-3.5 sm:w-4 text-center transition-colors duration-150 ${
                   lang === 'en' ? 'font-bold' : 'text-zinc-500 font-medium'
                 }`}
                 style={lang === 'en' ? { color: theme.primary } : undefined}
@@ -211,9 +209,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors cursor-pointer select-none"
             >
               {soundEnabled ? (
-                <Volume2 className="w-4 h-4 text-emerald-400" />
+                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
               ) : (
-                <VolumeX className="w-4 h-4 text-zinc-500" />
+                <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-500" />
               )}
             </button>
 
@@ -223,7 +221,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={promptInstall}
                 title={lang === 'es' ? 'Instalar aplicación Delta' : 'Install Delta App'}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-mono bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all cursor-pointer shadow-xs active:scale-95 select-none"
+                className="w-7 h-7 sm:w-auto flex items-center justify-center sm:gap-1.5 px-0 sm:px-2 py-0 sm:py-1 rounded-lg text-[11px] font-mono bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all cursor-pointer shadow-xs active:scale-95 select-none"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline font-bold">
@@ -240,20 +238,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors cursor-pointer"
             >
               {isDarkMode ? (
-                <Moon className="w-4 h-4 text-zinc-300 hover:text-white transition-colors" />
+                <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-300 hover:text-white transition-colors" />
               ) : (
-                <Sun className="w-4 h-4 text-[#FFD60A] hover:text-amber-300 transition-colors" />
+                <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFD60A] hover:text-amber-300 transition-colors" />
               )}
-            </button>
-
-            {/* Feedback / Bug Reporting Channel */}
-            <button
-              type="button"
-              onClick={() => setIsFeedbackOpen(true)}
-              title={lang === 'es' ? 'Canal de Feedback / Reportar error' : 'Feedback Channel / Report Issue'}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors cursor-pointer"
-            >
-              <MessageSquarePlus className="w-4 h-4 text-zinc-400 hover:text-amber-400 transition-colors" />
             </button>
           </div>
         </div>
@@ -350,11 +338,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         isIOS={isIOS}
-      />
-      <FeedbackModal
-        isOpen={isFeedbackOpen}
-        onClose={() => setIsFeedbackOpen(false)}
-        isLiveConnected={isLiveConnected}
       />
     </header>
   );
