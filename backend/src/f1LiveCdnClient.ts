@@ -1,3 +1,4 @@
+import { enrichWithTranscripts } from './radioTranscriptionService.js';
 import type {
   DriverLive,
   DriverStatus,
@@ -464,12 +465,21 @@ export class F1LiveCdnClient {
       // Track location coordinate: only during active live session, NEVER when finalised
       const outlineLen = circuitMeta.outline.length;
       const stepOffset = outlineLen > 0 ? (((pos * 7) % outlineLen) + outlineLen) % outlineLen : 0;
-      const location = !isFinalised && circuitMeta.outline[stepOffset]
-        ? { x: circuitMeta.outline[stepOffset][0], y: circuitMeta.outline[stepOffset][1] }
-        : null;
+      const location =
+        !isFinalised && circuitMeta.outline[stepOffset]
+          ? { x: circuitMeta.outline[stepOffset][0], y: circuitMeta.outline[stepOffset][1] }
+          : null;
 
-      const intervalSec = typeof interval === 'string' ? parseFloat(interval.replace('+', '').replace('s', '')) : NaN;
-      const isOvertakeZone = !isQualy && !isLeader && !isNaN(intervalSec) && intervalSec > 0 && intervalSec <= 1.0;
+      const intervalSec =
+        typeof interval === 'string'
+          ? Number.parseFloat(interval.replace('+', '').replace('s', ''))
+          : Number.NaN;
+      const isOvertakeZone =
+        !isQualy &&
+        !isLeader &&
+        !Number.isNaN(intervalSec) &&
+        intervalSec > 0 &&
+        intervalSec <= 1.0;
 
       parsedDrivers.push({
         pos,
@@ -548,6 +558,8 @@ export class F1LiveCdnClient {
       teamRadios.reverse();
     }
 
+    const enrichedRadios = enrichWithTranscripts(teamRadios);
+
     const totalLaps = circuitMeta.totalLaps > 0 ? circuitMeta.totalLaps : 57;
     const progressPercentage = Math.min(100, Math.round((maxLapsCompleted / totalLaps) * 100));
 
@@ -577,7 +589,7 @@ export class F1LiveCdnClient {
       session: sessionLive,
       drivers: parsedDrivers,
       messages: messages.slice(-25).reverse(),
-      teamRadios,
+      teamRadios: enrichedRadios,
       circuitTrack: {
         circuitName: circuitMeta.bounds ? circuitName : 'Circuito Oficial',
         outline: circuitMeta.outline,

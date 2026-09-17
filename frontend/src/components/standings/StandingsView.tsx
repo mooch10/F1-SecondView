@@ -73,6 +73,13 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const activeYear =
     selectedSeasonYear >= minYear && selectedSeasonYear <= 2026 ? selectedSeasonYear : 2026;
 
+  // Power Unit Tracker is strictly available for 2026 season. If user switches to any historical year, reset to drivers.
+  useEffect(() => {
+    if (activeYear !== 2026 && subTab === 'pu-tracker') {
+      setSubTab('drivers');
+    }
+  }, [activeYear, subTab]);
+
   // Generate list of all supported years for current series (descending)
   const allSeriesYears = useMemo(() => {
     const list: number[] = [];
@@ -549,7 +556,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 <span className="hidden sm:inline">{t.standings.constructorsTab}</span>
               </button>
 
-              {series === 'f1' && (
+              {series === 'f1' && activeYear === 2026 && (
                 <button
                   type="button"
                   onClick={() => setSubTab('pu-tracker')}
@@ -881,8 +888,8 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
             </div>
           )}
 
-          {/* POWER UNIT TRACKER (F1 Only) */}
-          {series === 'f1' && subTab === 'pu-tracker' && (
+          {/* POWER UNIT TRACKER (F1 2026 Only) */}
+          {series === 'f1' && activeYear === 2026 && subTab === 'pu-tracker' && (
             <PowerUnitTracker onSelectDriver={(code) => handleDriverClick({ code })} />
           )}
         </>

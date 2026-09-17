@@ -514,24 +514,26 @@ export function generateUniversalLiveSnapshot(
     const isPole = idx === 0;
     const { driverLapDuration, s1, s2, s3 } = precomputedSectors[idx];
     const diffSec = d.performanceBias;
-    const gap = isNotStarted || !hasLiveTiming
-      ? `P${d.order}`
-      : isPole
-        ? isQualy
-          ? 'POLE'
-          : 'LÍDER'
-        : `+${diffSec.toFixed(3)}`;
+    const gap =
+      isNotStarted || !hasLiveTiming
+        ? `P${d.order}`
+        : isPole
+          ? isQualy
+            ? 'POLE'
+            : 'LÍDER'
+          : `+${diffSec.toFixed(3)}`;
 
     const prevDuration =
       idx > 0 ? benchmarkLap + sourceDrivers[idx - 1].performanceBias : benchmarkLap;
     const intervalDiff = driverLapDuration - prevDuration;
-    const interval = isNotStarted || !hasLiveTiming
-      ? '- - -'
-      : isPole
-        ? isQualy
-          ? 'POLE'
-          : 'LÍDER'
-        : `+${intervalDiff.toFixed(3)}`;
+    const interval =
+      isNotStarted || !hasLiveTiming
+        ? '- - -'
+        : isPole
+          ? isQualy
+            ? 'POLE'
+            : 'LÍDER'
+          : `+${intervalDiff.toFixed(3)}`;
 
     const s1Status: SectorStatus =
       Math.abs(s1 - bestEngineS1) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
@@ -603,8 +605,10 @@ export function generateUniversalLiveSnapshot(
       teamColor: d.teamColor,
       gap,
       interval,
-      isDrsZone: !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      isOvertakeZone: !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      isDrsZone:
+        !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
+      isOvertakeZone:
+        !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
       lastLapTime: isNotStarted || !hasLiveTiming ? '--:--.---' : effectiveBestStr,
       bestLapTime: isNotStarted || !hasLiveTiming ? undefined : effectiveBestStr,
       bestLapDuration: isNotStarted || !hasLiveTiming ? null : effectiveBestDur,
@@ -618,33 +622,34 @@ export function generateUniversalLiveSnapshot(
       pitStops,
       inPit: isNotStarted ? false : d.status === 'PIT' || d.status === 'GARAGE',
       status: 'ACTIVE',
-      sectors: isNotStarted || !hasLiveTiming
-        ? {
-            s1: null,
-            s2: null,
-            s3: null,
-            s1Status: 'none' as const,
-            s2Status: 'none' as const,
-            s3Status: 'none' as const,
-            segments: {
-              s1: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
-              s2: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
-              s3: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+      sectors:
+        isNotStarted || !hasLiveTiming
+          ? {
+              s1: null,
+              s2: null,
+              s3: null,
+              s1Status: 'none' as const,
+              s2Status: 'none' as const,
+              s3Status: 'none' as const,
+              segments: {
+                s1: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+                s2: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+                s3: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+              },
+            }
+          : {
+              s1,
+              s2,
+              s3,
+              s1Status,
+              s2Status,
+              s3Status,
+              segments: {
+                s1: Array(5).fill(s1Status) as MiniSectorStatus[],
+                s2: Array(5).fill(s2Status) as MiniSectorStatus[],
+                s3: Array(5).fill(s3Status) as MiniSectorStatus[],
+              },
             },
-          }
-        : {
-            s1,
-            s2,
-            s3,
-            s1Status,
-            s2Status,
-            s3Status,
-            segments: {
-              s1: Array(5).fill(s1Status) as MiniSectorStatus[],
-              s2: Array(5).fill(s2Status) as MiniSectorStatus[],
-              s3: Array(5).fill(s3Status) as MiniSectorStatus[],
-            },
-          },
       speedTrap: isNotStarted ? null : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
       i1Speed: isNotStarted ? null : Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
       i2Speed: isNotStarted ? null : Number((294.0 - d.performanceBias * 1.9).toFixed(1)),

@@ -2,11 +2,14 @@
 // Zero external MP3 downloads, 0ms latency, works offline
 
 const AUDIO_STORAGE_KEY = 'delta_audio_alerts_enabled';
+const APP_INIT_TIMESTAMP = typeof window !== 'undefined' ? Date.now() : 0;
 
 let audioCtx: AudioContext | null = null;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
+  // Guard against any sound synthesis during app entrance
+  if (Date.now() - APP_INIT_TIMESTAMP < 4000) return null;
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (AudioContextClass) {

@@ -3963,7 +3963,10 @@ export class JuniorSeriesClient {
     const fallback = series === 'f2' ? F2_FALLBACK_SCHEDULE : F3_FALLBACK_SCHEDULE;
 
     try {
-      const res = await this.fetchFom<{ meetings: FomMeeting[] }>(series, `/meetings?season=${year}`);
+      const res = await this.fetchFom<{ meetings: FomMeeting[] }>(
+        series,
+        `/meetings?season=${year}`,
+      );
       if (res?.meetings && res.meetings.length > 0) {
         const races: JolpicaRace[] = res.meetings.map((m, idx) => {
           const featureSession = m.meetingSessions?.find(
@@ -3982,10 +3985,13 @@ export class JuniorSeriesClient {
             locality: m.meetingLocation,
             country: m.meetingCountryName,
             raceDateTime: startDate,
-            sessions: sessions.length > 0 ? sessions : [
-              { name: 'Sprint Race', dateTime: startDate },
-              { name: 'Feature Race', dateTime: startDate },
-            ],
+            sessions:
+              sessions.length > 0
+                ? sessions
+                : [
+                    { name: 'Sprint Race', dateTime: startDate },
+                    { name: 'Feature Race', dateTime: startDate },
+                  ],
             isNext: false,
           };
         });
@@ -4062,7 +4068,9 @@ export class JuniorSeriesClient {
         if (cRes?.standings && cRes.standings.length > 0) {
           constructors = cRes.standings.map((c, idx) => {
             const pos = Number(c.displayPosition || c.position?.replace(/\D/g, '') || idx + 1);
-            const teamColor = c.teamColourCode ? `#${c.teamColourCode}` : getTeamColor(c.teamName, series);
+            const teamColor = c.teamColourCode
+              ? `#${c.teamColourCode}`
+              : getTeamColor(c.teamName, series);
 
             return {
               pos,
@@ -4144,7 +4152,8 @@ export class JuniorSeriesClient {
       } else {
         const nowMs = Date.now();
         const completedRounds = schedule.filter((r) => new Date(r.raceDateTime).getTime() <= nowMs);
-        targetRound = completedRounds.length > 0 ? completedRounds[completedRounds.length - 1].round : 1;
+        targetRound =
+          completedRounds.length > 0 ? completedRounds[completedRounds.length - 1].round : 1;
       }
     } else {
       const parsed = Number.parseInt(roundParam, 10);
@@ -4168,14 +4177,12 @@ export class JuniorSeriesClient {
       const meetingKey = targetMeeting.meetingKey;
       try {
         const [featureRes, sprintRes] = await Promise.all([
-          this.fetchFom<{ sessionResults?: { results?: FomRaceResult[]; state?: string; startTime?: string } }>(
-            series,
-            `/race?meeting=${meetingKey}&session=2`,
-          ),
-          this.fetchFom<{ sessionResults?: { results?: FomRaceResult[]; state?: string; startTime?: string } }>(
-            series,
-            `/race?meeting=${meetingKey}&session=1`,
-          ),
+          this.fetchFom<{
+            sessionResults?: { results?: FomRaceResult[]; state?: string; startTime?: string };
+          }>(series, `/race?meeting=${meetingKey}&session=2`),
+          this.fetchFom<{
+            sessionResults?: { results?: FomRaceResult[]; state?: string; startTime?: string };
+          }>(series, `/race?meeting=${meetingKey}&session=1`),
         ]);
 
         const featureResults = featureRes?.sessionResults?.results || [];
@@ -4194,7 +4201,10 @@ export class JuniorSeriesClient {
           return detail;
         }
       } catch (err) {
-        console.warn(`[JuniorSeries] Failed to fetch FOM race results for ${series} r${targetRound}:`, err);
+        console.warn(
+          `[JuniorSeries] Failed to fetch FOM race results for ${series} r${targetRound}:`,
+          err,
+        );
       }
     }
 
@@ -4238,7 +4248,9 @@ export class JuniorSeriesClient {
 
       // Detect fastest lap bonus point (Feature: P1-P10, Sprint: P1-P8/P10)
       const basePoints = isSprint
-        ? (series === 'f2' ? [10, 8, 6, 5, 4, 3, 2, 1] : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1])[pos - 1] || 0
+        ? (series === 'f2' ? [10, 8, 6, 5, 4, 3, 2, 1] : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1])[
+            pos - 1
+          ] || 0
         : [25, 18, 15, 12, 10, 8, 6, 4, 2, 1][pos - 1] || 0;
       const isFastestLap = Number(r.racePoints || 0) > basePoints;
 
@@ -4249,12 +4261,18 @@ export class JuniorSeriesClient {
         fullName: `${r.driverFirstName || ''} ${r.driverLastName || ''}`.trim(),
         familyName: r.driverLastName || '',
         teamName: r.teamName || 'Junior Team',
-        teamColor: r.teamColourCode ? `#${r.teamColourCode}` : getTeamColor(r.teamName || '', series),
+        teamColor: r.teamColourCode
+          ? `#${r.teamColourCode}`
+          : getTeamColor(r.teamName || '', series),
         points: Number(r.racePoints || 0),
         grid: pos,
         posChange: 0,
         laps: Number(r.lapsCompleted || totalLaps),
-        status: isDnf ? 'DNF' : (r.completionStatusCode === 'OK' ? 'Finished' : (r.completionStatusCode || 'Finished')),
+        status: isDnf
+          ? 'DNF'
+          : r.completionStatusCode === 'OK'
+            ? 'Finished'
+            : r.completionStatusCode || 'Finished',
         timeOrStatus,
         isWinner,
         isPodium: pos <= 3 && !isDnf,
@@ -4278,7 +4296,9 @@ export class JuniorSeriesClient {
 
     const sprintSession: JuniorSessionResult = {
       sessionType: 'Sprint',
-      date: sprintSessionData?.startTime || raceEvent.sessions?.find((s) => s.name.includes('Sprint'))?.dateTime,
+      date:
+        sprintSessionData?.startTime ||
+        raceEvent.sessions?.find((s) => s.name.includes('Sprint'))?.dateTime,
       results: mappedSprint,
       fastestLap: sprintFl
         ? {

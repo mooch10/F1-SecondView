@@ -200,9 +200,13 @@ export class LiveStreamClient {
         else if (statusDetail.includes('OUT') || statusDetail.includes('DNF')) trackStatus = 'OUT';
 
         // Extract authentic gaps and laps from statistics if provided by scoreboard
-        const statGap = c.statistics?.find((s) => s.name === 'gapToLeader' || s.name === 'behind')?.value;
+        const statGap = c.statistics?.find(
+          (s) => s.name === 'gapToLeader' || s.name === 'behind',
+        )?.value;
         const statInterval = c.statistics?.find((s) => s.name === 'interval')?.value;
-        const statLaps = c.statistics?.find((s) => s.name === 'lapsCompleted' || s.name === 'laps')?.value;
+        const statLaps = c.statistics?.find(
+          (s) => s.name === 'lapsCompleted' || s.name === 'laps',
+        )?.value;
 
         const gapToLeaderSec = typeof statGap === 'number' ? statGap : 0;
         const intervalSec = typeof statInterval === 'number' ? statInterval : 0;

@@ -100,7 +100,9 @@ export function useLiveAlerts(
           lastFavPitRef.current = { inPit: fav.inPit, pitStops: fav.pitStops ?? 0 };
         }
       }
-      isInitialMount.current = false;
+      if (snapshot || (drivers && drivers.length > 0)) {
+        isInitialMount.current = false;
+      }
       return;
     }
 
@@ -108,6 +110,11 @@ export function useLiveAlerts(
     if (snapshot?.flag && snapshot.flag !== lastFlagRef.current) {
       const prevFlag = lastFlagRef.current;
       lastFlagRef.current = snapshot.flag;
+
+      // Do NOT trigger alerts or sounds on first observation of flag
+      if (!prevFlag) {
+        return;
+      }
 
       if (snapshot.flag === 'SC') {
         playSafetyCarSound();
@@ -143,16 +150,19 @@ export function useLiveAlerts(
           color: '#E10600',
         });
       } else if (snapshot.flag === 'CHEQUERED' && prevFlag !== 'CHEQUERED') {
-        playChequeredSound();
-        pushAlert({
-          type: 'CHEQUERED',
-          title: lang === 'es' ? '🏁 BANDERA A CUADROS' : '🏁 CHEQUERED FLAG',
-          subtitle:
-            lang === 'es'
-              ? '¡Sesión y Gran Premio completados!'
-              : 'Session and Grand Prix completed!',
-          color: '#FFFFFF',
-        });
+        // Only trigger fanfare if race was actively taking place
+        if (prevFlag === 'GREEN' || prevFlag === 'YELLOW' || prevFlag === 'SC' || prevFlag === 'VSC') {
+          playChequeredSound();
+          pushAlert({
+            type: 'CHEQUERED',
+            title: lang === 'es' ? '🏁 BANDERA A CUADROS' : '🏁 CHEQUERED FLAG',
+            subtitle:
+              lang === 'es'
+                ? '¡Sesión y Gran Premio completados!'
+                : 'Session and Grand Prix completed!',
+            color: '#FFFFFF',
+          });
+        }
       }
     }
 
@@ -188,7 +198,7 @@ export function useLiveAlerts(
       const fav = drivers.find((d) => d.driverNumber === favoriteDriverNumber);
       if (fav) {
         const prev = lastFavPitRef.current;
-        const enteredPit = Boolean(!prev?.inPit && fav.inPit);
+        const enteredPit = Boolean(prev && !prev.inPit && fav.inPit);
         const didPitStop = Boolean(prev && (fav.pitStops ?? 0) > prev.pitStops);
 
         if (enteredPit || didPitStop) {
@@ -209,7 +219,7 @@ export function useLiveAlerts(
         lastFavPitRef.current = { inPit: fav.inPit, pitStops: fav.pitStops ?? 0 };
       }
     }
-  }, [snapshot?.flag, drivers, favoriteDriverNumber, lang, pushAlert]);
+  }, [snapshot, drivers, favoriteDriverNumber, lang, pushAlert]);
 
   // Request browser notification permission helper
   const requestNotificationPermission = useCallback(async () => {

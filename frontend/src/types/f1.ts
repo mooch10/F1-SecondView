@@ -131,6 +131,8 @@ export interface TeamRadioCapture {
   teamName: string;
   teamColor: string;
   audioUrl: string;
+  transcript?: string;
+  category?: 'PIT' | 'STRATEGY' | 'FLAG' | 'DAMAGE' | 'RADIO_CHECK' | 'GENERAL';
 }
 
 export interface LiveSnapshot {
