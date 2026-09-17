@@ -65,6 +65,11 @@ const COUNTRY_MAP: Record<string, string> = {
   switzerland: 'ch',
   thailand: 'th',
   tailandia: 'th',
+  colombia: 'co',
+  corea_del_sur: 'kr',
+  south_korea: 'kr',
+  korea: 'kr',
+  paraguay: 'py',
 };
 
 /**

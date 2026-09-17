@@ -125,6 +125,7 @@ export const DRIVER_ACADEMY_MAP: Record<string, string> = {
   NAE: 'independent',  // Théophile Naël
   UGO: 'mclaren',      // Ugo Ugochukwu (McLaren Driver Development)
   KAT: 'redbull',      // Taito Kato (Honda Dream Project / Red Bull)
+  KAI: 'redbull',      // Taito Kato (Honda Dream Project / Red Bull - FOM TLA)
   GIU: 'williams',     // Alessandro Giusti (Williams Racing Driver Academy)
   RIV: 'redbull',      // Ernesto Rivera (Red Bull Junior Team)
   CLE: 'independent',  // Pedro Clerot
@@ -133,25 +134,35 @@ export const DRIVER_ACADEMY_MAP: Record<string, string> = {
   YAM: 'independent',  // Hiyu Yamakoshi
   STR: 'independent',  // Noah Strømsted
   PIN: 'independent',  // Bruno del Pino
+  DEL: 'independent',  // Bruno del Pino (FOM TLA)
   GLA: 'sauber',       // Maciej Gładysz (Sauber Academy)
   CNG: 'redbull',      // Mattia Colnaghi (Red Bull Junior Team)
   WHA: 'ferrari',      // James Wharton (Ex-Ferrari Driver Academy)
   NAK: 'independent',  // Jin Nakamura (TGR)
   DAV: 'independent',  // Yevan David
-  DEL: 'redbull',      // Enzo Deligny (Red Bull Junior Team)
+  DIL: 'redbull',      // Enzo Deligny (Red Bull Junior Team - FOM TLA)
   LAC: 'alpine',       // Nicola Lacorte (Alpine Academy)
   POW: 'mercedes',     // Alex Powell (Mercedes Junior Team)
   LE: 'independent',   // Kanato Le
+  KLE: 'independent',  // Kanato Le (FOM TLA)
   XIE: 'independent',  // Gerrard Xie
   DEP: 'independent',  // Matteo De Palo
   VOI: 'independent',  // Callum Voisin
   SHA: 'independent',  // Louis Sharp
   HO: 'independent',   // Christian Ho
+  CHO: 'independent',  // Christian Ho (FOM TLA)
   ZAG: 'independent',  // Matías Zagazeta
   DOM: 'independent',  // Ivan Domingues
   SAG: 'independent',  // Javier Sagrera
   MAN: 'independent',  // Christian Mansell
   MEG: 'independent',  // Sami Meguetounif
+  MCL: 'redbull',      // Fionn McLaughlin (Red Bull Junior Team)
+  BAR: 'independent',  // Fernando Barrichello
+  GAR: 'independent',  // José Garfias
+  BHI: 'independent',  // Nandhavud Bhirombhakdi
+  ESC: 'independent',  // Ricardo Escotto
+  HEU: 'independent',  // Patrick Heuzenroeder
+  HAN: 'independent',  // Salim Hanna
   // Historical F2 & F3 Driver Codes
   POU: 'sauber',       // Théo Pourchaire (Sauber Academy)
   VES: 'mercedes',     // Frederik Vesti (Mercedes Junior Team)
