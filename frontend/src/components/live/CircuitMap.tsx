@@ -649,17 +649,6 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
                         S2
                       </text>
                     </g>
-
-                    {/* Overtake / DRS Straightaway Zones */}
-                    {trackGeometry.overtakeZones?.map((ot, idx) => (
-                      <g key={idx} transform={`translate(${ot.start.x.toFixed(1)}, ${ot.start.y.toFixed(1)})`}>
-                        <circle r="3" fill="#10B981" />
-                        <rect x="5" y="-5.5" width="24" height="10" rx="2" fill="#064E3B" stroke="#10B981" strokeWidth="0.8" />
-                        <text x="17" y="1.8" textAnchor="middle" fill="#A7F3D0" fontSize="6" fontWeight="bold" fontFamily="monospace">
-                          DRS {idx + 1}
-                        </text>
-                      </g>
-                    ))}
                   </g>
                 )}
 

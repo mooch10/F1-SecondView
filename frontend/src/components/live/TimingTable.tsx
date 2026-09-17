@@ -339,13 +339,19 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 <div className="flex items-center justify-end gap-1">
                   {!isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval)) && (
                     <span
-                      className="px-1 py-0.2 rounded text-[7px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse"
+                      className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse select-none shrink-0"
                       title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s)' : 'Overtake Mode (MOM) active (< 1.0s)'}
                     >
                       OVERTAKE
                     </span>
                   )}
-                  <span className="font-mono text-[10px] text-zinc-400 truncate">
+                  <span
+                    className={`font-mono text-[10px] truncate ${
+                      !isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval))
+                        ? 'text-emerald-400 font-extrabold'
+                        : 'text-zinc-400'
+                    }`}
+                  >
                     INT {pinnedDriver.interval}
                   </span>
                 </div>
@@ -722,11 +728,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           </button>
                           {closeInterval && (
                             <span
-                              className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
+                              className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
                               title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode (MOM) active (< 1.0s behind car ahead)'}
                             >
-                              <span className="hidden sm:inline">OVERTAKE</span>
-                              <span className="sm:hidden">OT</span>
+                              OVERTAKE
                             </span>
                           )}
                           <span
