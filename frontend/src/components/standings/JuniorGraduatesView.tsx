@@ -251,7 +251,9 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                 <div className="flex items-center gap-2 mb-2.5">
                   <UserCheck className="w-4 h-4 text-teal-600 dark:text-[#27F4D2]" />
                   <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900 dark:text-white">
-                    {series === 'f2'
+                    {season.year === 2026
+                      ? (lang === 'es' ? 'Talentos de Academias F1 en Pista' : 'F1 Academy Talents on Grid')
+                      : series === 'f2'
                       ? (lang === 'es' ? 'Graduados Directos a Fórmula 1' : 'Direct Formula 1 Graduates')
                       : (lang === 'es' ? 'Promociones a F2 y Academias F1' : 'Promotions to F2 & F1 Academies')}
                   </span>
