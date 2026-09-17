@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Moon, Search, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
+import { Download, MessageSquarePlus, Moon, Search, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries, SERIES_THEMES } from '../../hooks/useSeries';
 import { TrackTimeToggle } from '../common/TrackTimeToggle';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { InstallAppModal } from '../common/InstallAppModal';
+import { FeedbackModal } from '../common/FeedbackModal';
 import { useFavoriteDriver } from '../../hooks/useFavoriteDriver';
 import { getDriverProfile } from '../../data/f1DriversData';
 import { isAudioAlertsEnabled, setAudioAlertsEnabled } from '../../utils/audioAlerts';
+import { trackSeriesChange, trackTabChange } from '../../utils/analytics';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -41,6 +43,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { isInstalled, isIOS, promptInstall, isModalOpen, setIsModalOpen } = usePWAInstall();
   const { favoriteDriverNumber } = useFavoriteDriver();
   const [soundEnabled, setSoundEnabled] = useState(() => isAudioAlertsEnabled());
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+
+  const handleTabClick = (tab: ActiveTab) => {
+    trackTabChange(tab);
+    setActiveTab(tab);
+  };
 
   useEffect(() => {
     const handleAudioChange = (e: Event) => {
@@ -102,8 +110,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     onClick={() => {
                       setSeries(s);
+                      trackSeriesChange(s);
                       if (s !== 'f1' && (activeTab === 'qualy' || activeTab === 'live')) {
-                        setActiveTab('standings');
+                        handleTabClick('standings');
                       }
                     }}
                     className={`px-2 py-0.5 rounded-md text-[11px] font-bold uppercase transition-all cursor-pointer select-none ${
@@ -236,6 +245,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Sun className="w-4 h-4 text-[#FFD60A] hover:text-amber-300 transition-colors" />
               )}
             </button>
+
+            {/* Feedback / Bug Reporting Channel */}
+            <button
+              type="button"
+              onClick={() => setIsFeedbackOpen(true)}
+              title={lang === 'es' ? 'Canal de Feedback / Reportar error' : 'Feedback Channel / Report Issue'}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-[#131722] border border-transparent hover:border-white/[0.08] transition-colors cursor-pointer"
+            >
+              <MessageSquarePlus className="w-4 h-4 text-zinc-400 hover:text-amber-400 transition-colors" />
+            </button>
           </div>
         </div>
 
@@ -247,7 +266,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 data-active={activeTab === 'live'}
-                onClick={() => setActiveTab('live')}
+                onClick={() => handleTabClick('live')}
                 className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center gap-1 text-center whitespace-nowrap cursor-pointer ${
                   activeTab === 'live'
                     ? 'text-zinc-100'
@@ -268,7 +287,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               data-active={activeTab === 'last-race'}
-              onClick={() => setActiveTab('last-race')}
+              onClick={() => handleTabClick('last-race')}
               className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                 activeTab === 'last-race'
                   ? 'text-zinc-100'
@@ -284,7 +303,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 data-active={activeTab === 'qualy'}
-                onClick={() => setActiveTab('qualy')}
+                onClick={() => handleTabClick('qualy')}
                 className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                   activeTab === 'qualy'
                     ? 'text-zinc-100'
@@ -300,7 +319,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               data-active={activeTab === 'schedule'}
-              onClick={() => setActiveTab('schedule')}
+              onClick={() => handleTabClick('schedule')}
               className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                 activeTab === 'schedule'
                   ? 'text-zinc-100'
@@ -314,7 +333,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               data-active={activeTab === 'standings'}
-              onClick={() => setActiveTab('standings')}
+              onClick={() => handleTabClick('standings')}
               className={`flex-1 sm:flex-initial min-w-0 py-2.5 sm:py-2 px-1 sm:px-3 text-[10px] sm:text-xs font-mono uppercase tracking-tight sm:tracking-wider font-semibold transition-all border-b-2 flex items-center justify-center text-center whitespace-nowrap cursor-pointer ${
                 activeTab === 'standings'
                   ? 'text-zinc-100'
@@ -331,6 +350,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         isIOS={isIOS}
+      />
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        isLiveConnected={isLiveConnected}
       />
     </header>
   );

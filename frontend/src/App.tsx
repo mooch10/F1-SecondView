@@ -21,6 +21,7 @@ import { useFavoriteDriver } from './hooks/useFavoriteDriver';
 import { useLiveAlerts } from './hooks/useLiveAlerts';
 import { LiveAlertToast } from './components/live/LiveAlertToast';
 import type { ActiveTab } from './types/f1';
+import { trackDriverSelect, trackTvModeToggle } from './utils/analytics';
 
 // Dynamic / Lazy loaded secondary views and overlays for code-splitting
 const QualifyingView = lazy(() =>
@@ -167,6 +168,7 @@ function App() {
     if (prof) {
       setSelectedProfile(prof);
       setIsProfileOpen(true);
+      trackDriverSelect(prof.number, prof.fullName, prof.team);
     }
   };
 
@@ -244,6 +246,7 @@ function App() {
           onToggleTvMode={() => {
             setIsTvMode((prev) => {
               const next = !prev;
+              trackTvModeToggle(next);
               if (next) {
                 setActiveTab('live');
                 setUserSubView('timing');

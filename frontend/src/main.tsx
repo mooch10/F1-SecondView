@@ -5,6 +5,10 @@ import App from './App.tsx'
 import { LanguageProvider } from './context/LanguageProvider.tsx'
 import { SeriesProvider } from './context/SeriesProvider.tsx'
 import { TimezoneProvider } from './context/TimezoneProvider.tsx'
+import { initAnalytics } from './utils/analytics'
+
+// Initialize Google Analytics 4 & Microsoft Clarity (if configured in env)
+initAnalytics();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
