@@ -68,15 +68,15 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
 
     return (
       <div
-        className={`flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-md sm:rounded-lg border text-center font-mono ${badgeClass}`}
+        className={`flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-md sm:rounded-lg border text-center font-mono min-w-0 overflow-hidden ${badgeClass}`}
         title={`${fullName}: ${used}/${limit} ${lang === 'es' ? 'usados' : 'used'}`}
       >
-        <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-semibold opacity-80">
-          {label}
+        <span className="text-[7px] xs:text-[8px] sm:text-[9.5px] uppercase font-bold tracking-tight sm:tracking-normal whitespace-nowrap opacity-85 select-none leading-none">
+          {label.replace(/-/g, '\u2011')}
         </span>
-        <span className={`text-[11px] sm:text-xs ${countClass}`}>
+        <span className={`text-[10px] sm:text-xs leading-tight mt-0.5 whitespace-nowrap ${countClass}`}>
           {used}
-          <span className="text-[9px] sm:text-[10px] font-normal opacity-60">/{limit}</span>
+          <span className="text-[8.5px] sm:text-[10px] font-normal opacity-60">/{limit}</span>
         </span>
       </div>
     );

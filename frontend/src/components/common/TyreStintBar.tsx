@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import type { TyreCompound } from '../../types/f1';
 
 export interface StintItem {
@@ -68,9 +68,11 @@ export const TyreStintBar: React.FC<TyreStintBarProps> = ({
             >
               {/* Badge letter circle */}
               <span
-                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center font-mono font-black text-[8px] leading-none shrink-0 ${cfg.border} ${cfg.text} bg-black/50 mr-1`}
+                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center font-sans font-extrabold text-[8px] leading-none shrink-0 ${cfg.border} ${cfg.text} bg-black/50 mr-1 select-none`}
               >
-                {cfg.letter}
+                <span className="transform translate-y-[0.5px] leading-none">
+                  {cfg.letter}
+                </span>
               </span>
 
               {/* Laps label */}

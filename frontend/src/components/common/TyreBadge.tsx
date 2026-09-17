@@ -50,36 +50,26 @@ export const TyreBadge: React.FC<TyreBadgeProps> = ({
           : `Pirelli compound ${tyre.compound} (${tyre.laps} laps)`
       }
     >
-      <svg
-        viewBox="0 0 20 20"
-        className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} shrink-0 select-none`}
+      <span
+        className={`inline-flex items-center justify-center rounded-full shrink-0 select-none ${
+          isSmall
+            ? 'w-4 h-4 text-[8.5px] border-[1.5px]'
+            : 'w-5 h-5 text-[10px] border-2'
+        }`}
+        style={{
+          borderColor: color,
+          color: color,
+          backgroundColor: `${color}18`,
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+          fontWeight: 800,
+          lineHeight: 1,
+        }}
         aria-hidden="true"
       >
-        <circle
-          cx="10"
-          cy="10"
-          r={isSmall ? 8.5 : 8}
-          stroke={color}
-          strokeWidth={isSmall ? 1.5 : 2}
-          fill={color}
-          fillOpacity={0.12}
-        />
-        <text
-          x="10"
-          y="10"
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill={color}
-          className="select-none"
-          style={{
-            fontSize: isSmall ? '9.5px' : '11px',
-            fontWeight: 900,
-            fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
-          }}
-        >
+        <span className="transform translate-y-[0.5px] leading-none">
           {letter}
-        </text>
-      </svg>
+        </span>
+      </span>
       <span
         className={`font-mono font-bold tabular-nums ${
           isSmall ? 'text-[10px] text-zinc-400' : 'text-xs text-zinc-300'
