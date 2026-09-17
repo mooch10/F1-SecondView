@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { X, MapPin, Gauge, Flag } from 'lucide-react';
 import { type CircuitIntel, getCircuitIntel } from '../../data/circuitIntelData';
 import { useLanguage } from '../../hooks/useLanguage';
+import { CountryFlag } from '../common/CountryFlag';
 
 interface CircuitProfileModalProps {
   isOpen: boolean;
@@ -70,7 +71,12 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3.5 border-b border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-[#0B0E14]">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="text-xl shrink-0">{circuit.flag}</span>
+            <CountryFlag
+              flagEmoji={circuit.flag}
+              countryName={circuit.country}
+              alt={circuit.country}
+              className="w-6 h-4 rounded-[2px] shadow-xs shrink-0 inline-block"
+            />
             <div className="min-w-0">
               <span className="text-[10px] font-mono font-bold tracking-widest text-red-600 dark:text-red-400 uppercase block truncate">
                 {circuit.officialGpName}

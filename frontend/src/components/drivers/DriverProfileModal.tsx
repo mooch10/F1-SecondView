@@ -5,6 +5,7 @@ import { getDriverAnalytics } from '../../data/driverAnalytics';
 import { fetchStandings } from '../../services/api';
 import type { StandingsData } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
+import { CountryFlag } from '../common/CountryFlag';
 
 interface DriverProfileModalProps {
   isOpen: boolean;
@@ -273,9 +274,13 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
             {/* Name, Code & Number */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-2xl" role="img" aria-label={localizedNat}>
-                  {activeProfile.flag}
-                </span>
+                <CountryFlag
+                  countryCode={activeProfile.countryCode}
+                  flagEmoji={activeProfile.flag}
+                  countryName={activeProfile.nationality}
+                  alt={localizedNat}
+                  className="w-7 h-5 rounded-[3px] shadow-sm inline-block"
+                />
                 <span className="text-xs font-mono font-bold tracking-widest text-zinc-400 uppercase">
                   {activeProfile.code} • #{activeProfile.number}
                 </span>

@@ -7,6 +7,7 @@ import {
 } from '../../data/juniorGraduatesData';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
+import { CountryFlag } from '../common/CountryFlag';
 
 interface JuniorGraduatesViewProps {
   onSelectDriver?: (name: string) => void;
@@ -159,7 +160,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                           : (lang === 'es' ? 'CAMPEÓN' : 'CHAMPION')}
                       </span>
                       <h3 className="text-base font-black text-zinc-900 dark:text-white font-sans flex items-center gap-1.5">
-                        <span>{season.champion.flag}</span>
+                        <CountryFlag flagEmoji={season.champion.flag} className="w-5 h-3.5 rounded-[2px] shadow-xs inline-block shrink-0" />
                         <span>{season.champion.name}</span>
                       </h3>
                     </div>
@@ -197,7 +198,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                         : (lang === 'es' ? 'SUBCAMPEÓN (P2)' : 'RUNNER-UP (P2)')}
                     </span>
                     <h3 className="text-base font-bold text-zinc-900 dark:text-white font-sans flex items-center gap-1.5 mt-0.5">
-                      <span>{season.runnerUp.flag}</span>
+                      <CountryFlag flagEmoji={season.runnerUp.flag} className="w-5 h-3.5 rounded-[2px] shadow-xs inline-block shrink-0" />
                       <span>{season.runnerUp.name}</span>
                     </h3>
                   </div>
@@ -221,7 +222,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                         : (lang === 'es' ? '3º PUESTO (P3)' : '3RD PLACE (P3)')}
                     </span>
                     <h3 className="text-base font-bold text-zinc-900 dark:text-white font-sans flex items-center gap-1.5 mt-0.5">
-                      <span>{season.thirdPlace.flag}</span>
+                      <CountryFlag flagEmoji={season.thirdPlace.flag} className="w-5 h-3.5 rounded-[2px] shadow-xs inline-block shrink-0" />
                       <span>{season.thirdPlace.name}</span>
                     </h3>
                   </div>
@@ -266,7 +267,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-base">{grad.flag}</span>
+                          <CountryFlag flagEmoji={grad.flag} className="w-5 h-3.5 rounded-[2px] shadow-xs inline-block shrink-0" />
                           <span className="font-bold text-zinc-900 dark:text-white text-xs truncate group-hover:text-teal-600 dark:group-hover:text-[#27F4D2] transition-colors">
                             {grad.name}
                           </span>

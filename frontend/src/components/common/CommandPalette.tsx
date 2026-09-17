@@ -17,6 +17,7 @@ import {
 import type { ActiveTab, SeriesCategory } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
+import { renderTextWithFlags } from './CountryFlag';
 
 export interface CommandPaletteProps {
   isOpen: boolean;
@@ -592,7 +593,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       </span>
                       {item.subtitle && (
                         <span className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate block font-mono">
-                          {item.subtitle}
+                          {renderTextWithFlags(item.subtitle, 'w-3.5 h-2.5 rounded-[2px] inline-block mx-1 align-middle')}
                         </span>
                       )}
                     </div>

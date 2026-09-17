@@ -4,6 +4,7 @@ import {
   LAST_RACE_EVENTS,
 } from '../../data/lastRaceAnalysisData';
 import { useLanguage } from '../../hooks/useLanguage';
+import { CountryFlag } from '../common/CountryFlag';
 
 export const LapEvolutionChart: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -55,15 +56,21 @@ export const LapEvolutionChart: React.FC = () => {
 
         {/* Filter buttons */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          {(
-            [
-              { id: 'all', label: t.lastRace.filterAll },
-              { id: 'podium', label: t.lastRace.filterPodium },
-              { id: 'points', label: t.lastRace.filterPoints },
-              { id: 'colapinto', label: 'Alpine 🇦🇷' },
-              { id: 'norris', label: 'McLaren' },
-            ] as const
-          ).map((btn) => (
+          {[
+            { id: 'all' as const, label: t.lastRace.filterAll },
+            { id: 'podium' as const, label: t.lastRace.filterPodium },
+            { id: 'points' as const, label: t.lastRace.filterPoints },
+            {
+              id: 'colapinto' as const,
+              label: (
+                <span className="inline-flex items-center gap-1">
+                  <span>Alpine</span>
+                  <CountryFlag countryCode="AR" alt="Argentina" className="w-3.5 h-2.5 rounded-[2px] shadow-xs inline-block" />
+                </span>
+              ),
+            },
+            { id: 'norris' as const, label: 'McLaren' },
+          ].map((btn) => (
             <button
               key={btn.id}
               type="button"
@@ -223,26 +230,26 @@ export const LapEvolutionChart: React.FC = () => {
       </div>
 
       {/* Legend & Active Highlights */}
-      <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-zinc-200 dark:border-white/[0.06] text-xs font-mono">
-        <div className="flex items-center gap-3 flex-wrap">
-          {filteredDrivers.slice(0, 6).map((d) => (
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-2.5 border-t border-zinc-200 dark:border-white/[0.08] text-xs font-mono">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          {filteredDrivers.map((d) => (
             <button
               key={d.code}
               type="button"
               onMouseEnter={() => setHoveredDriver(d.code)}
               onMouseLeave={() => setHoveredDriver(null)}
-              className={`flex items-center gap-1.5 px-2 py-0.5 rounded transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md transition-all cursor-pointer text-xs ${
                 hoveredDriver === d.code
-                  ? 'bg-zinc-200 dark:bg-white/10'
-                  : 'hover:bg-zinc-100 dark:hover:bg-white/[0.04]'
+                  ? 'bg-zinc-200 dark:bg-white/15 ring-1 ring-zinc-400 dark:ring-white/30 scale-105'
+                  : 'bg-zinc-100/60 dark:bg-white/[0.03] hover:bg-zinc-200/70 dark:hover:bg-white/[0.08]'
               }`}
             >
               <span
-                className="w-2.5 h-2.5 rounded-full"
+                className="w-2 h-2 rounded-full shrink-0"
                 style={{ backgroundColor: d.teamColor }}
               />
               <span className="font-bold text-zinc-800 dark:text-zinc-200">{d.code}</span>
-              <span className="text-zinc-500 text-[10px]">(P{d.finishPos})</span>
+              <span className="text-zinc-500 text-[10px]">P{d.finishPos}</span>
             </button>
           ))}
         </div>

@@ -543,7 +543,7 @@ const makePosProgression = (grid: number, finish: number, pitLaps: number[], key
     if (keyLaps[l] !== undefined) {
       cur = keyLaps[l];
     } else if (pitLaps.includes(l)) {
-      cur = Math.min(cur + 4, 18);
+      cur = Math.min(cur + 4, 20);
     } else {
       // smooth drift towards finish
       const target = finish;
@@ -551,13 +551,13 @@ const makePosProgression = (grid: number, finish: number, pitLaps: number[], key
       if (cur < target) cur = Math.min(cur + step, target);
       else if (cur > target) cur = Math.max(cur - step, target);
     }
-    arr.push(Math.round(cur));
+    arr.push(Math.min(20, Math.max(1, Math.round(cur))));
   }
   arr[57] = finish;
   return arr;
 };
 
-// 4. LAP CHART EVOLUTION (Position by lap for highlighted drivers)
+// 4. LAP CHART EVOLUTION (Position by lap for all 20 drivers on grid)
 export const LAST_RACE_LAP_CHART_DRIVERS: LapChartDriver[] = [
   {
     driverNumber: 12,
@@ -660,6 +660,16 @@ export const LAST_RACE_LAP_CHART_DRIVERS: LapChartDriver[] = [
     positions: makePosProgression(12, 10, [28], { 1: 12, 15: 11, 28: 10, 35: 11, 50: 10, 57: 10 }),
   },
   {
+    driverNumber: 23,
+    code: 'ALB',
+    fullName: 'Alexander Albon',
+    teamName: 'Williams',
+    teamColor: '#00A0DE',
+    gridPos: 10,
+    finishPos: 11,
+    positions: makePosProgression(10, 11, [18], { 1: 10, 15: 10, 18: 10, 19: 14, 30: 12, 45: 11, 57: 11 }),
+  },
+  {
     driverNumber: 14,
     code: 'ALO',
     fullName: 'Fernando Alonso',
@@ -668,6 +678,86 @@ export const LAST_RACE_LAP_CHART_DRIVERS: LapChartDriver[] = [
     gridPos: 8,
     finishPos: 12,
     positions: makePosProgression(8, 12, [13, 38], { 1: 8, 13: 8, 25: 10, 39: 13, 50: 12, 57: 12 }),
+  },
+  {
+    driverNumber: 27,
+    code: 'HUL',
+    fullName: 'Nico Hülkenberg',
+    teamName: 'Audi',
+    teamColor: '#E4002B',
+    gridPos: 14,
+    finishPos: 13,
+    positions: makePosProgression(14, 13, [21], { 1: 14, 15: 13, 21: 13, 22: 16, 35: 14, 50: 13, 57: 13 }),
+  },
+  {
+    driverNumber: 31,
+    code: 'OCO',
+    fullName: 'Esteban Ocon',
+    teamName: 'Haas',
+    teamColor: '#B6BABD',
+    gridPos: 13,
+    finishPos: 14,
+    positions: makePosProgression(13, 14, [27], { 1: 13, 15: 12, 27: 11, 28: 17, 38: 15, 50: 14, 57: 14 }),
+  },
+  {
+    driverNumber: 87,
+    code: 'BEA',
+    fullName: 'Oliver Bearman',
+    teamName: 'Haas',
+    teamColor: '#B6BABD',
+    gridPos: 15,
+    finishPos: 15,
+    positions: makePosProgression(15, 15, [20], { 1: 15, 15: 14, 20: 14, 21: 18, 35: 16, 50: 15, 57: 15 }),
+  },
+  {
+    driverNumber: 5,
+    code: 'BOR',
+    fullName: 'Gabriel Bortoleto',
+    teamName: 'Audi',
+    teamColor: '#E4002B',
+    gridPos: 16,
+    finishPos: 16,
+    positions: makePosProgression(16, 16, [19], { 1: 16, 15: 16, 19: 15, 20: 19, 35: 17, 50: 16, 57: 16 }),
+  },
+  {
+    driverNumber: 11,
+    code: 'PER',
+    fullName: 'Sergio Pérez',
+    teamName: 'Cadillac',
+    teamColor: '#D4AF37',
+    gridPos: 18,
+    finishPos: 17,
+    positions: makePosProgression(18, 17, [25, 45], { 1: 18, 15: 17, 25: 15, 26: 19, 45: 17, 46: 19, 57: 17 }),
+  },
+  {
+    driverNumber: 77,
+    code: 'BOT',
+    fullName: 'Valtteri Bottas',
+    teamName: 'Cadillac',
+    teamColor: '#D4AF37',
+    gridPos: 17,
+    finishPos: 18,
+    positions: makePosProgression(17, 18, [21], { 1: 17, 15: 18, 21: 17, 22: 20, 35: 19, 50: 18, 57: 18 }),
+  },
+  {
+    driverNumber: 18,
+    code: 'STR',
+    fullName: 'Lance Stroll',
+    teamName: 'Aston Martin',
+    teamColor: '#229971',
+    gridPos: 19,
+    finishPos: 19,
+    positions: makePosProgression(19, 19, [14, 37], { 1: 19, 14: 19, 15: 20, 30: 19, 37: 18, 38: 20, 57: 19 }),
+  },
+  {
+    driverNumber: 22,
+    code: 'TSU',
+    fullName: 'Yuki Tsunoda',
+    teamName: 'Racing Bulls',
+    teamColor: '#6692FF',
+    gridPos: 20,
+    finishPos: 20,
+    positions: makePosProgression(20, 20, [21], { 1: 20, 10: 20, 21: 20, 35: 20, 57: 20 }),
   },
 ];
 
