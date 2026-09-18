@@ -61,6 +61,31 @@ export interface F1CdnSpeeds {
   ST?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
 }
 
+function parseLapDurationSec(lapStr?: string): number | null {
+  if (!lapStr || lapStr === '-' || lapStr.includes('NO') || lapStr.includes('---')) return null;
+  const parts = lapStr.split(':');
+  if (parts.length === 2) {
+    const min = Number.parseFloat(parts[0]);
+    const sec = Number.parseFloat(parts[1]);
+    return Number.isNaN(min) || Number.isNaN(sec) ? null : Number((min * 60 + sec).toFixed(3));
+  }
+  const sec = Number.parseFloat(lapStr);
+  return Number.isNaN(sec) ? null : Number(sec.toFixed(3));
+}
+
+export interface F1CdnSessionData {
+  Series?: Array<{
+    Utc?: string;
+    Lap?: number;
+    QualifyingPart?: number;
+  }>;
+  StatusSeries?: Array<{
+    Utc?: string;
+    TrackStatus?: string;
+    SessionStatus?: string;
+  }>;
+}
+
 export interface F1CdnTimingLine {
   Position?: string;
   Line?: number;
@@ -74,8 +99,20 @@ export interface F1CdnTimingLine {
   Stopped?: boolean;
   Retired?: boolean;
   Status?: number;
+  KnockedOut?: boolean;
+  Cutoff?: boolean;
   Sectors?: F1CdnSector[];
   Speeds?: F1CdnSpeeds;
+  BestLapTimes?: Array<{
+    Value?: string;
+    Lap?: number;
+    OverallFastest?: boolean;
+    PersonalFastest?: boolean;
+  }>;
+  Stats?: Array<{
+    TimeDiffToFastest?: string;
+    TimeDifftoPositionAhead?: string;
+  }>;
   BestLapTime?: {
     Value?: string;
     Lap?: number;
@@ -273,19 +310,36 @@ export class F1LiveCdnClient {
     const needDriverList = !driverListMap;
 
     // 3. Parallel Settled Feeds
-    const [timingSettled, appDataSettled, driverListSettled, raceControlSettled, teamRadioSettled] =
-      await Promise.allSettled([
-        this.fetchCdnJson<F1CdnTimingData>(`${normalizedPath}TimingData.json`),
-        this.fetchCdnJson<F1CdnTimingAppData>(`${normalizedPath}TimingAppData.json`),
-        needDriverList
-          ? this.fetchCdnJson<F1CdnDriverList>(`${normalizedPath}DriverList.json`, false)
-          : Promise.resolve(null),
-        this.fetchCdnJson<F1CdnRaceControl>(`${normalizedPath}RaceControlMessages.json`),
-        this.fetchCdnJson<F1CdnTeamRadio>(`${normalizedPath}TeamRadio.json`),
-      ]);
+    const [
+      timingSettled,
+      appDataSettled,
+      sessionDataSettled,
+      sessionInfoSettled,
+      driverListSettled,
+      raceControlSettled,
+      teamRadioSettled,
+    ] = await Promise.allSettled([
+      this.fetchCdnJson<F1CdnTimingData>(`${normalizedPath}TimingData.json`),
+      this.fetchCdnJson<F1CdnTimingAppData>(`${normalizedPath}TimingAppData.json`),
+      this.fetchCdnJson<F1CdnSessionData>(`${normalizedPath}SessionData.json`),
+      providedPath
+        ? this.fetchCdnJson<F1CdnSessionInfo>(`${normalizedPath}SessionInfo.json`)
+        : Promise.resolve(null),
+      needDriverList
+        ? this.fetchCdnJson<F1CdnDriverList>(`${normalizedPath}DriverList.json`, false)
+        : Promise.resolve(null),
+      this.fetchCdnJson<F1CdnRaceControl>(`${normalizedPath}RaceControlMessages.json`),
+      this.fetchCdnJson<F1CdnTeamRadio>(`${normalizedPath}TeamRadio.json`),
+    ]);
 
     const timingDataRaw = timingSettled.status === 'fulfilled' ? timingSettled.value : null;
     const timingAppDataRaw = appDataSettled.status === 'fulfilled' ? appDataSettled.value : null;
+    const sessionDataRaw =
+      sessionDataSettled.status === 'fulfilled' ? sessionDataSettled.value : null;
+    const innerSessionInfo =
+      sessionInfoSettled.status === 'fulfilled' ? sessionInfoSettled.value : null;
+    const effectiveSessionInfo = innerSessionInfo || sessionInfo;
+
     const freshDriverList =
       driverListSettled.status === 'fulfilled' ? driverListSettled.value : null;
     const raceControlRaw =
@@ -306,9 +360,15 @@ export class F1LiveCdnClient {
     const safeDriverList: F1CdnDriverList = driverListMap || {};
 
     const circuitName =
-      sessionInfo?.Meeting?.Circuit?.ShortName || sessionInfo?.Meeting?.Name || '';
-    const locationName = sessionInfo?.Meeting?.Location || '';
-    const countryName = sessionInfo?.Meeting?.Country?.Name || '';
+      effectiveSessionInfo?.Meeting?.Circuit?.ShortName ||
+      effectiveSessionInfo?.Meeting?.Name ||
+      sessionInfo?.Meeting?.Circuit?.ShortName ||
+      sessionInfo?.Meeting?.Name ||
+      '';
+    const locationName =
+      effectiveSessionInfo?.Meeting?.Location || sessionInfo?.Meeting?.Location || '';
+    const countryName =
+      effectiveSessionInfo?.Meeting?.Country?.Name || sessionInfo?.Meeting?.Country?.Name || '';
     const circuitMeta = getCircuitData(circuitName, locationName, countryName);
 
     // Track state detection (flag)
@@ -347,14 +407,76 @@ export class F1LiveCdnClient {
       }
     }
 
-    const isQualy =
-      (sessionInfo?.Type || '').toLowerCase().includes('qual') ||
-      (sessionInfo?.Name || '').toLowerCase().includes('qual');
-    const sessionType: SessionType = isQualy ? 'Qualifying' : 'Race';
+    // Secondary Track Status check from SessionData StatusSeries (fastest edge updates)
+    if (sessionDataRaw?.StatusSeries && sessionDataRaw.StatusSeries.length > 0) {
+      const latestStatus = sessionDataRaw.StatusSeries[sessionDataRaw.StatusSeries.length - 1];
+      const trackSt = (latestStatus?.TrackStatus || '').toLowerCase();
+      if (trackSt.includes('red')) {
+        currentFlag = 'RED';
+      } else if (trackSt.includes('safetycar')) {
+        currentFlag = 'SC';
+      } else if (trackSt.includes('vsc')) {
+        currentFlag = 'VSC';
+      } else if (trackSt.includes('yellow') && currentFlag === 'GREEN') {
+        currentFlag = 'YELLOW';
+      } else if (trackSt.includes('allclear') && currentFlag !== 'CHEQUERED' && currentFlag !== 'RED') {
+        currentFlag = 'GREEN';
+      }
+    }
+
+    // Accurate Session Type Classification
+    const typeName = `${effectiveSessionInfo?.Type || ''} ${effectiveSessionInfo?.Name || ''} ${normalizedPath}`.toLowerCase();
+    const hasQualyParts = Boolean(
+      sessionDataRaw?.Series?.some((s) => s.QualifyingPart !== undefined),
+    );
+    const isQualy = typeName.includes('qual') || typeName.includes('shootout') || hasQualyParts;
+    const isPractice =
+      !isQualy &&
+      (typeName.includes('practice') ||
+        typeName.includes('fp1') ||
+        typeName.includes('fp2') ||
+        typeName.includes('fp3'));
+    const sessionType: SessionType = isQualy ? 'Qualifying' : isPractice ? 'Practice' : 'Race';
+
+    // Determine current Qualifying phase (Q1, Q2, Q3)
+    let qualifyingPhase: 'Q1' | 'Q2' | 'Q3' | null = null;
+    if (isQualy) {
+      // 1. From SessionData Series QualifyingPart
+      if (sessionDataRaw?.Series && sessionDataRaw.Series.length > 0) {
+        const latestPart = sessionDataRaw.Series[sessionDataRaw.Series.length - 1]?.QualifyingPart;
+        if (latestPart === 3) qualifyingPhase = 'Q3';
+        else if (latestPart === 2) qualifyingPhase = 'Q2';
+        else if (latestPart === 1) qualifyingPhase = 'Q1';
+      }
+
+      // 2. Fallback: Inspect BestLapTimes slots across drivers
+      if (!qualifyingPhase) {
+        let hasQ3 = false;
+        let hasQ2 = false;
+        for (const t of Object.values(timingLines)) {
+          if (!t) continue;
+          if (t.BestLapTimes?.[2]?.Value) hasQ3 = true;
+          if (t.BestLapTimes?.[1]?.Value) hasQ2 = true;
+        }
+        if (hasQ3) qualifyingPhase = 'Q3';
+        else if (hasQ2) qualifyingPhase = 'Q2';
+        else qualifyingPhase = 'Q1';
+      }
+    }
 
     // Parse drivers and normalize to DriverLive[]
     const parsedDrivers: DriverLive[] = [];
     let maxLapsCompleted = 0;
+
+    // Direct Lap extraction from SessionData for race sessions
+    if (sessionType === 'Race' && sessionDataRaw?.Series && sessionDataRaw.Series.length > 0) {
+      const latestLapEntry = sessionDataRaw.Series[sessionDataRaw.Series.length - 1]?.Lap;
+      if (typeof latestLapEntry === 'number' && latestLapEntry > maxLapsCompleted) {
+        maxLapsCompleted = latestLapEntry;
+      }
+    }
+
+    const activePhaseIndex = qualifyingPhase === 'Q3' ? 2 : qualifyingPhase === 'Q2' ? 1 : 0;
 
     for (const [racingNumStr, timing] of Object.entries(timingLines)) {
       if (!timing) continue;
@@ -475,17 +597,65 @@ export class F1LiveCdnClient {
         teamColor = dInfo.TeamColour.startsWith('#') ? dInfo.TeamColour : `#${dInfo.TeamColour}`;
       }
 
-      // Gap & Interval
-      let gap = timing.GapToLeader || (isLeader ? (isQualy ? 'POLE' : 'LÍDER') : '- - -');
-      if (isLeader && !gap) {
-        gap = isQualy ? 'POLE' : 'LÍDER';
+      // Qualifying detailed times and elimination status
+      let q1Time: string | null = null;
+      let q2Time: string | null = null;
+      let q3Time: string | null = null;
+      let q1Duration: number | null = null;
+      let q2Duration: number | null = null;
+      let q3Duration: number | null = null;
+      let eliminatedPhase: 'Q1' | 'Q2' | null = null;
+
+      if (isQualy) {
+        if (Array.isArray(timing.BestLapTimes)) {
+          const q1Raw = timing.BestLapTimes[0]?.Value;
+          const q2Raw = timing.BestLapTimes[1]?.Value;
+          const q3Raw = timing.BestLapTimes[2]?.Value;
+
+          if (q1Raw) {
+            q1Time = q1Raw;
+            q1Duration = parseLapDurationSec(q1Raw);
+          }
+          if (q2Raw) {
+            q2Time = q2Raw;
+            q2Duration = parseLapDurationSec(q2Raw);
+          }
+          if (q3Raw) {
+            q3Time = q3Raw;
+            q3Duration = parseLapDurationSec(q3Raw);
+          }
+        }
+
+        if (timing.KnockedOut || timing.Cutoff) {
+          eliminatedPhase = q2Time ? 'Q2' : 'Q1';
+        } else if (pos > 15) {
+          eliminatedPhase = 'Q1';
+        } else if (pos > 10) {
+          eliminatedPhase = 'Q2';
+        }
+      }
+
+      // Best lap time resolution
+      const bestLapTimeStr = isQualy
+        ? q3Time || q2Time || q1Time || timing.BestLapTime?.Value || ''
+        : timing.BestLapTime?.Value || '';
+      const bestLapDuration = parseLapDurationSec(bestLapTimeStr);
+
+      // Gap & Interval (Polymorphic between Race and Qualy)
+      const qualyGap = timing.Stats?.[activePhaseIndex]?.TimeDiffToFastest;
+      const qualyInterval = timing.Stats?.[activePhaseIndex]?.TimeDifftoPositionAhead;
+
+      let gap = isLeader ? (isQualy ? 'POLE' : 'LÍDER') : timing.GapToLeader || '- - -';
+      if (isQualy && !isLeader && qualyGap) {
+        gap = qualyGap;
       }
 
       let interval =
-        timing.IntervalToPositionAhead?.Value ||
-        (isLeader ? (isQualy ? 'POLE' : 'LÍDER') : '- - -');
-      if (isLeader && !interval) {
-        interval = isQualy ? 'POLE' : 'LÍDER';
+        isLeader
+          ? (isQualy ? 'POLE' : 'LÍDER')
+          : timing.IntervalToPositionAhead?.Value || '- - -';
+      if (isQualy && !isLeader && qualyInterval) {
+        interval = qualyInterval;
       }
 
       // Speed Trap & Speeds
@@ -525,11 +695,19 @@ export class F1LiveCdnClient {
         interval,
         isOvertakeZone,
         lastLapTime: timing.LastLapTime?.Value || '',
-        bestLapTime: timing.BestLapTime?.Value || '',
-        isFastestLap: Boolean(
+        bestLapTime: bestLapTimeStr,
+        bestLapDuration,
+        isFastestLap: !isQualy && Boolean(
           timing.BestLapTime?.OverallFastest || timing.LastLapTime?.OverallFastest,
         ),
-        isPole: isLeader,
+        isPole: isQualy && isLeader && Boolean(bestLapTimeStr),
+        eliminatedPhase,
+        q1Time,
+        q2Time,
+        q3Time,
+        q1Duration,
+        q2Duration,
+        q3Duration,
         pitStops: timing.NumberOfPitStops ?? 0,
         inPit: Boolean(timing.InPit),
         lastPitStopDuration: lastPit?.stationaryTimeSec,
@@ -597,17 +775,36 @@ export class F1LiveCdnClient {
     const totalLaps = circuitMeta.totalLaps > 0 ? circuitMeta.totalLaps : 57;
     const progressPercentage = Math.min(100, Math.round((maxLapsCompleted / totalLaps) * 100));
 
-    const sessionState: SessionState =
-      sessionInfo?.SessionStatus?.toLowerCase() === 'finalised'
-        ? 'FINISHED'
-        : sessionInfo?.SessionStatus?.toLowerCase() === 'started'
+    const isSessionFinalised = sessionInfo?.SessionStatus?.toLowerCase() === 'finalised';
+    const isSessionStarted = sessionInfo?.SessionStatus?.toLowerCase() === 'started';
+
+    const sessionState: SessionState = isSessionFinalised
+      ? 'FINISHED'
+      : currentFlag === 'RED'
+        ? 'SUSPENDED'
+        : isSessionStarted
           ? 'IN_PROGRESS'
           : 'IN_PROGRESS';
 
+    const resolvedSessionName = isQualy
+      ? effectiveSessionInfo?.Name &&
+        effectiveSessionInfo.Name.toLowerCase().includes('qual')
+        ? effectiveSessionInfo.Name
+        : innerSessionInfo?.Name || 'Clasificación'
+      : isPractice
+        ? effectiveSessionInfo?.Name &&
+          !effectiveSessionInfo.Name.toLowerCase().includes('race')
+          ? effectiveSessionInfo.Name
+          : innerSessionInfo?.Name || 'Práctica Libre'
+        : effectiveSessionInfo?.Name || sessionInfo?.Name || 'Carrera';
+
     const sessionLive: SessionLive = {
-      sessionKey: sessionInfo?.Key || 9999,
-      sessionName: sessionInfo?.Name || 'Carrera Oficial',
+      sessionKey: effectiveSessionInfo?.Key || sessionInfo?.Key || 9999,
+      sessionName: resolvedSessionName,
       sessionType,
+      qualifyingPhase: isQualy ? qualifyingPhase : null,
+      poleDriver: isQualy && parsedDrivers[0] ? parsedDrivers[0].code : null,
+      poleLapTime: isQualy && parsedDrivers[0] ? parsedDrivers[0].bestLapTime || null : null,
       location: locationName || 'Circuito',
       country: countryName || 'F1',
       circuit: circuitName || 'Circuito Oficial',

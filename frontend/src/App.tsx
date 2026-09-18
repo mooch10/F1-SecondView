@@ -204,10 +204,12 @@ function App() {
   const isLiveSessionActive =
     Boolean(
       snapshot?.session.status === 'IN_PROGRESS' ||
+        snapshot?.session.status === 'SUSPENDED' ||
         snapshot?.session.flag === 'GREEN' ||
         snapshot?.session.flag === 'YELLOW' ||
         snapshot?.session.flag === 'SC' ||
-        snapshot?.session.flag === 'VSC',
+        snapshot?.session.flag === 'VSC' ||
+        snapshot?.session.flag === 'RED',
     ) && drivers.length > 0;
 
   // Only an active Grand Prix Race session awards championship points

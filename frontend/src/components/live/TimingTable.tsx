@@ -983,6 +983,105 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
                   </div>
 
+                  {/* Desglose de Tiempos por Fase en Clasificación (Q1 / Q2 / Q3 Breakdown) */}
+                  {isQualy && (d.q1Time || d.q2Time || d.q3Time || d.bestLapTime) && (
+                    <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2 font-mono">
+                      <div className="flex items-center justify-between text-[10px] text-zinc-400 mb-2 uppercase font-semibold">
+                        <div className="flex items-center gap-1.5">
+                          <Timer className="w-3 h-3 text-[#27F4D2] shrink-0" />
+                          <span className="text-zinc-200">
+                            {lang === 'es' ? 'Desglose de Clasificación' : 'Qualifying Breakdown'}
+                          </span>
+                        </div>
+                        {d.isPole ? (
+                          <span className="px-1.5 py-0.5 rounded text-[8.5px] font-black bg-[#FFD60A]/20 text-[#FFD60A] border border-[#FFD60A]/40 uppercase tracking-wide">
+                            POLE POSITION
+                          </span>
+                        ) : d.eliminatedPhase ? (
+                          <span className="px-1.5 py-0.5 rounded text-[8.5px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 uppercase tracking-wide">
+                            {lang === 'es' ? `ELIMINADO EN ${d.eliminatedPhase}` : `ELIMINATED IN ${d.eliminatedPhase}`}
+                          </span>
+                        ) : d.pos <= 10 ? (
+                          <span className="px-1.5 py-0.5 rounded text-[8.5px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wide">
+                            TOP 10 • Q3
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                        {/* Q1 */}
+                        <div
+                          className={`p-2 rounded-lg border flex flex-col items-center justify-center ${
+                            d.eliminatedPhase === 'Q1'
+                              ? 'bg-rose-950/20 border-rose-500/30'
+                              : 'bg-[#0B0E14] border-white/[0.06]'
+                          }`}
+                        >
+                          <span className="text-[9.5px] text-zinc-400 uppercase font-bold tracking-wider">
+                            Q1
+                          </span>
+                          <span
+                            className={`font-black text-xs font-tabular mt-0.5 ${
+                              d.q1Time ? 'text-zinc-100' : 'text-zinc-600'
+                            }`}
+                          >
+                            {d.q1Time || '---'}
+                          </span>
+                        </div>
+
+                        {/* Q2 */}
+                        <div
+                          className={`p-2 rounded-lg border flex flex-col items-center justify-center ${
+                            d.eliminatedPhase === 'Q2'
+                              ? 'bg-rose-950/20 border-rose-500/30'
+                              : 'bg-[#0B0E14] border-white/[0.06]'
+                          }`}
+                        >
+                          <span className="text-[9.5px] text-zinc-400 uppercase font-bold tracking-wider">
+                            Q2
+                          </span>
+                          <span
+                            className={`font-black text-xs font-tabular mt-0.5 ${
+                              d.q2Time ? 'text-zinc-100' : 'text-zinc-600'
+                            }`}
+                          >
+                            {d.q2Time || '---'}
+                          </span>
+                        </div>
+
+                        {/* Q3 */}
+                        <div
+                          className={`p-2 rounded-lg border flex flex-col items-center justify-center ${
+                            d.isPole
+                              ? 'bg-[#FFD60A]/10 border-[#FFD60A]/40'
+                              : d.q3Time
+                              ? 'bg-emerald-950/20 border-emerald-500/30'
+                              : 'bg-[#0B0E14] border-white/[0.06]'
+                          }`}
+                        >
+                          <span
+                            className={`text-[9.5px] uppercase font-bold tracking-wider ${
+                              d.isPole ? 'text-[#FFD60A]' : 'text-zinc-400'
+                            }`}
+                          >
+                            Q3
+                          </span>
+                          <span
+                            className={`font-black text-xs font-tabular mt-0.5 ${
+                              d.isPole
+                                ? 'text-[#FFD60A]'
+                                : d.q3Time
+                                ? 'text-zinc-100'
+                                : 'text-zinc-600'
+                            }`}
+                          >
+                            {d.q3Time || '---'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Live Tyre Stints Strategy Bar */}
                   {!isQualy && d.tyre && (
                     <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2">
