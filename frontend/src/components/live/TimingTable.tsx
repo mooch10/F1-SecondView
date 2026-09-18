@@ -359,7 +359,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
             </div>
 
             {/* Interval & Gap */}
-            <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1">
+            <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-2 sm:pr-2">
               <span className="font-mono text-xs font-bold text-zinc-200 truncate">
                 {pinnedDriver.gap}
               </span>
@@ -387,7 +387,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
             </div>
 
             {/* Last Lap Time */}
-            <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight">
+            <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight pl-2 sm:pl-1">
               <span className="font-mono text-xs font-bold text-zinc-300">
                 {pinnedDriver.lastLapTime || '--:--.---'}
               </span>
@@ -417,8 +417,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           <div className="col-span-3 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
           <div className="col-span-2 sm:col-span-2 text-center whitespace-nowrap">{t.live.table.tyre}</div>
           <div className="col-span-1 sm:col-span-1 text-center whitespace-nowrap">{t.live.table.pit}</div>
-          <div className="col-span-3 sm:col-span-3 text-right pr-1 sm:pr-2 whitespace-nowrap">GAP / INT</div>
-          <div className="col-span-2 sm:col-span-2 text-right whitespace-nowrap">{t.live.table.lastLap}</div>
+          <div className="col-span-3 sm:col-span-3 text-right pr-2 sm:pr-2 whitespace-nowrap">GAP / INT</div>
+          <div className="col-span-2 sm:col-span-2 text-right pl-2 sm:pl-0 whitespace-nowrap">{t.live.table.lastLap}</div>
         </div>
       )}
 
@@ -727,7 +727,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Race Gap & Interval - 3 columnas con espacio suficiente */}
-                    <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1 sm:pr-2">
+                    <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-2 sm:pr-2">
                       <span className="font-mono text-xs font-semibold text-zinc-200 font-tabular truncate">
                         {d.gap}
                       </span>
@@ -771,7 +771,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Race Last Lap & Fastest Lap Badge - 2 columnas */}
-                    <div className="col-span-2 sm:col-span-2 text-right flex items-center justify-end gap-1 pl-1">
+                    <div className="col-span-2 sm:col-span-2 text-right flex items-center justify-end gap-1 pl-2 sm:pl-1">
                       <div className="flex flex-col leading-tight">
                         <span
                           className={`font-mono text-xs font-tabular ${
@@ -1193,12 +1193,13 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Retirement Cause Badge */}
-                    <div className="col-span-2 sm:col-span-3 text-right flex items-center justify-end gap-1.5">
+                    <div className="col-span-2 sm:col-span-3 text-right flex items-center justify-end gap-1.5 pl-2 sm:pl-0">
                       <span
-                        className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 truncate max-w-[120px] sm:max-w-[170px]"
+                        className="px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] font-mono font-medium text-rose-300 bg-rose-500/10 border border-rose-500/20 truncate max-w-[120px] sm:max-w-[170px]"
                         title={d.retirementReason || (lang === 'es' ? 'Abandono' : 'Retired')}
                       >
-                        {d.retirementReason || (lang === 'es' ? 'Abandono' : 'Retired')}
+                        <span className="sm:hidden font-bold">DNF</span>
+                        <span className="hidden sm:inline">{d.retirementReason || (lang === 'es' ? 'Abandono' : 'Retired')}</span>
                       </span>
                       <div className="text-zinc-500 hidden sm:block">
                         {isExpanded ? (

@@ -203,7 +203,7 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
                   }`}
                 >
                   <Zap className="w-3 h-3" />
-                  <span>DRS / Aero</span>
+                  <span>{lang === 'es' ? 'Aerodinámica Activa' : 'Active Aero'}</span>
                 </button>
 
                 <button
@@ -233,8 +233,8 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
                 <span className="text-emerald-400 flex items-center gap-1.5 font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
                   {lang === 'es'
-                    ? `${circuit.activeAeroZones} ZONAS ACTIVE AERO / DRS`
-                    : `${circuit.activeAeroZones} ACTIVE AERO / DRS ZONES`}
+                    ? `${circuit.activeAeroZones} ZONAS DE AERODINÁMICA ACTIVA (RECTAS)`
+                    : `${circuit.activeAeroZones} ACTIVE AERO STRAIGHTAWAY ZONES`}
                 </span>
               )}
               {activeMode === 'corners' && (
@@ -324,7 +324,7 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
                           strokeLinejoin="round"
                           className="drop-shadow-[0_0_12px_rgba(34,197,94,0.8)]"
                         />
-                        {/* DRS Zone Marker Dot */}
+                        {/* Active Aero Zone Marker Dot */}
                         <circle
                           cx={dp.midPoint[0]}
                           cy={dp.midPoint[1]}
@@ -337,12 +337,12 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
                           x={dp.midPoint[0]}
                           y={dp.midPoint[1] + 3.5}
                           textAnchor="middle"
-                          fontSize="8"
+                          fontSize="7"
                           fontWeight="900"
                           fill="#FFFFFF"
                           fontFamily="monospace"
                         >
-                          D{dp.drs.id}
+                          AA{dp.drs.id}
                         </text>
                       </g>
                     ))}
@@ -358,58 +358,48 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
                     strokeWidth="5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]"
+                    className="opacity-80"
                   />
                 )}
 
-                {/* 5. Interactive Corner Pins (Visible in Corners & Sectors modes) */}
-                <g id="corner-pins-layer">
-                  {cornerApexes.map(({ corner, coord }) => {
-                    const isSelected = activeCorner?.number === corner.number;
+                {/* Corner Apex Number Badges */}
+                {activeMode === 'corners' &&
+                  cornerApexes.map(({ corner, coord }) => {
+                    const isSelected = selectedCorner?.number === corner.number;
+                    const isHovered = hoveredCorner?.number === corner.number;
+
                     return (
                       <g
                         key={corner.number}
+                        className="cursor-pointer transition-transform duration-150"
                         onClick={() => setSelectedCorner(corner)}
                         onMouseEnter={() => setHoveredCorner(corner)}
                         onMouseLeave={() => setHoveredCorner(null)}
-                        className="cursor-pointer transition-transform"
                       >
-                        {/* Transparent Large Hitbox for Touch Screens (Mobile friendly 36px radius) */}
                         <circle
                           cx={coord[0]}
                           cy={coord[1]}
-                          r="22"
-                          fill="transparent"
-                          pointerEvents="all"
-                        />
-
-                        {/* Outer Pin Body */}
-                        <circle
-                          cx={coord[0]}
-                          cy={coord[1]}
-                          r={isSelected ? '12' : '9'}
-                          fill={isSelected ? '#F59E0B' : '#1E293B'}
-                          stroke={isSelected ? '#FFFFFF' : '#F59E0B'}
-                          strokeWidth={isSelected ? '2' : '1.5'}
+                          r={isSelected || isHovered ? '13' : '9'}
+                          fill={isSelected ? '#F59E0B' : isHovered ? '#FBBF24' : '#1E293B'}
+                          stroke={isSelected || isHovered ? '#FFFFFF' : '#F59E0B'}
+                          strokeWidth="2"
                           className="transition-all"
                         />
-
-                        {/* Corner Number Typography */}
                         <text
                           x={coord[0]}
-                          y={coord[1] + (isSelected ? 3.5 : 3)}
+                          y={coord[1] + (isSelected || isHovered ? 4 : 3)}
                           textAnchor="middle"
-                          fontSize={isSelected ? '9' : '8'}
+                          fontSize={isSelected || isHovered ? '9' : '7.5'}
                           fontWeight="900"
-                          fill={isSelected ? '#000000' : '#F59E0B'}
+                          fill={isSelected ? '#000000' : isHovered ? '#000000' : '#FFFFFF'}
                           fontFamily="monospace"
+                          pointerEvents="none"
                         >
                           {corner.number}
                         </text>
                       </g>
                     );
                   })}
-                </g>
               </svg>
             </div>
 
@@ -522,15 +512,15 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
               </div>
             )}
 
-            {/* DRS Mode Legend */}
+            {/* Active Aero Mode Legend (2026 Replacement for DRS) */}
             {activeMode === 'drs' && (
               <div className="w-full mt-2.5 bg-emerald-500/10 border border-emerald-500/25 rounded-lg p-2 font-mono text-[10px] text-zinc-300 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>
                     {lang === 'es'
-                      ? 'Reglamento 2026: Alerón activo de baja resistencia (Low-Drag Straightaway)'
-                      : '2026 Active Aero: Low-Drag straightaway deployment mode'}
+                      ? 'Reglamento 2026: Aerodinámica activa en rectas (modo baja resistencia / alas en X). El DRS fue reemplazado por aerodinámica activa y el MOM (Manual Override Mode).'
+                      : '2026 Regulations: Straightaway active aerodynamics (X-mode / low drag). DRS has been replaced by active aero and MOM (Manual Override Mode).'}
                   </span>
                 </div>
                 <span className="font-bold text-emerald-400 shrink-0">

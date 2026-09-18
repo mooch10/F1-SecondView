@@ -14341,7 +14341,7 @@ export const CIRCUIT_INTEL_CATALOG: Record<string, CircuitIntel> = {
   },
   "characteristics": {
     "es": "Tradicional cierre de campeonato bajo el crepúsculo de Abu Dabi con el paso bajo el hotel W y rectas con frenadas duras.",
-    "en": "The traditional twilight season finale featuring the iconic W Hotel overpass and long DRS overtaking straights."
+    "en": "The traditional twilight season finale featuring the iconic W Hotel overpass and long overtaking straights."
   },
   "bounds": {
     "minX": -232,
