@@ -204,12 +204,17 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="w-full sm:max-w-lg bg-[#131722] border border-white/[0.12] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-zinc-100"
+        className="w-full sm:max-w-lg bg-[#131722] border-t sm:border border-white/[0.12] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[85dvh] sm:max-h-[90vh] overflow-hidden text-zinc-100 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
+        {/* Mobile Pull Handle Indicator */}
+        <div className="sm:hidden w-full flex justify-center pt-2.5 pb-1 bg-[#171C28] shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-white/20" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08] bg-[#171C28] shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 sm:py-3 border-b border-white/[0.08] bg-[#171C28] shrink-0">
           <div className="flex items-center gap-2">
             <Swords className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
@@ -224,7 +229,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] active:scale-95 flex items-center justify-center text-zinc-400 hover:text-white transition-all cursor-pointer shrink-0"
             aria-label={t.live.h2h.close}
             title={t.live.h2h.close}
           >

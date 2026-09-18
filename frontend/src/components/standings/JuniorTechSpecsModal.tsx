@@ -41,25 +41,34 @@ export const JuniorTechSpecsModal: React.FC<JuniorTechSpecsModalProps> = ({
   const specs: TechSpecsData = TECH_SPECS[targetSeries];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
       <div
-        className="bg-[#0B0E14] border border-white/[0.12] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+        onClick={onClose}
+        className="fixed inset-0"
+      />
+      <div
+        className="relative z-10 bg-[#0B0E14] border-t sm:border border-white/[0.12] rounded-t-2xl sm:rounded-2xl w-full max-w-3xl max-h-[85dvh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Pull Handle Indicator */}
+        <div className="sm:hidden w-full flex justify-center pt-2.5 pb-1 bg-[#131722] shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-white/20" />
+        </div>
+
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-[#131722] border-b border-white/[0.08]">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-[#131722] border-b border-white/[0.08] shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs keep-white"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs keep-white shrink-0"
               style={{ backgroundColor: theme.primary }}
             >
               <Gauge className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-400 block">
+            <div className="min-w-0">
+              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-400 block truncate">
                 {targetSeries.toUpperCase()} FIA CHAMPIONSHIP • {lang === 'es' ? 'ESPECIFICACIONES TÉCNICAS' : 'TECHNICAL SPECS'}
               </span>
-              <h2 className="text-lg font-black text-white uppercase tracking-tight">
+              <h2 className="text-base sm:text-lg font-black text-white uppercase tracking-tight truncate">
                 {specs.chassis}
               </h2>
             </div>
@@ -68,9 +77,11 @@ export const JuniorTechSpecsModal: React.FC<JuniorTechSpecsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] active:scale-95 text-zinc-400 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
+            title={lang === 'es' ? 'Cerrar' : 'Close'}
+            aria-label={lang === 'es' ? 'Cerrar' : 'Close'}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 

@@ -184,15 +184,15 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
       />
 
       {/* Sheet / Modal Container */}
-      <div className="relative z-10 w-full max-w-lg bg-[#0E121A] border-t sm:border border-white/15 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
+      <div className="relative z-10 w-full max-w-lg bg-[#0E121A] border-t sm:border border-white/15 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[85dvh] sm:max-h-[88vh] flex flex-col animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
         {/* Mobile Pull Handle Indicator */}
-        <div className="sm:hidden w-full flex justify-center pt-2.5 pb-1">
+        <div className="sm:hidden w-full flex justify-center pt-2.5 pb-1 shrink-0">
           <div className="w-12 h-1.5 rounded-full bg-white/20" />
         </div>
 
         {/* Top Header with Team Color Accent */}
         <div
-          className="relative px-5 pt-4 pb-6 overflow-hidden flex items-center justify-between"
+          className="relative px-4 sm:px-5 pt-3 sm:pt-4 pb-5 sm:pb-6 overflow-hidden flex items-center justify-between shrink-0"
           style={{
             background: `linear-gradient(135deg, ${activeProfile.teamColor}25 0%, var(--driver-modal-header-end, #0E121A) 85%)`,
           }}
@@ -227,7 +227,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer z-10"
+            className="w-8 h-8 rounded-full bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/20 active:scale-95 text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer z-10 shrink-0"
             aria-label={t.driverProfile.closeAria}
           >
             <X className="w-4 h-4" />

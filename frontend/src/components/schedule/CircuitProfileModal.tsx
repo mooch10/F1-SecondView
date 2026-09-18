@@ -126,7 +126,7 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 select-none animate-fadeIn">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 select-none animate-fadeIn">
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -134,10 +134,15 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
       />
 
       {/* Modal Box */}
-      <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#10141E] border border-zinc-200 dark:border-white/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[94vh] animate-in zoom-in-95 duration-150">
+      <div className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#10141E] border-t sm:border border-zinc-200 dark:border-white/15 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans max-h-[85dvh] sm:max-h-[90vh] animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-150">
         
+        {/* Mobile Pull Handle Indicator */}
+        <div className="sm:hidden w-full flex justify-center pt-2.5 pb-1 bg-zinc-50 dark:bg-[#0B0E14] shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-zinc-300 dark:bg-white/20" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-3.5 sm:px-4 py-3 border-b border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-[#0B0E14]">
+        <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 border-b border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-[#0B0E14] shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <CountryFlag
               flagEmoji={circuit.flag}
@@ -158,8 +163,9 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-white bg-zinc-100 hover:bg-zinc-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] transition-colors cursor-pointer shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-white bg-zinc-200/60 dark:bg-white/[0.08] hover:bg-zinc-200 dark:hover:bg-white/[0.15] active:scale-95 transition-all cursor-pointer shrink-0"
             title={lang === 'es' ? 'Cerrar' : 'Close'}
+            aria-label={lang === 'es' ? 'Cerrar' : 'Close'}
           >
             <X className="w-4 h-4" />
           </button>
@@ -641,7 +647,7 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2.5 bg-zinc-100 dark:bg-[#0B0E14] border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+        <div className="px-4 py-2.5 pb-[max(env(safe-area-inset-bottom),0.625rem)] bg-zinc-100 dark:bg-[#0B0E14] border-t border-zinc-200 dark:border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-zinc-500 dark:text-zinc-400 shrink-0">
           <span className="text-[10px]">FIA FORMULA 1 2026 WORLD CHAMPIONSHIP</span>
           <button
             type="button"

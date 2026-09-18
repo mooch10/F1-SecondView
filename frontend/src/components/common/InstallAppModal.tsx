@@ -33,7 +33,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md bg-[#131722] border-t sm:border border-white/[0.12] rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-5 text-zinc-100 flex flex-col gap-3.5 relative max-h-[90dvh] sm:max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-5 duration-200"
+        className="w-full sm:max-w-md bg-[#131722] border-t sm:border border-white/[0.12] rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-5 text-zinc-100 flex flex-col gap-3.5 relative max-h-[85dvh] sm:max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-5 duration-200"
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
