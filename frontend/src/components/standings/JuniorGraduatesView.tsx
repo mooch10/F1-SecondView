@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, UserCheck } from 'lucide-react';
+import { GraduationCap, Lightbulb, Sparkles, Trophy, UserCheck } from 'lucide-react';
 import {
   F2_HISTORICAL_SEASONS,
   F3_HISTORICAL_SEASONS,
@@ -62,10 +62,10 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
           {/* Quick Stats Pill */}
           <div className="bg-zinc-100 dark:bg-[#0B0E14] border border-zinc-200 dark:border-white/[0.08] rounded-xl p-3 flex items-center gap-3 shrink-0">
             <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg text-white font-mono shadow-sm keep-white"
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm keep-white"
               style={{ backgroundColor: theme.primary }}
             >
-              🎓
+              <GraduationCap className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col leading-tight">
               <span className="text-[10px] font-mono font-bold text-zinc-500 dark:text-zinc-400 uppercase">
@@ -152,7 +152,7 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
               <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/30 flex flex-col justify-between relative overflow-hidden shadow-xs">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">🏆</span>
+                    <Trophy className="w-5 h-5 text-amber-500 shrink-0" />
                     <div>
                       <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
                         {season.year === 2026
@@ -239,7 +239,10 @@ export const JuniorGraduatesView: React.FC<JuniorGraduatesViewProps> = ({
 
             {/* Key Fact Note */}
             <div className="px-4 py-2.5 bg-zinc-100/80 dark:bg-[#131722] border-t border-zinc-200 dark:border-white/[0.06] text-xs font-mono text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-              <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">💡 Hito:</span>
+              <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0 flex items-center gap-1">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                {lang === 'es' ? 'Hito:' : 'Milestone:'}
+              </span>
               <span className="text-zinc-600 dark:text-zinc-400">
                 {lang === 'es' ? season.keyFact : season.keyFactEn}
               </span>

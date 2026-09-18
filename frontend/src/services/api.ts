@@ -52,6 +52,7 @@ export async function fetchSchedule(series: SeriesCategory = 'f1'): Promise<Jolp
     const query = series !== 'f1' ? `?series=${series}` : '';
     const res = await fetch(`${API_BASE_URL}/api/schedule.json${query}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -69,6 +70,7 @@ export async function fetchScheduleDetails(series: SeriesCategory = 'f1'): Promi
     const query = series !== 'f1' ? `?series=${series}` : '';
     const res = await fetch(`${API_BASE_URL}/api/schedule.json${query}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -92,6 +94,7 @@ export async function fetchStandings(
 
     const res = await fetch(`${API_BASE_URL}/api/standings.json${query}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -107,6 +110,7 @@ export async function fetchQualifying(): Promise<JolpicaQualifyingSession | null
   try {
     const res = await fetch(`${API_BASE_URL}/api/qualifying.json`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -123,6 +127,7 @@ export async function fetchLastRaceDetail(series: SeriesCategory = 'f1'): Promis
     const query = series !== 'f1' ? `?series=${series}` : '';
     const res = await fetch(`${API_BASE_URL}/api/last-race.json${query}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -142,6 +147,7 @@ export async function fetchRaceResultsByRound(
     const query = series !== 'f1' ? `&series=${series}` : '';
     const res = await fetch(`${API_BASE_URL}/api/race-results.json?round=${round}${query}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -158,6 +164,7 @@ export async function fetchDriverChanges(series: SeriesCategory = 'f2'): Promise
     const target = series === 'f1' ? 'f2' : series;
     const res = await fetch(`${API_BASE_URL}/api/driver-changes.json?series=${target}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);

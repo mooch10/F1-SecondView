@@ -18,16 +18,15 @@ export function usePWAInstall() {
       (window.navigator as unknown as { standalone?: boolean }).standalone === true
     );
   });
-  const [isIOS, setIsIOS] = useState<boolean>(false);
+  const [isIOS] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const ua = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(ua) && !('MSStream' in window);
+  });
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // Detect iOS
-    const ua = window.navigator.userAgent.toLowerCase();
-    const isIosDevice = /iphone|ipad|ipod/.test(ua) && !('MSStream' in window);
-    setIsIOS(isIosDevice);
 
     // Check display-mode changes
     const mediaQuery = window.matchMedia('(display-mode: standalone)');

@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
+  CircleDot,
+  Disc,
   Flag,
   MapPin,
   Timer,
+  TrendingUp,
   Trophy,
+  User,
   Zap,
 } from 'lucide-react';
 import { fetchLastRaceDetail } from '../../services/api';
@@ -350,8 +354,9 @@ export const LastRaceView: React.FC = () => {
               <span className="text-zinc-400 text-[10px] hidden sm:inline">
                 {t.lastRace.lap} {activeFastestLap.lap}
               </span>
-              <span className="font-black text-purple-300 bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 rounded text-[11px] whitespace-nowrap">
-                {activeFastestLap.time} 🟣
+              <span className="font-black text-purple-300 bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 rounded text-[11px] whitespace-nowrap flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                <span>{activeFastestLap.time}</span>
               </span>
             </div>
           </div>
@@ -364,57 +369,62 @@ export const LastRaceView: React.FC = () => {
           <button
             type="button"
             onClick={() => setAnalysisTab('results')}
-            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               analysisTab === 'results'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            🏁 {t.lastRace.subTabs?.results || 'Clasificación'}
+            <Flag className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.lastRace.subTabs?.results || 'Clasificación'}</span>
           </button>
           <button
             type="button"
             onClick={() => setAnalysisTab('stints')}
-            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               analysisTab === 'stints'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            🍩 {t.lastRace.subTabs?.stints || 'Stints'}
+            <CircleDot className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.lastRace.subTabs?.stints || 'Stints'}</span>
           </button>
           <button
             type="button"
             onClick={() => setAnalysisTab('lapChart')}
-            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               analysisTab === 'lapChart'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            📈 {t.lastRace.subTabs?.lapChart || 'Gráfico'}
+            <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.lastRace.subTabs?.lapChart || 'Gráfico'}</span>
           </button>
           <button
             type="button"
             onClick={() => setAnalysisTab('pitStops')}
-            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               analysisTab === 'pitStops'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            ⏱️ {t.lastRace.subTabs?.pitStops || 'Pit Stops'}
+            <Timer className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.lastRace.subTabs?.pitStops || 'Pit Stops'}</span>
           </button>
           <button
             type="button"
             onClick={() => setAnalysisTab('tyreSets')}
-            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap ${
+            className={`shrink-0 py-1.5 px-2.5 sm:px-3 rounded-lg font-bold text-center transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               analysisTab === 'tyreSets'
                 ? 'bg-white dark:bg-white/[0.12] text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            🛞 {t.lastRace.subTabs?.tyreSets || 'Sets Disponibles'}
+            <Disc className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.lastRace.subTabs?.tyreSets || 'Sets Disponibles'}</span>
           </button>
         </div>
       )}
@@ -520,8 +530,9 @@ export const LastRaceView: React.FC = () => {
                           #{d.driverNumber}
                         </span>
                         {d.isFastestLap && (
-                          <span className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight whitespace-nowrap shrink-0">
-                            <span className="sm:hidden">🟣 VR</span>
+                          <span className="px-1 sm:px-1.5 py-0.2 rounded text-[7px] sm:text-[9px] font-mono font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 tracking-tight whitespace-nowrap shrink-0 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                            <span className="sm:hidden">VR</span>
                             <span className="hidden sm:inline">{t.live.table.fastestLap}</span>
                           </span>
                         )}
@@ -642,8 +653,9 @@ export const LastRaceView: React.FC = () => {
                         </span>
                         <span className="font-bold text-zinc-200 text-xs font-tabular">
                           {d.fastestLapTime ? (
-                            <span className={d.isFastestLap ? 'text-purple-300' : 'text-zinc-200'}>
-                              {d.fastestLapTime} {d.isFastestLap && '🟣'}
+                            <span className={d.isFastestLap ? 'text-purple-300 inline-flex items-center gap-1' : 'text-zinc-200'}>
+                              <span>{d.fastestLapTime}</span>
+                              {d.isFastestLap && <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block shrink-0" />}
                             </span>
                           ) : (
                             'N/A'
@@ -689,7 +701,7 @@ export const LastRaceView: React.FC = () => {
                         onClick={() => openDriverProfile(undefined, d.code, d.fullName)}
                         className="mt-3 w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
-                        <span>👤</span>
+                        <User className="w-3.5 h-3.5 shrink-0" />
                         <span>{lang === 'es' ? 'Ver Ficha Oficial de Piloto' : 'View Official Driver Profile'}</span>
                       </button>
                     )}

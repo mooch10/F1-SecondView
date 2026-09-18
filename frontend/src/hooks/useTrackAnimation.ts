@@ -68,8 +68,10 @@ export function useTrackAnimation({
   useEffect(() => {
     if (!trackGeometry || sessionStatus === 'FINISHED') {
       if (sessionStatus === 'FINISHED') {
-        setAnimatedCoords(new Map());
         kinematicsMapRef.current.clear();
+        queueMicrotask(() => {
+          setAnimatedCoords((prev) => (prev.size === 0 ? prev : new Map()));
+        });
       }
       return;
     }
@@ -193,7 +195,7 @@ export function useTrackAnimation({
     if (rafRef.current === null && animateRef.current) {
       rafRef.current = requestAnimationFrame(animateRef.current);
     }
-  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary]);
+  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary, sessionStatus]);
 
   // 2. High-Performance 60 FPS Continuous Animation Loop
   useEffect(() => {

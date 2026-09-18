@@ -118,49 +118,57 @@ export function useLiveAlerts(
 
       if (snapshot.flag === 'SC') {
         playSafetyCarSound();
-        pushAlert({
-          type: 'SC',
-          title: lang === 'es' ? '⚠️ SAFETY CAR EN PISTA' : '⚠️ SAFETY CAR DEPLOYED',
-          subtitle:
-            lang === 'es'
-              ? 'Dirección de Carrera ha desplegado el Safety Car físico.'
-              : 'Race Control has deployed the physical Safety Car.',
-          color: '#FFD60A',
+        queueMicrotask(() => {
+          pushAlert({
+            type: 'SC',
+            title: lang === 'es' ? 'SAFETY CAR EN PISTA' : 'SAFETY CAR DEPLOYED',
+            subtitle:
+              lang === 'es'
+                ? 'Dirección de Carrera ha desplegado el Safety Car físico.'
+                : 'Race Control has deployed the physical Safety Car.',
+            color: '#FFD60A',
+          });
         });
       } else if (snapshot.flag === 'VSC') {
         playSafetyCarSound();
-        pushAlert({
-          type: 'VSC',
-          title: lang === 'es' ? '🟡 VIRTUAL SAFETY CAR (VSC)' : '🟡 VIRTUAL SAFETY CAR (VSC)',
-          subtitle:
-            lang === 'es'
-              ? 'Todos los pilotos deben reducir su delta de velocidad.'
-              : 'All drivers must respect speed delta limits.',
-          color: '#FFD60A',
+        queueMicrotask(() => {
+          pushAlert({
+            type: 'VSC',
+            title: lang === 'es' ? 'VIRTUAL SAFETY CAR (VSC)' : 'VIRTUAL SAFETY CAR (VSC)',
+            subtitle:
+              lang === 'es'
+                ? 'Todos los pilotos deben reducir su delta de velocidad.'
+                : 'All drivers must respect speed delta limits.',
+            color: '#FFD60A',
+          });
         });
       } else if (snapshot.flag === 'RED') {
         playRedFlagSound();
-        pushAlert({
-          type: 'RED',
-          title: lang === 'es' ? '🚩 BANDERA ROJA • SESIÓN DETENIDA' : '🚩 RED FLAG • SESSION SUSPENDED',
-          subtitle:
-            lang === 'es'
-              ? 'La sesión ha sido suspendida. Todos los autos a pit lane.'
-              : 'Session suspended. All cars returning to pit lane.',
-          color: '#E10600',
+        queueMicrotask(() => {
+          pushAlert({
+            type: 'RED',
+            title: lang === 'es' ? 'BANDERA ROJA • SESIÓN DETENIDA' : 'RED FLAG • SESSION SUSPENDED',
+            subtitle:
+              lang === 'es'
+                ? 'La sesión ha sido suspendida. Todos los autos a pit lane.'
+                : 'Session suspended. All cars returning to pit lane.',
+            color: '#E10600',
+          });
         });
       } else if (snapshot.flag === 'CHEQUERED' && prevFlag !== 'CHEQUERED') {
         // Only trigger fanfare if race was actively taking place
         if (prevFlag === 'GREEN' || prevFlag === 'YELLOW' || prevFlag === 'SC' || prevFlag === 'VSC') {
           playChequeredSound();
-          pushAlert({
-            type: 'CHEQUERED',
-            title: lang === 'es' ? '🏁 BANDERA A CUADROS' : '🏁 CHEQUERED FLAG',
-            subtitle:
-              lang === 'es'
-                ? '¡Sesión y Gran Premio completados!'
-                : 'Session and Grand Prix completed!',
-            color: '#FFFFFF',
+          queueMicrotask(() => {
+            pushAlert({
+              type: 'CHEQUERED',
+              title: lang === 'es' ? 'BANDERA A CUADROS' : 'CHEQUERED FLAG',
+              subtitle:
+                lang === 'es'
+                  ? '¡Sesión y Gran Premio completados!'
+                  : 'Session and Grand Prix completed!',
+              color: '#FFFFFF',
+            });
           });
         }
       }
@@ -176,17 +184,19 @@ export function useLiveAlerts(
       ) {
         lastP1NumberRef.current = currentP1.driverNumber;
         playLeadChangeSound();
-        pushAlert({
-          type: 'LEADER',
-          title:
-            lang === 'es'
-              ? `👑 NUEVO LÍDER: ${currentP1.code} (${currentP1.fullName})`
-              : `👑 NEW RACE LEADER: ${currentP1.code} (${currentP1.fullName})`,
-          subtitle:
-            lang === 'es'
-              ? `${currentP1.fullName} toma la primera posición de carrera.`
-              : `${currentP1.fullName} takes the lead of the race.`,
-          color: currentP1.teamColor || '#39B54A',
+        queueMicrotask(() => {
+          pushAlert({
+            type: 'LEADER',
+            title:
+              lang === 'es'
+                ? `NUEVO LÍDER: ${currentP1.code} (${currentP1.fullName})`
+                : `NEW RACE LEADER: ${currentP1.code} (${currentP1.fullName})`,
+            subtitle:
+              lang === 'es'
+                ? `${currentP1.fullName} toma la primera posición de carrera.`
+                : `${currentP1.fullName} takes the lead of the race.`,
+            color: currentP1.teamColor || '#39B54A',
+          });
         });
       } else if (currentP1 && lastP1NumberRef.current === null) {
         lastP1NumberRef.current = currentP1.driverNumber;
@@ -209,17 +219,19 @@ export function useLiveAlerts(
               : ` (${fav.lastPitStopDuration.toFixed(1)}s stop${fav.lastPitLaneTime ? `, ${fav.lastPitLaneTime.toFixed(1)}s lane` : ''})`
             : '';
 
-          pushAlert({
-            type: 'PIT',
-            title:
-              lang === 'es'
-                ? `🏎️ ⭐ ¡${fav.fullName} EN BOXES!`
-                : `🏎️ ⭐ ${fav.fullName} IN THE PITS!`,
-            subtitle:
-              lang === 'es'
-                ? `Parada #${fav.pitStops || 1}${durationStr} • Compuesto: ${fav.tyre?.compound || 'NUEVO'}`
-                : `Pit Stop #${fav.pitStops || 1}${durationStr} • Compound: ${fav.tyre?.compound || 'NEW'}`,
-            color: '#38BDF8',
+          queueMicrotask(() => {
+            pushAlert({
+              type: 'PIT',
+              title:
+                lang === 'es'
+                  ? `¡${fav.fullName} EN BOXES!`
+                  : `${fav.fullName} IN THE PITS!`,
+              subtitle:
+                lang === 'es'
+                  ? `Parada #${fav.pitStops || 1}${durationStr} • Compuesto: ${fav.tyre?.compound || 'NUEVO'}`
+                  : `Pit Stop #${fav.pitStops || 1}${durationStr} • Compound: ${fav.tyre?.compound || 'NEW'}`,
+              color: '#38BDF8',
+            });
           });
         }
         lastFavPitRef.current = { inPit: fav.inPit, pitStops: fav.pitStops ?? 0 };

@@ -5,6 +5,7 @@ import {
   Filter,
   Info,
   ShieldCheck,
+  Sparkles,
   Zap,
   AlertCircle,
 } from 'lucide-react';
@@ -153,7 +154,7 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
           </div>
 
           <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight whitespace-nowrap">
               TC (Turbo)
             </span>
             <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
@@ -163,7 +164,7 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
           </div>
 
           <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight whitespace-nowrap">
               MGU-K (350kW)
             </span>
             <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
@@ -173,7 +174,7 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
           </div>
 
           <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.05] text-center font-mono">
-            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight">
+            <span className="text-[8px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase block leading-tight whitespace-nowrap">
               ES (Batería)
             </span>
             <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight block my-0.5">
@@ -221,8 +222,9 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
               <div>• {t.puTracker.legend.ce}</div>
               <div>• {t.puTracker.legend.gbx}</div>
             </div>
-            <div className="text-[11px] font-bold text-purple-700 dark:text-purple-400 pt-1">
-              ✨ {t.puTracker.legend.noMguh}
+            <div className="text-[11px] font-bold text-purple-700 dark:text-purple-400 pt-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+              <span>{t.puTracker.legend.noMguh}</span>
             </div>
           </div>
         )}
@@ -418,8 +420,9 @@ export const PowerUnitTracker: React.FC<PowerUnitTrackerProps> = ({ onSelectDriv
                   </div>
 
                   {hasPenaltyRisk && (
-                    <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] font-sans font-medium text-amber-700 dark:text-amber-300 leading-snug">
-                      ⚠️ {lang === 'es' ? d.notesEs : d.notes}
+                    <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] font-sans font-medium text-amber-700 dark:text-amber-300 leading-snug flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>{lang === 'es' ? d.notesEs : d.notes}</span>
                     </div>
                   )}
                 </div>

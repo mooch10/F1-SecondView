@@ -5,6 +5,10 @@ import {
   Gauge,
   ChevronDown,
   Activity,
+  BarChart2,
+  LineChart,
+  Swords,
+  Zap,
 } from 'lucide-react';
 import type { DriverLive } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -207,7 +211,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08] bg-[#171C28] shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-base">⚔️</span>
+            <Swords className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <h2 className="text-xs font-mono font-black uppercase tracking-wider text-white">
                 {t.live.h2h.title}
@@ -307,7 +311,7 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
                     : 'bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-400/30'
                 }`}
               >
-                <span>⚔️</span>
+                <Swords className="w-3 h-3 text-amber-400 shrink-0" />
                 <span>
                   {driverB?.driverNumber === teammateOfA.driverNumber
                     ? (lang === 'es' ? 'Duelo Activo' : 'Duel Active')
@@ -417,7 +421,8 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
             {isCloseBattle && (
               <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span>⚡ {t.live.h2h.closeBattle}</span>
+                <Zap className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span>{t.live.h2h.closeBattle}</span>
               </div>
             )}
           </div>
@@ -544,24 +549,26 @@ export const HeadToHeadModal: React.FC<HeadToHeadModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setH2hTab('speedTrace')}
-                    className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                    className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1 ${
                       h2hTab === 'speedTrace'
                         ? 'bg-white/20 text-white shadow-xs'
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    📉 Speed Trace
+                    <LineChart className="w-3 h-3 shrink-0" />
+                    <span>Speed Trace</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setH2hTab('stats')}
-                    className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                    className={`px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1 ${
                       h2hTab === 'stats'
                         ? 'bg-white/20 text-white shadow-xs'
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    📊 {lang === 'es' ? 'Sectores' : 'Sectors'}
+                    <BarChart2 className="w-3 h-3 shrink-0" />
+                    <span>{lang === 'es' ? 'Sectores' : 'Sectors'}</span>
                   </button>
                 </div>
               </div>

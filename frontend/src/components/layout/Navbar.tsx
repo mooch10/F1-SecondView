@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Moon, Search, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
+import { Download, Moon, Search, Star, Sun, Tv, Volume2, VolumeX } from 'lucide-react';
 import type { ActiveTab } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries, SERIES_THEMES } from '../../hooks/useSeries';
@@ -195,7 +195,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title={lang === 'es' ? `Tu Piloto: ${favoriteProfile.fullName}` : `Your Driver: ${favoriteProfile.fullName}`}
                 className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold transition-colors cursor-pointer select-none"
               >
-                <span>⭐</span>
+                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                 <span>{favoriteProfile.code}</span>
                 <span className="text-[9px] text-amber-300/70">#{favoriteProfile.number}</span>
               </button>

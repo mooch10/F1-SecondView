@@ -4176,7 +4176,7 @@ export class JuniorSeriesClient {
                 fd.code === d.driverTLA ||
                 fd.name.toLowerCase() === fullName.toLowerCase() ||
                 fd.name.toLowerCase().includes(fullName.toLowerCase()) ||
-                fullName.toLowerCase().includes(fd.name.toLowerCase())
+                fullName.toLowerCase().includes(fd.name.toLowerCase()),
             );
             const team = fallbackDriver?.team || 'Junior Team';
             const teamColor = fallbackDriver?.teamColor || getTeamColor(team, series);

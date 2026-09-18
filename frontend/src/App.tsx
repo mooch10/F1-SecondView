@@ -1,4 +1,4 @@
-import { Radio, Tv } from 'lucide-react';
+import { Calendar, Radio, Timer, Tv } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { BetweenRacesView } from './components/live/BetweenRacesView';
@@ -385,16 +385,18 @@ function App() {
                       <button
                         type="button"
                         onClick={() => setUserSubView('betweenRaces')}
-                        className="px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-white/10"
+                        className="px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-white/10 flex items-center gap-1.5"
                       >
-                        {t.live.nextScheduleBtn}
+                        <Calendar className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t.live.nextScheduleBtn}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setActiveTab('qualy')}
-                        className="px-3.5 py-2 rounded-lg bg-[#FFD60A]/15 hover:bg-[#FFD60A]/25 text-[#FFD60A] font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-[#FFD60A]/30"
+                        className="px-3.5 py-2 rounded-lg bg-[#FFD60A]/15 hover:bg-[#FFD60A]/25 text-[#FFD60A] font-mono text-xs font-bold uppercase transition-colors cursor-pointer border border-[#FFD60A]/30 flex items-center gap-1.5"
                       >
-                        {t.live.qualyResultsBtn}
+                        <Timer className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t.live.qualyResultsBtn}</span>
                       </button>
                     </div>
                   </div>

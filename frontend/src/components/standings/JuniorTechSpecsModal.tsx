@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Gauge, Trophy, Wrench, X } from 'lucide-react';
+import { FileText, Gauge, Trophy, Wrench, X } from 'lucide-react';
 import { TECH_SPECS, type TechSpecsData } from '../../data/juniorGraduatesData';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useSeries } from '../../hooks/useSeries';
@@ -50,10 +50,10 @@ export const JuniorTechSpecsModal: React.FC<JuniorTechSpecsModalProps> = ({
         <div className="flex items-center justify-between px-5 py-4 bg-[#131722] border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-black font-mono shadow-xs"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs keep-white"
               style={{ backgroundColor: theme.primary }}
             >
-              🏎️
+              <Gauge className="w-5 h-5 text-white" />
             </div>
             <div>
               <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-400 block">
@@ -113,7 +113,7 @@ export const JuniorTechSpecsModal: React.FC<JuniorTechSpecsModalProps> = ({
 
           {/* Superlicense Badge Highlight */}
           <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/15 to-transparent border border-amber-500/30 flex items-start gap-3">
-            <span className="text-2xl shrink-0">🪪</span>
+            <FileText className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div className="flex flex-col gap-1">
               <span className="font-bold text-amber-300 uppercase tracking-wide text-xs flex items-center gap-1.5">
                 <Trophy className="w-3.5 h-3.5 text-amber-400" />

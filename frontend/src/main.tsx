@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { ErrorBoundary } from './components/common/ErrorBoundary.tsx'
 import { LanguageProvider } from './context/LanguageProvider.tsx'
 import { SeriesProvider } from './context/SeriesProvider.tsx'
 import { TimezoneProvider } from './context/TimezoneProvider.tsx'
@@ -12,13 +13,15 @@ initAnalytics();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <LanguageProvider>
-      <SeriesProvider>
-        <TimezoneProvider>
-          <App />
-        </TimezoneProvider>
-      </SeriesProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <SeriesProvider>
+          <TimezoneProvider>
+            <App />
+          </TimezoneProvider>
+        </SeriesProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
 

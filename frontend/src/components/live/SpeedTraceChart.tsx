@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Gauge, Info } from 'lucide-react';
+import { Gauge, Info, MapPin } from 'lucide-react';
 import type { DriverLive } from '../../types/f1';
 import type { DriverTelemetryStats } from '../../data/lastRaceAnalysisData';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -144,8 +144,14 @@ export const SpeedTraceChart: React.FC<SpeedTraceChartProps> = ({
   const minSpeed = 70;
   const maxSpeed = 360;
 
-  const scaleX = (pct: number) => padLeft + (pct / 100) * chartW;
-  const scaleY = (speed: number) => padTop + chartH - ((speed - minSpeed) / (maxSpeed - minSpeed)) * chartH;
+  const scaleX = React.useCallback(
+    (pct: number) => padLeft + (pct / 100) * chartW,
+    [padLeft, chartW]
+  );
+  const scaleY = React.useCallback(
+    (speed: number) => padTop + chartH - ((speed - minSpeed) / (maxSpeed - minSpeed)) * chartH,
+    [padTop, chartH]
+  );
 
   // Build SVG Paths
   const pathA = useMemo(() => {
@@ -154,7 +160,7 @@ export const SpeedTraceChart: React.FC<SpeedTraceChartProps> = ({
       const y = scaleY(p.speedA);
       return i === 0 ? `M ${x.toFixed(1)} ${y.toFixed(1)}` : `${acc} L ${x.toFixed(1)} ${y.toFixed(1)}`;
     }, '');
-  }, [points]);
+  }, [points, scaleX, scaleY]);
 
   const pathB = useMemo(() => {
     return points.reduce((acc, p, i) => {
@@ -162,7 +168,7 @@ export const SpeedTraceChart: React.FC<SpeedTraceChartProps> = ({
       const y = scaleY(p.speedB);
       return i === 0 ? `M ${x.toFixed(1)} ${y.toFixed(1)}` : `${acc} L ${x.toFixed(1)} ${y.toFixed(1)}`;
     }, '');
-  }, [points]);
+  }, [points, scaleX, scaleY]);
 
   const currentPoint = hoverIndex !== null ? points[hoverIndex] : null;
 
@@ -400,8 +406,9 @@ export const SpeedTraceChart: React.FC<SpeedTraceChartProps> = ({
 
         {/* Floating track location badge on hover */}
         {currentPoint && (
-          <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-xs px-2 py-0.5 rounded border border-white/10 text-[10px] font-mono text-zinc-300">
-            <span>📍 {currentPoint.zoneName} ({currentPoint.distancePercent.toFixed(0)}%)</span>
+          <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-xs px-2 py-0.5 rounded border border-white/10 text-[10px] font-mono text-zinc-300 flex items-center gap-1">
+            <MapPin className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
+            <span>{currentPoint.zoneName} ({currentPoint.distancePercent.toFixed(0)}%)</span>
           </div>
         )}
       </div>

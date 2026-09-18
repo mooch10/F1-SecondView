@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Mic, Pause, Play, Volume2, VolumeX, X } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, MessageSquare, Mic, Pause, Play, Star, Volume2, VolumeX, X } from 'lucide-react';
 import type { TeamRadioCapture } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useFavoriteDriver } from '../../hooks/useFavoriteDriver';
@@ -173,8 +173,9 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
               {latestRadio.teamName}
             </span>
             {latestRadio.transcript && (
-              <span className="text-emerald-300/90 text-[11px] font-mono italic truncate hidden md:inline">
-                💬 "{latestRadio.transcript}"
+              <span className="text-emerald-300/90 text-[11px] font-mono italic truncate hidden md:inline-flex items-center gap-1">
+                <MessageSquare className="w-3 h-3 text-[#00D2BE] shrink-0" />
+                <span>"{latestRadio.transcript}"</span>
               </span>
             )}
             <span className="text-zinc-500 text-[10px]">
@@ -267,7 +268,11 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
                     : `Filtrar solo ${favoriteProfile?.code || '#' + favoriteDriverNumber}`
                 }
               >
-                <span>⭐</span>
+                <Star
+                  className={`w-2.5 h-2.5 ${
+                    filterDriver === favoriteDriverNumber ? 'fill-black text-black' : 'fill-amber-400 text-amber-400'
+                  }`}
+                />
                 <span>
                   {lang === 'en' ? 'Only' : 'Solo'} {favoriteProfile?.code || `#${favoriteDriverNumber}`}
                 </span>
@@ -369,7 +374,7 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
                       }`}
                     >
                       <div className="flex items-start gap-1.5 flex-1 min-w-0">
-                        <span className="text-[#00D2BE] select-none text-[11px] font-bold shrink-0">💬</span>
+                        <MessageSquare className="w-3.5 h-3.5 text-[#00D2BE] shrink-0 mt-0.5" />
                         <p className="italic leading-relaxed text-[11px] sm:text-xs break-words">
                           "{r.transcript}"
                         </p>

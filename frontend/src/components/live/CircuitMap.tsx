@@ -1,10 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  AlertTriangle,
   Car,
   ChevronDown,
   ChevronUp,
   Eye,
   EyeOff,
+  Flag,
+  Lock,
   Maximize2,
   Minimize2,
   Navigation,
@@ -42,11 +45,13 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     defaultExpanded !== undefined ? defaultExpanded : !isFinished,
   );
 
-  // Automatically collapse track map when session finishes
+  // Automatically collapse track map when session transitions to finished
+  const prevIsFinishedRef = React.useRef(isFinished);
   React.useEffect(() => {
-    if (isFinished) {
+    if (isFinished && !prevIsFinishedRef.current) {
       setIsExpanded(false);
     }
+    prevIsFinishedRef.current = isFinished;
   }, [isFinished]);
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [showSectors, setShowSectors] = useState<boolean>(true);
@@ -343,7 +348,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     }
 
     return coords;
-  }, [trackGeometry, filteredDrivers, selectedDriverNumber, animatedPositions]);
+  }, [trackGeometry, isFinished, filteredDrivers, selectedDriverNumber, animatedPositions]);
 
   // Handle Driver Tap
   const handleDriverSelect = useCallback((driverNum: number) => {
@@ -375,7 +380,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
               </span>
               {isFinished ? (
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1.5 whitespace-nowrap shrink-0">
-                  <span className="text-[10px]">🏁</span>
+                  <Flag className="w-2.5 h-2.5 text-zinc-300" />
                   {lang === 'es' ? 'PISTA CERRADA • FINALIZADA' : 'TRACK CLOSED • FINISHED'}
                 </span>
               ) : (
@@ -499,10 +504,13 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
           {/* Clustered / Parc Fermé Notice Banner in GPS Mode */}
           {!isFinished && isGpsClustered && (
             <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 flex items-center justify-between text-xs text-amber-300">
-              <span className="text-[11px] font-mono">
-                {lang === 'es'
-                  ? '⚠️ Monoplazas en Boxes / Parque Cerrado. Telemetría GPS en espera.'
-                  : '⚠️ Cars in Pits / Parc Fermé. GPS telemetry on standby.'}
+              <span className="text-[11px] font-mono flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>
+                  {lang === 'es'
+                    ? 'Monoplazas en Boxes / Parque Cerrado. Telemetría GPS en espera.'
+                    : 'Cars in Pits / Parc Fermé. GPS telemetry on standby.'}
+                </span>
               </span>
             </div>
           )}
@@ -798,8 +806,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
             {isFinished && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-4 z-20">
                 <div className="bg-[#0B0E14]/92 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-md max-w-sm text-center shadow-2xl flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center text-2xl shadow-inner">
-                    🏁
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center text-white shadow-inner">
+                    <Flag className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="font-bold text-white uppercase tracking-wider text-xs sm:text-sm font-chakra">
@@ -812,7 +820,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
                     </p>
                   </div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-zinc-400">
-                    <span>🔒 {lang === 'es' ? 'Régimen de Parque Cerrado' : 'Parc Fermé Regulations'}</span>
+                    <Lock className="w-3 h-3 text-zinc-400 shrink-0" />
+                    <span>{lang === 'es' ? 'Régimen de Parque Cerrado' : 'Parc Fermé Regulations'}</span>
                   </div>
                 </div>
               </div>

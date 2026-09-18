@@ -76,7 +76,7 @@ const COUNTRY_MAP: Record<string, string> = {
  * Extracts a 2-letter ISO country code from a Unicode flag emoji
  * (e.g. 🇦🇷 -> 'AR', 🇬🇧 -> 'GB', 🇪🇸 -> 'ES')
  */
-export function emojiToCountryCode(emoji: string | undefined | null): string | null {
+function emojiToCountryCode(emoji: string | undefined | null): string | null {
   if (!emoji) return null;
   const chars = Array.from(emoji);
   if (chars.length < 2) return null;
@@ -156,16 +156,21 @@ export const CountryFlag: React.FC<CountryFlagProps> = ({
   );
 };
 
+export interface TextWithFlagsProps {
+  text: string | undefined | null;
+  flagClassName?: string;
+}
+
 /**
- * Splits text by flag emojis and replaces them with CountryFlag components.
+ * Splits text by flag emojis and replaces them with crisp vector CountryFlag components.
  */
-export function renderTextWithFlags(
-  text: string | undefined | null,
-  flagClassName: string = 'w-4 h-2.5 rounded-[2px] inline-block mx-1 align-middle'
-): React.ReactNode {
-  if (!text) return text;
+export const TextWithFlags: React.FC<TextWithFlagsProps> = ({
+  text,
+  flagClassName = 'w-4 h-2.5 rounded-[2px] inline-block mx-1 align-middle',
+}) => {
+  if (!text) return null;
   if (!/[\u{1F1E6}-\u{1F1FF}]{2}/u.test(text)) {
-    return text;
+    return <>{text}</>;
   }
   const parts = text.split(/([\u{1F1E6}-\u{1F1FF}]{2})/u);
   return (
@@ -184,5 +189,5 @@ export function renderTextWithFlags(
       })}
     </>
   );
-}
+};
 

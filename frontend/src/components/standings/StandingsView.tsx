@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Award, Calendar, GraduationCap, ShieldCheck, Trophy, Users, Wrench, Zap } from 'lucide-react';
+import { Award, Calendar, GraduationCap, Medal, ShieldCheck, Trophy, Users, Wrench, Zap } from 'lucide-react';
 import { fetchDriverChanges, fetchStandings } from '../../services/api';
 import type { DriverChangeAlert, DriverLive, StandingsData } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -73,12 +73,8 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
   const activeYear =
     selectedSeasonYear >= minYear && selectedSeasonYear <= 2026 ? selectedSeasonYear : 2026;
 
-  // Power Unit Tracker is strictly available for 2026 season. If user switches to any historical year, reset to drivers.
-  useEffect(() => {
-    if (activeYear !== 2026 && subTab === 'pu-tracker') {
-      setSubTab('drivers');
-    }
-  }, [activeYear, subTab]);
+  // Power Unit Tracker is strictly available for 2026 season. Derive effective subtab directly without cascading render.
+  const effectiveSubTab = activeYear !== 2026 && subTab === 'pu-tracker' ? 'drivers' : subTab;
 
   // Generate list of all supported years for current series (descending)
   const allSeriesYears = useMemo(() => {
@@ -156,21 +152,21 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
     if (displayPos === 1) {
       return (
         <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded font-mono text-[10px] sm:text-xs font-black bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-[0_0_8px_rgba(251,191,36,0.25)]">
-          <span className="text-[9px] sm:text-[11px]">🥇</span> <span>{displayPos}</span>
+          <Trophy className="w-2.5 h-2.5 text-amber-400 shrink-0" /> <span>{displayPos}</span>
         </span>
       );
     }
     if (displayPos === 2) {
       return (
         <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded font-mono text-[10px] sm:text-xs font-black bg-slate-300/15 text-slate-200 border border-slate-300/30">
-          <span className="text-[9px] sm:text-[11px]">🥈</span> <span>{displayPos}</span>
+          <Medal className="w-2.5 h-2.5 text-slate-300 shrink-0" /> <span>{displayPos}</span>
         </span>
       );
     }
     if (displayPos === 3) {
       return (
         <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded font-mono text-[10px] sm:text-xs font-black bg-amber-700/15 text-amber-500 border border-amber-700/30">
-          <span className="text-[9px] sm:text-[11px]">🥉</span> <span>{displayPos}</span>
+          <Medal className="w-2.5 h-2.5 text-amber-600 shrink-0" /> <span>{displayPos}</span>
         </span>
       );
     }
@@ -530,11 +526,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 type="button"
                 onClick={() => setSubTab('drivers')}
                 className={`flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
-                  subTab === 'drivers'
+                  effectiveSubTab === 'drivers'
                     ? 'text-zinc-900 dark:text-white'
                     : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
                 }`}
-                style={subTab === 'drivers' ? { borderColor: theme.primary } : undefined}
+                style={effectiveSubTab === 'drivers' ? { borderColor: theme.primary } : undefined}
               >
                 <Award className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
                 <span className="sm:hidden">{lang === 'es' ? 'PILOTOS' : 'DRIVERS'}</span>
@@ -545,11 +541,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                 type="button"
                 onClick={() => setSubTab('constructors')}
                 className={`flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
-                  subTab === 'constructors'
+                  effectiveSubTab === 'constructors'
                     ? 'text-zinc-900 dark:text-white'
                     : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
                 }`}
-                style={subTab === 'constructors' ? { borderColor: theme.primary } : undefined}
+                style={effectiveSubTab === 'constructors' ? { borderColor: theme.primary } : undefined}
               >
                 <Users className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
                 <span className="sm:hidden">{lang === 'es' ? 'CONSTRUCTORES' : 'CONSTRUCTORS'}</span>
@@ -561,11 +557,11 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                   type="button"
                   onClick={() => setSubTab('pu-tracker')}
                   className={`flex items-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 text-[11px] sm:text-xs font-mono uppercase tracking-wider font-semibold transition-all border-b-2 cursor-pointer shrink-0 whitespace-nowrap ${
-                    subTab === 'pu-tracker'
+                    effectiveSubTab === 'pu-tracker'
                       ? 'text-zinc-900 dark:text-white'
                       : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white border-transparent'
                   }`}
-                  style={subTab === 'pu-tracker' ? { borderColor: theme.primary } : undefined}
+                  style={effectiveSubTab === 'pu-tracker' ? { borderColor: theme.primary } : undefined}
                 >
                   <Zap className="w-3.5 h-3.5 shrink-0" style={{ color: theme.primary }} />
                   <span className="sm:hidden">{lang === 'es' ? 'MOTORES' : 'PU'}</span>
@@ -623,7 +619,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           )}
 
           {/* Academy Filter Pills for F2 / F3 in Drivers Tab */}
-          {series !== 'f1' && subTab === 'drivers' && (
+          {series !== 'f1' && effectiveSubTab === 'drivers' && (
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-xs font-mono">
               <span className="text-zinc-500 text-[11px] uppercase font-bold shrink-0 mr-1">
                 {t.standings.academiesFilter}:
@@ -677,7 +673,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           )}
 
           {/* DRIVERS TABLE */}
-          {subTab === 'drivers' && (
+          {effectiveSubTab === 'drivers' && (
             <div className="bg-white dark:bg-[#131722] border border-zinc-200 dark:border-white/[0.08] rounded-xl overflow-hidden shadow-sm">
               <div className="grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-zinc-50 dark:bg-[#131722] border-b border-zinc-200 dark:border-white/[0.08] text-[9px] sm:text-[11px] font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase select-none">
                 <div className="col-span-2 sm:col-span-1 text-center">{t.standings.headers.pos}</div>
@@ -813,7 +809,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           )}
 
           {/* CONSTRUCTORS TABLE */}
-          {subTab === 'constructors' && (
+          {effectiveSubTab === 'constructors' && (
             <div className="space-y-3">
               {series === 'f1' && activeYear >= 1950 && activeYear <= 1957 && (
                 <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-mono">
@@ -889,7 +885,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
           )}
 
           {/* POWER UNIT TRACKER (F1 2026 Only) */}
-          {series === 'f1' && activeYear === 2026 && subTab === 'pu-tracker' && (
+          {series === 'f1' && activeYear === 2026 && effectiveSubTab === 'pu-tracker' && (
             <PowerUnitTracker onSelectDriver={(code) => handleDriverClick({ code })} />
           )}
         </>

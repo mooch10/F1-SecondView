@@ -8,6 +8,7 @@ import {
   Radio,
   Swords,
   Trophy,
+  Zap,
 } from 'lucide-react';
 import { fetchScheduleDetails } from '../../services/api';
 import type { JolpicaRace, LastRacePodium } from '../../types/f1';
@@ -173,10 +174,18 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                 {nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}
               </span>
             </div>
-            <span className="text-[11px] text-zinc-400 font-mono">
-              {mode === 'track'
-                ? `⚡ ${lang === 'es' ? 'Horario circuito' : 'Track time'}: ${nextRace.locality}`
-                : `📍 ${lang === 'es' ? 'Horario dispositivo' : 'Device time'}`}
+            <span className="text-[11px] text-zinc-400 font-mono flex items-center gap-1">
+              {mode === 'track' ? (
+                <>
+                  <Zap className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>{`${lang === 'es' ? 'Horario circuito' : 'Track time'}: ${nextRace.locality}`}</span>
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
+                  <span>{lang === 'es' ? 'Horario dispositivo' : 'Device time'}</span>
+                </>
+              )}
             </span>
           </div>
 

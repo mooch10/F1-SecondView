@@ -41,13 +41,6 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
   const [selectedCorner, setSelectedCorner] = useState<CircuitCornerTelemetry | null>(null);
   const [hoveredCorner, setHoveredCorner] = useState<CircuitCornerTelemetry | null>(null);
 
-  // Default selected corner to first available
-  useEffect(() => {
-    if (telemetry.corners && telemetry.corners.length > 0) {
-      setSelectedCorner(telemetry.corners[0]);
-    }
-  }, [telemetry]);
-
   useEffect(() => {
     if (!isOpen) return;
 

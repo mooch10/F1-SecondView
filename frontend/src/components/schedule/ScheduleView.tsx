@@ -7,6 +7,7 @@ import {
   Clock,
   Layers,
   MapPin,
+  Medal,
   Trophy,
   Zap,
 } from 'lucide-react';
@@ -211,10 +212,18 @@ export const ScheduleView: React.FC = () => {
                 {nextRace.locality.toUpperCase()}, {nextRace.country.toUpperCase()}
               </span>
             </div>
-            <span className="text-[11px] text-zinc-400 font-mono">
-              {mode === 'track'
-                ? `⚡ ${t.schedule.trackTimeHint}: ${nextRace.locality}`
-                : `📍 ${t.schedule.deviceTimeHint}`}
+            <span className="text-[11px] text-zinc-400 font-mono flex items-center gap-1">
+              {mode === 'track' ? (
+                <>
+                  <Zap className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>{`${t.schedule.trackTimeHint}: ${nextRace.locality}`}</span>
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
+                  <span>{t.schedule.deviceTimeHint}</span>
+                </>
+              )}
             </span>
           </div>
 
@@ -299,15 +308,18 @@ export const ScheduleView: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-white/[0.06] text-xs font-mono">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-amber-500/30 text-amber-300 font-bold whitespace-nowrap">
-              🥇 <span className="sm:hidden">{series === 'f3' ? 'Slater (182 pts)' : '---'}</span>
+              <Trophy className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="sm:hidden">{series === 'f3' ? 'Slater (182 pts)' : '---'}</span>
               <span className="hidden sm:inline">{t.schedule.driverChampion}: {series === 'f3' ? 'Freddie Slater (182 pts)' : '---'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300 whitespace-nowrap">
-              🥈 <span className="sm:hidden">{series === 'f3' ? 'Naël (154 pts)' : '---'}</span>
+              <Medal className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+              <span className="sm:hidden">{series === 'f3' ? 'Naël (154 pts)' : '---'}</span>
               <span className="hidden sm:inline">{t.schedule.runnerUp}: {series === 'f3' ? 'Théophile Naël (154 pts)' : '---'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0E14] border border-white/[0.08] text-zinc-300 whitespace-nowrap">
-              🏆 <span className="sm:hidden">{series === 'f3' ? 'Campos (399 pts)' : '---'}</span>
+              <Trophy className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="sm:hidden">{series === 'f3' ? 'Campos (399 pts)' : '---'}</span>
               <span className="hidden sm:inline">{t.schedule.constructorsChampion}: {series === 'f3' ? 'Campos Racing (399 pts)' : '---'}</span>
             </span>
           </div>

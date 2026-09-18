@@ -8,6 +8,7 @@ import {
   Radio,
   Sparkles,
   Timer,
+  User,
 } from 'lucide-react';
 import { fetchQualifying } from '../../services/api';
 import type {
@@ -705,7 +706,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         onClick={() => openDriverProfile(undefined, d.code, d.fullName)}
                         className="w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
-                        <span>👤</span>
+                        <User className="w-3.5 h-3.5 shrink-0" />
                         <span>{lang === 'es' ? 'Ver Ficha Oficial de Piloto' : 'View Official Driver Profile'}</span>
                       </button>
                     </div>
@@ -939,7 +940,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                           </span>
                           {item.isPhaseLeader && (
                             <span className="px-1.5 py-0.2 rounded text-[7px] sm:text-[9px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-tight whitespace-nowrap shrink-0">
-                              {phaseFilter === 'ALL' || phaseFilter === 'Q3' ? 'POLE 🥇' : (lang === 'es' ? 'LÍDER' : 'LEADER')}
+                              {phaseFilter === 'ALL' || phaseFilter === 'Q3' ? 'POLE' : (lang === 'es' ? 'LÍDER' : 'LEADER')}
                             </span>
                           )}
                           {d.eliminatedPhase && phaseFilter === 'ALL' && (
@@ -1087,7 +1088,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
                         onClick={() => openDriverProfile(undefined, d.code, d.fullName)}
                         className="mt-3 w-full py-2 px-3 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-zinc-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
-                        <span>👤</span>
+                        <User className="w-3.5 h-3.5 shrink-0" />
                         <span>{lang === 'es' ? 'Ver Ficha Oficial de Piloto' : 'View Official Driver Profile'}</span>
                       </button>
                     </div>

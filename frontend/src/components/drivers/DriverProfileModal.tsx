@@ -400,7 +400,7 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
                     title={lang === 'en' ? `Open 1 vs 1 duel with ${analytics.h2h.teammateName}` : `Abrir duelo 1 vs 1 con ${analytics.h2h.teammateName}`}
                   >
                     <span>vs {analytics.h2h.teammateName} ({analytics.h2h.teammateCode})</span>
-                    <span className="text-[10px]">⚔️</span>
+                    <Swords className="w-3 h-3 text-amber-500 shrink-0" />
                   </button>
                 ) : (
                   <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold">
@@ -525,10 +525,15 @@ export const DriverProfileModal: React.FC<DriverProfileModalProps> = ({
               </div>
 
               <div className="bg-zinc-50 dark:bg-white/[0.03] rounded-lg p-2 border border-zinc-200/80 dark:border-white/[0.04]">
-                <span className="text-xs sm:text-sm font-black text-white block">
-                  {activeProfile.careerStats.worldChampionships > 0
-                    ? `${activeProfile.careerStats.worldChampionships} 🏆`
-                    : '0'}
+                <span className="text-xs sm:text-sm font-black text-white flex items-center justify-center gap-1">
+                  {activeProfile.careerStats.worldChampionships > 0 ? (
+                    <>
+                      <span>{activeProfile.careerStats.worldChampionships}</span>
+                      <Trophy className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    </>
+                  ) : (
+                    '0'
+                  )}
                 </span>
                 <span className="text-[9px] uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                   {t.driverProfile.championships}
