@@ -18,9 +18,9 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
   const { lang, t } = useLanguage();
 
   return (
-    <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 shadow-sm">
+    <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-2.5 sm:p-3 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-2 min-w-0">
+      <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <SlidersHorizontal className="w-3.5 h-3.5 text-[#E10600] shrink-0" />
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 whitespace-nowrap">
@@ -32,11 +32,11 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
         {/* Current Delay Status Badge */}
         <div className="flex items-center gap-1.5 shrink-0">
           {delaySeconds === 0 ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest uppercase whitespace-nowrap">
+            <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold bg-[#E10600]/15 text-[#E10600] border border-[#E10600]/30 tracking-widest uppercase whitespace-nowrap">
               {t.live.delay.live}
             </span>
           ) : (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider font-tabular whitespace-nowrap">
+            <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold bg-[#1C2230] text-[#FFD60A] border border-white/[0.08] tracking-wider font-tabular whitespace-nowrap">
               -{delaySeconds}s {lang === 'es' ? 'RETRASO' : 'DELAY'}
             </span>
           )}
@@ -55,13 +55,13 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
       </div>
 
       {/* Production Scrubber & Hardware Nudge Controls */}
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex items-center gap-1.5 sm:gap-2 pt-0.5 sm:pt-1">
         {/* Hardware Button -2s */}
         <button
           type="button"
           onClick={() => onNudge(-2)}
           disabled={delaySeconds <= 0}
-          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer select-none"
+          className="h-7 sm:h-8 px-2 sm:px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-[11px] sm:text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer select-none"
           title={lang === 'es' ? 'Restar 2 segundos de retraso' : 'Subtract 2 seconds of delay'}
         >
           -2s
@@ -200,7 +200,7 @@ export const SyncDelayBar: React.FC<SyncDelayBarProps> = ({
           type="button"
           onClick={() => onNudge(2)}
           disabled={delaySeconds >= 45}
-          className="h-8 px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer select-none"
+          className="h-7 sm:h-8 px-2 sm:px-3 rounded-lg bg-[#1C2230] border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#232a3b] text-[11px] sm:text-xs font-mono font-semibold text-zinc-100 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer select-none"
           title={lang === 'es' ? 'Sumar 2 segundos de retraso' : 'Add 2 seconds of delay'}
         >
           <span>+2s</span>

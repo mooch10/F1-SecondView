@@ -20,30 +20,36 @@ export const TyreBadge: React.FC<TyreBadgeProps> = ({
 
   const compound = tyre.compound.toUpperCase();
   let letter = '-';
-  let color = '#71717A';
+  let bgColor = '#71717A';
+  let textColor = '#FFFFFF';
 
   if (compound.includes('SOFT')) {
     letter = 'S';
-    color = '#FF3B30';
+    bgColor = '#E10600';
+    textColor = '#FFFFFF';
   } else if (compound.includes('MEDIUM')) {
     letter = 'M';
-    color = '#FFD60A';
+    bgColor = '#FFD60A';
+    textColor = '#000000';
   } else if (compound.includes('HARD')) {
     letter = 'H';
-    color = '#FFFFFF';
+    bgColor = '#FFFFFF';
+    textColor = '#000000';
   } else if (compound.includes('INTER')) {
     letter = 'I';
-    color = '#34C759';
+    bgColor = '#34C759';
+    textColor = '#000000';
   } else if (compound.includes('WET')) {
     letter = 'W';
-    color = '#007AFF';
+    bgColor = '#007AFF';
+    textColor = '#FFFFFF';
   }
 
   const isSmall = size === 'sm';
 
   return (
     <div
-      className={`inline-flex items-center select-none ${isSmall ? 'gap-1' : 'gap-1.5'} ${className}`}
+      className={`inline-flex items-center select-none ${isSmall ? 'gap-1' : 'gap-1 sm:gap-1.5'} ${className}`}
       title={
         lang === 'es'
           ? `Compuesto Pirelli ${tyre.compound} (${tyre.laps} vueltas)`
@@ -53,26 +59,23 @@ export const TyreBadge: React.FC<TyreBadgeProps> = ({
       <span
         className={`inline-flex items-center justify-center rounded-full shrink-0 select-none ${
           isSmall
-            ? 'w-4 h-4 text-[8.5px] border-[1.5px]'
-            : 'w-5 h-5 text-[10px] border-2'
+            ? 'w-4 h-4 text-[9px]'
+            : 'w-[19px] h-[19px] text-[11px]'
         }`}
         style={{
-          borderColor: color,
-          color: color,
-          backgroundColor: `${color}18`,
-          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-          fontWeight: 800,
+          backgroundColor: bgColor,
+          color: textColor,
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          fontWeight: 900,
           lineHeight: 1,
         }}
         aria-hidden="true"
       >
-        <span className="transform translate-y-[0.5px] leading-none">
-          {letter}
-        </span>
+        {letter}
       </span>
       <span
         className={`font-mono font-bold tabular-nums ${
-          isSmall ? 'text-[10px] text-zinc-400' : 'text-xs text-zinc-300'
+          isSmall ? 'text-[9.5px] text-zinc-400' : 'text-[10px] sm:text-xs text-zinc-300'
         }`}
       >
         {tyre.laps}

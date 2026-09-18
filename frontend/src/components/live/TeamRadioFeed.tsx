@@ -147,7 +147,7 @@ export const TeamRadioFeed: React.FC<TeamRadioFeedProps> = ({ radios = [] }) => 
       )}
 
       {/* Header / Bar */}
-      <div className="w-full px-3 py-2.5 flex items-center justify-between gap-2 bg-[#131722] hover:bg-white/[0.02] transition-colors">
+      <div className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2.5 flex items-center justify-between gap-2 bg-[#131722] hover:bg-white/[0.02] transition-colors">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}

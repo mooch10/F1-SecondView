@@ -362,8 +362,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       }`}
     >
       {/* Circuit Header Bar */}
-      <div className="flex flex-wrap items-center justify-between px-3 sm:px-4 py-2.5 bg-[#1C2230] border-b border-white/[0.08] select-none gap-2">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-between px-2.5 sm:px-4 py-1.5 sm:py-2.5 bg-[#1C2230] border-b border-white/[0.08] select-none gap-2">
+        <div className="flex items-center gap-2 sm:gap-2.5">
           <div
             className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
               isFinished
@@ -516,12 +516,12 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
           )}
 
           {/* SVG Circuit Canvas Area */}
-          <div className="relative w-full overflow-hidden flex-1 flex flex-col items-center justify-center p-2 sm:p-4 min-h-[380px] sm:min-h-[460px]">
+          <div className="relative w-full overflow-hidden flex-1 flex flex-col items-center justify-center p-1.5 sm:p-4 min-h-[250px] sm:min-h-[460px]">
             {trackGeometry ? (
               <svg
                 viewBox={`0 0 ${trackGeometry.canvasW} ${trackGeometry.canvasH}`}
                 preserveAspectRatio="xMidYMid meet"
-                className="w-full h-auto max-h-[440px] sm:max-h-[560px] drop-shadow-xl select-none"
+                className="w-full h-auto max-h-[280px] sm:max-h-[560px] drop-shadow-xl select-none"
               >
                 {/* Visual Glow Gradients & Filters */}
                 <defs>

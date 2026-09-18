@@ -211,9 +211,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   return (
     <div className="bg-[#131722] border border-white/[0.08] rounded-xl shadow-lg overflow-hidden">
       {/* Top Utility / Action Bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-[#171C28] border-b border-white/[0.08] text-xs font-mono select-none">
+      <div className="flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#171C28] border-b border-white/[0.08] text-[11px] sm:text-xs font-mono select-none">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+          <span className="text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400">
             {isQualy ? t.live.qualyProgress : t.live.liveTimes}
           </span>
           {pinnedDriver && (
@@ -253,10 +253,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
       {/* TU PILOTO Sticky Highlight Card */}
       {pinnedDriver && (
-        <div className="bg-[#151A25] border-b-2 border-amber-500/40 px-3 py-2.5 relative select-none">
-          <div className="flex items-center justify-between mb-1.5">
+        <div className="bg-[#151A25] border-b-2 border-amber-500/40 px-2 sm:px-3 py-1.5 sm:py-2.5 relative select-none">
+          <div className="flex items-center justify-between mb-1 sm:mb-1.5">
             <div className="flex items-center gap-1.5">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center gap-1 tracking-wider uppercase shadow-xs">
+              <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono font-black bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center gap-1 tracking-wider uppercase shadow-xs">
                 <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                 {t.live.yourDriver}
               </span>
@@ -265,24 +265,24 @@ export const TimingTable: React.FC<TimingTableProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               <button
                 type="button"
                 onClick={() => openH2HWithDriver(pinnedDriver.driverNumber)}
-                className="px-2 py-0.5 rounded-md bg-white/[0.08] hover:bg-white/[0.14] text-white font-mono text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-white/10"
+                className="px-1.5 sm:px-2 py-0.5 rounded-md bg-white/[0.08] hover:bg-white/[0.14] text-white font-mono text-[9.5px] sm:text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer border border-white/10"
                 title={t.live.h2h.title}
               >
-                <Swords className="w-3 h-3 text-white/80" />
+                <Swords className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/80" />
                 <span>1 vs 1</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => togglePin(pinnedDriver.driverNumber)}
-                className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                 title={t.live.unpinDriver}
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
           </div>
@@ -295,12 +295,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 P{pinnedDriver.pos}
               </span>
               {!isQualy && pinnedDriver.posChange > 0 && (
-                <span className="text-[8px] sm:text-[9px] text-emerald-400 font-bold font-mono mt-0.5">
+                <span className="text-[7.5px] sm:text-[9px] text-emerald-400 font-bold font-mono mt-0.5">
                   ▲{pinnedDriver.posChange}
                 </span>
               )}
               {!isQualy && pinnedDriver.posChange < 0 && (
-                <span className="text-[8px] sm:text-[9px] text-rose-400 font-bold font-mono mt-0.5">
+                <span className="text-[7.5px] sm:text-[9px] text-rose-400 font-bold font-mono mt-0.5">
                   ▼{Math.abs(pinnedDriver.posChange)}
                 </span>
               )}
@@ -308,10 +308,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
             {/* Code, Number & Name */}
             <div
-              className="col-span-3 sm:col-span-3 flex items-center gap-1.5 overflow-hidden"
+              className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden"
             >
               <span
-                className="w-1.5 h-6 sm:h-7 rounded-full shrink-0"
+                className="w-1 sm:w-1.5 h-5 sm:h-7 rounded-full shrink-0"
                 style={{ backgroundColor: pinnedDriver.teamColor || '#E10600' }}
               />
               <div className="flex flex-col leading-tight truncate">
@@ -402,7 +402,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       )}
       {/* Table Header (Polymorphic: Qualy vs Race) */}
       {isQualy ? (
-        <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
+        <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
           <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
           <div className="col-span-4 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
           <div className="col-span-3 sm:col-span-5 text-center whitespace-nowrap">
@@ -412,12 +412,12 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           <div className="col-span-4 sm:col-span-3 text-right whitespace-nowrap">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
         </div>
       ) : (
-        <div className="grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3 bg-[#1C2230] border-b border-white/[0.08] text-[10px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+        <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
           <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
           <div className="col-span-3 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
           <div className="col-span-2 sm:col-span-2 text-center whitespace-nowrap">{t.live.table.tyre}</div>
           <div className="col-span-1 sm:col-span-1 text-center whitespace-nowrap">{t.live.table.pit}</div>
-          <div className="col-span-3 sm:col-span-3 text-right pr-2 whitespace-nowrap">GAP / INT</div>
+          <div className="col-span-3 sm:col-span-3 text-right pr-1 sm:pr-2 whitespace-nowrap">GAP / INT</div>
           <div className="col-span-2 sm:col-span-2 text-right whitespace-nowrap">{t.live.table.lastLap}</div>
         </div>
       )}
@@ -439,9 +439,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
             <div key={d.driverNumber} className="flex flex-col">
               {/* Reborde divisorio que delimita la zona de puntos (Top 10) */}
               {showPointsCutoff && (
-                <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                <div className="relative flex items-center justify-center my-1 sm:my-1.5 px-2 sm:px-3 select-none">
                   <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/80 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                  <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                  <span className="absolute px-2 sm:px-2.5 py-0.5 rounded-full text-[8.5px] sm:text-[9px] font-mono font-black uppercase tracking-wider bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     {lang === 'es' ? 'LÍMITE ZONA DE PUNTOS' : 'POINTS CUTOFF'}
                   </span>
@@ -450,9 +450,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
               {/* Línea divisoria de corte Q2 (eliminación P11 a P15) */}
               {showQ2Cutoff && (
-                <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                <div className="relative flex items-center justify-center my-1 sm:my-1.5 px-2 sm:px-3 select-none">
                   <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
-                  <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                  <span className="absolute px-2 sm:px-2.5 py-0.5 rounded-full text-[8.5px] sm:text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                     {lang === 'es' ? 'ZONA DE ELIMINACIÓN Q2' : 'Q2 ELIMINATION ZONE'}
                   </span>
@@ -461,9 +461,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
               {/* Línea divisoria de corte Q1 (eliminación P16 a P20) */}
               {showQ1Cutoff && (
-                <div className="relative flex items-center justify-center my-1.5 px-3 select-none">
+                <div className="relative flex items-center justify-center my-1 sm:my-1.5 px-2 sm:px-3 select-none">
                   <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-rose-500/80 to-transparent shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
-                  <span className="absolute px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                  <span className="absolute px-2 sm:px-2.5 py-0.5 rounded-full text-[8.5px] sm:text-[9px] font-mono font-black uppercase tracking-wider bg-rose-950/90 text-rose-300 border border-rose-500/50 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                     {lang === 'es' ? 'ZONA DE ELIMINACIÓN Q1' : 'Q1 ELIMINATION ZONE'}
                   </span>
@@ -481,7 +481,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     toggleExpand(d.driverNumber);
                   }
                 }}
-                className={`w-full text-left grid grid-cols-12 gap-2 sm:gap-4 px-3.5 sm:px-5 py-3.5 sm:py-3 items-center transition-colors select-none cursor-pointer ${
+                className={`w-full text-left grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-2.5 items-center transition-colors select-none cursor-pointer ${
                   isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                 } ${closeInterval ? 'bg-emerald-950/15' : ''} ${
                   isPinned
@@ -509,7 +509,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </span>
                     {!isQualy && d.posChange > 0 && (
                       <span
-                        className="text-[8px] sm:text-[9px] text-emerald-400 font-bold font-mono leading-none mt-1 select-none tabular-nums"
+                        className="text-[7.5px] sm:text-[9px] text-emerald-400 font-bold font-mono leading-none mt-0.5 select-none tabular-nums"
                         title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos} (+${d.posChange})` : `Started P${d.gridPosition ?? d.pos} (+${d.posChange})`}
                       >
                         ▲{d.posChange}
@@ -517,7 +517,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     )}
                     {!isQualy && d.posChange < 0 && (
                       <span
-                        className="text-[8px] sm:text-[9px] text-rose-400 font-bold font-mono leading-none mt-1 select-none tabular-nums"
+                        className="text-[7.5px] sm:text-[9px] text-rose-400 font-bold font-mono leading-none mt-0.5 select-none tabular-nums"
                         title={lang === 'es' ? `Largó P${d.gridPosition ?? d.pos} (-${Math.abs(d.posChange)})` : `Started P${d.gridPosition ?? d.pos} (-${Math.abs(d.posChange)})`}
                       >
                         ▼{Math.abs(d.posChange)}
@@ -529,7 +529,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 {/* Team stripe + Star Pin + Code & Number */}
                 <div className={`${isQualy ? 'col-span-4' : 'col-span-3'} sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden`}>
                   <span
-                    className="w-1 h-6 rounded-full flex-shrink-0"
+                    className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
                   />
                   {/* Star Pin Button */}
@@ -572,7 +572,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       >
                         {d.code}
                       </button>
-                      <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                      <span className="text-[9px] sm:text-[10px] text-zinc-400 font-mono shrink-0">
                         #{d.driverNumber}
                       </span>
                       {/* Official Championship Points Badge in Race (Desktop) */}
@@ -1138,29 +1138,29 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleExpand(d.driverNumber)}
-                    className={`w-full text-left grid grid-cols-12 gap-1 px-3 py-2.5 items-center transition-colors select-none ${
+                    className={`w-full text-left grid grid-cols-12 gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 items-center transition-colors select-none ${
                       isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.02]'
                     }`}
                   >
                     {/* DNF Badge in Position column */}
                     <div className="col-span-1 flex items-center justify-center">
-                      <span className="font-mono text-[10px] font-black text-rose-400 bg-rose-500/15 px-1 py-0.5 rounded border border-rose-500/30">
+                      <span className="font-mono text-[9px] sm:text-[10px] font-black text-rose-400 bg-rose-500/15 px-1 py-0.5 rounded border border-rose-500/30">
                         DNF
                       </span>
                     </div>
 
                     {/* Team stripe + Code & Number */}
-                    <div className="col-span-4 sm:col-span-3 flex items-center gap-2 overflow-hidden">
+                    <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5 sm:gap-2 overflow-hidden">
                       <span
-                        className="w-1 h-6 rounded-full flex-shrink-0"
+                        className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
                       <div className="flex flex-col leading-tight truncate">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-sm font-bold text-zinc-300 tracking-tight">
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                          <span className="font-mono text-xs sm:text-sm font-bold text-zinc-300 tracking-tight">
                             {d.code}
                           </span>
-                          <span className="text-[10px] text-zinc-500 font-mono">
+                          <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono">
                             #{d.driverNumber}
                           </span>
                         </div>
@@ -1177,7 +1177,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
                     {/* Columna PIT: Separada, conteo de paradas */}
                     <div className="col-span-1 sm:col-span-1 flex items-center justify-center">
-                      <span className="inline-flex items-center justify-center font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md border bg-[#0B0E14] text-zinc-500 border-white/[0.05]">
+                      <span className="inline-flex items-center justify-center font-mono text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded sm:rounded-md border bg-[#0B0E14] text-zinc-500 border-white/[0.05]">
                         {d.pitStops ?? 0}P
                       </span>
                     </div>

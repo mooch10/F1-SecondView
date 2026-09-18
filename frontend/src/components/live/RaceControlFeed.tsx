@@ -28,7 +28,7 @@ export const RaceControlFeed: React.FC<RaceControlFeedProps> = ({ messages, driv
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full px-3 py-2.5 flex items-center justify-between gap-2 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2.5 flex items-center justify-between gap-2 text-left hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-2 overflow-hidden flex-1">
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />

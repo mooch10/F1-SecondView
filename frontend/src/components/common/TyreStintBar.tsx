@@ -28,21 +28,21 @@ export const TyreStintBar: React.FC<TyreStintBarProps> = ({
   const getCompoundConfig = (comp: TyreCompound) => {
     const c = (comp || '').toUpperCase();
     if (c.includes('SOFT')) {
-      return { letter: 'S', color: '#FF3B30', bg: 'bg-[#FF3B30]/20', border: 'border-[#FF3B30]', text: 'text-[#FF3B30]', name: 'Soft' };
+      return { letter: 'S', color: '#E10600', letterColor: '#FFFFFF', bg: 'bg-[#E10600]/20', border: 'border-[#E10600]', text: 'text-[#E10600]', name: 'Soft' };
     }
     if (c.includes('MEDIUM')) {
-      return { letter: 'M', color: '#FFD60A', bg: 'bg-[#FFD60A]/20', border: 'border-[#FFD60A]', text: 'text-[#FFD60A]', name: 'Medium' };
+      return { letter: 'M', color: '#FFD60A', letterColor: '#000000', bg: 'bg-[#FFD60A]/20', border: 'border-[#FFD60A]', text: 'text-[#FFD60A]', name: 'Medium' };
     }
     if (c.includes('HARD')) {
-      return { letter: 'H', color: '#FFFFFF', bg: 'bg-white/20', border: 'border-white', text: 'text-white', name: 'Hard' };
+      return { letter: 'H', color: '#FFFFFF', letterColor: '#000000', bg: 'bg-white/20', border: 'border-white', text: 'text-white', name: 'Hard' };
     }
     if (c.includes('INTER')) {
-      return { letter: 'I', color: '#34C759', bg: 'bg-[#34C759]/20', border: 'border-[#34C759]', text: 'text-[#34C759]', name: 'Intermediate' };
+      return { letter: 'I', color: '#34C759', letterColor: '#000000', bg: 'bg-[#34C759]/20', border: 'border-[#34C759]', text: 'text-[#34C759]', name: 'Intermediate' };
     }
     if (c.includes('WET')) {
-      return { letter: 'W', color: '#007AFF', bg: 'bg-[#007AFF]/20', border: 'border-[#007AFF]', text: 'text-[#007AFF]', name: 'Wet' };
+      return { letter: 'W', color: '#007AFF', letterColor: '#FFFFFF', bg: 'bg-[#007AFF]/20', border: 'border-[#007AFF]', text: 'text-[#007AFF]', name: 'Wet' };
     }
-    return { letter: '?', color: '#71717A', bg: 'bg-zinc-700/20', border: 'border-zinc-500', text: 'text-zinc-400', name: 'Unknown' };
+    return { letter: '?', color: '#71717A', letterColor: '#FFFFFF', bg: 'bg-zinc-700/20', border: 'border-zinc-500', text: 'text-zinc-400', name: 'Unknown' };
   };
 
   return (
@@ -68,11 +68,10 @@ export const TyreStintBar: React.FC<TyreStintBarProps> = ({
             >
               {/* Badge letter circle */}
               <span
-                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center font-sans font-extrabold text-[8px] leading-none shrink-0 ${cfg.border} ${cfg.text} bg-black/50 mr-1 select-none`}
+                className="w-3.5 h-3.5 rounded-full flex items-center justify-center font-sans font-black text-[8px] leading-none shrink-0 mr-1 select-none"
+                style={{ backgroundColor: cfg.color, color: cfg.letterColor }}
               >
-                <span className="transform translate-y-[0.5px] leading-none">
-                  {cfg.letter}
-                </span>
+                {cfg.letter}
               </span>
 
               {/* Laps label */}

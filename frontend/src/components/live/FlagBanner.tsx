@@ -198,16 +198,16 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
   return (
     <div className="flex flex-col gap-2">
       {/* Session Title & Digital Instrument Box */}
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm">
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl p-2.5 sm:p-4 flex items-center justify-between shadow-sm">
         <div>
           {(cleanCircuit || session.country) ? (
-            <div className="text-xs font-mono tracking-wider uppercase text-zinc-400">
+            <div className="text-[10px] sm:text-xs font-mono tracking-wider uppercase text-zinc-400">
               {cleanCircuit}
               {cleanCircuit && session.country ? ' • ' : ''}
               {session.country ? session.country.toUpperCase() : ''}
             </div>
           ) : null}
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white mt-0.5 uppercase">
+          <h1 className="text-base sm:text-xl font-bold tracking-tight text-white mt-0.5 uppercase">
             {session.location && session.location !== 'Circuito'
               ? `${session.location} `
               : ''}
@@ -223,36 +223,36 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
 
         {/* Lap / Phase Instrument Box */}
         {session.sessionType === 'Qualifying' && !isNotStarted ? (
-          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-cyan-500/30 px-3 py-1.5 rounded-lg shadow-xs">
-            <span className="text-[9px] font-mono font-bold tracking-widest text-[#27F4D2] uppercase">
+          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-cyan-500/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-xs">
+            <span className="text-[8.5px] sm:text-[9px] font-mono font-bold tracking-widest text-[#27F4D2] uppercase">
               {t.live.qualyPhase}
             </span>
-            <div className="text-xl sm:text-2xl font-mono font-black tracking-tight text-[#FFD60A] tabular-nums">
+            <div className="text-lg sm:text-2xl font-mono font-black tracking-tight text-[#FFD60A] tabular-nums">
               {session.qualifyingPhase || 'Q1'}
             </div>
           </div>
         ) : isNotStarted ? (
-          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
-            <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+            <span className="text-[8.5px] sm:text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
               {lang === 'es' ? 'ESTADO' : 'STATUS'}
             </span>
-            <div className="text-base sm:text-xl font-mono font-bold tracking-tight text-cyan-400 tabular-nums">
+            <div className="text-sm sm:text-xl font-mono font-bold tracking-tight text-cyan-400 tabular-nums">
               {lang === 'es' ? 'GRILLA' : 'GRID'}
-              <span className="text-xs font-normal text-zinc-500 ml-1">
+              <span className="text-[10px] sm:text-xs font-normal text-zinc-500 ml-1">
                 (0/{resolvedTotalLaps})
               </span>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-3 py-1.5 rounded-lg">
-            <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+          <div className="flex flex-col items-end justify-center bg-[#0B0E14] border border-white/[0.08] px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+            <span className="text-[8.5px] sm:text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
               {isRaceFinished || session.status === 'FINISHED'
                 ? (lang === 'es' ? 'RESULTADO' : 'RESULT')
                 : t.live.lap}
             </span>
-            <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
+            <div className="text-lg sm:text-2xl font-mono font-bold tracking-tight text-white tabular-nums">
               {displayLap}
-              <span className="text-xs sm:text-sm font-normal text-zinc-500 ml-1">
+              <span className="text-[11px] sm:text-sm font-normal text-zinc-500 ml-1">
                 / {resolvedTotalLaps}
               </span>
             </div>
@@ -261,7 +261,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
       </div>
 
       {/* Progress / Status Bar */}
-      <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-3 py-2 flex flex-col gap-1.5 shadow-sm">
+      <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 flex flex-col gap-1 sm:gap-1.5 shadow-sm">
         <div className="flex items-center justify-between text-[10px] font-mono">
           <span className="text-zinc-400 uppercase tracking-wider font-semibold">
             {isNotStarted
@@ -312,7 +312,7 @@ export const FlagBanner: React.FC<FlagBannerProps> = ({ session }) => {
 
       {/* Track Flag Strip */}
       <div
-        className={`flex items-center justify-between px-3 py-2 bg-[#131722] border-y border-r border-white/[0.08] ${flagConfig.border} rounded-xl text-xs font-mono font-semibold tracking-wider ${flagConfig.text} shadow-sm min-w-0`}
+        className={`flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#131722] border-y border-r border-white/[0.08] ${flagConfig.border} rounded-xl text-xs font-mono font-semibold tracking-wider ${flagConfig.text} shadow-sm min-w-0`}
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className={`w-2 h-2 rounded-full ${flagConfig.indicator} shrink-0`} />

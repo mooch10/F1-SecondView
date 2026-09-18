@@ -12,8 +12,8 @@ export const TrackWeatherBar: React.FC<TrackWeatherBarProps> = ({ weather }) => 
   if (!weather) return null;
 
   return (
-    <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-3 py-2 text-[11px] font-mono select-none shadow-sm">
-      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-1.5 gap-x-3 sm:gap-4">
+    <div className="bg-[#131722] border border-white/[0.08] rounded-xl px-2.5 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-[11px] font-mono select-none shadow-sm">
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-1 gap-x-2 sm:gap-4">
         {/* 1. Track / Asphalt Temperature */}
         <div className="flex items-center gap-1.5 whitespace-nowrap" title={lang === 'es' ? 'Temperatura de Asfalto' : 'Track Temperature'}>
           <span className="w-2 h-2 rounded-full bg-[#E10600] inline-block shadow-sm" />
