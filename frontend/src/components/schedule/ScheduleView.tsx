@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Layers,
   MapPin,
   Trophy,
   Zap,
@@ -338,10 +339,17 @@ export const ScheduleView: React.FC = () => {
 
             return (
               <div key={r.round} className="flex flex-col">
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => toggleRound(r.round, isPast)}
-                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors select-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleRound(r.round, isPast);
+                    }
+                  }}
+                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors select-none cursor-pointer"
                   style={r.isNext ? { backgroundColor: `${theme.primary}12` } : undefined}
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
@@ -418,7 +426,7 @@ export const ScheduleView: React.FC = () => {
                             className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.12] border border-zinc-200 dark:border-white/[0.08] text-[9px] font-mono text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer shrink-0"
                             title={lang === 'es' ? 'Ver Ficha Técnica y Trazado Vectorial' : 'View Track Profile & Map'}
                           >
-                            <span>📐</span>
+                            <Layers className="w-2.5 h-2.5 text-zinc-400" />
                             <span>{lang === 'es' ? 'Ficha Técnica' : 'Track Profile'}</span>
                           </button>
                         )}
@@ -439,7 +447,7 @@ export const ScheduleView: React.FC = () => {
                       <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     )}
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded Section */}
                 {isExpanded && (

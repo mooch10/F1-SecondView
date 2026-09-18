@@ -3,8 +3,10 @@ import {
   ChevronRight,
   Clock,
   Flag,
+  Layers,
   MapPin,
   Radio,
+  Swords,
   Trophy,
 } from 'lucide-react';
 import { fetchScheduleDetails } from '../../services/api';
@@ -143,7 +145,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                   className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-[11px] sm:text-xs font-mono font-semibold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer shrink-0"
                   title={lang === 'es' ? 'Comparador 1 vs 1 y Telemetría' : '1 vs 1 Comparator & Telemetry'}
                 >
-                  <span>⚔️</span>
+                  <Swords className="w-3.5 h-3.5" />
                   <span>1 vs 1</span>
                 </button>
               )}
@@ -153,7 +155,7 @@ export const BetweenRacesView: React.FC<BetweenRacesViewProps> = ({
                 className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-[11px] sm:text-xs font-mono font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer shrink-0"
                 title={lang === 'es' ? 'Ver Ficha Técnica del Circuito' : 'View Track Intel'}
               >
-                <span>📐</span>
+                <Layers className="w-3.5 h-3.5" />
                 <span>{lang === 'es' ? 'Ficha Técnica' : 'Track Intel'}</span>
               </button>
             </div>
