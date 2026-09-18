@@ -390,19 +390,6 @@ export const CircuitProfileModal: React.FC<CircuitProfileModalProps> = ({
                           pointerEvents="all"
                         />
 
-                        {/* Animated Selection Glow Ring */}
-                        {isSelected && (
-                          <circle
-                            cx={coord[0]}
-                            cy={coord[1]}
-                            r="16"
-                            fill="rgba(245, 158, 11, 0.25)"
-                            stroke="#F59E0B"
-                            strokeWidth="1.5"
-                            className="animate-ping origin-center"
-                          />
-                        )}
-
                         {/* Outer Pin Body */}
                         <circle
                           cx={coord[0]}
