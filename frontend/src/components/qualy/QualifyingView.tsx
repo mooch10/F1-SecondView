@@ -95,7 +95,8 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
     liveSnapshot?.session?.sessionType === 'Qualifying' &&
     (liveSnapshot?.session?.status === 'IN_PROGRESS' ||
       liveSnapshot?.session?.status === 'SUSPENDED' ||
-      liveSnapshot?.session?.flag === 'RED') &&
+      liveSnapshot?.session?.flag === 'RED' ||
+      liveSnapshot?.session?.flag === 'CHEQUERED') &&
     liveDrivers &&
     liveDrivers.length > 0
   );

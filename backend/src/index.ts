@@ -440,13 +440,17 @@ const server = createServer(async (req, res) => {
 // Initial update and server start
 const initialSnapshot = await updateSnapshot();
 
-// Adaptive background loop: fast 2.5s interval during IN_PROGRESS sessions,
+// Adaptive background loop: fast 2.5s interval during IN_PROGRESS or SUSPENDED sessions,
 // relaxed 30s interval during FINISHED or idle periods between race weekends
-let nextPollDelayMs = initialSnapshot?.session?.status === 'IN_PROGRESS' ? 2500 : 30000;
+const initialIsLive =
+  initialSnapshot?.session?.status === 'IN_PROGRESS' ||
+  initialSnapshot?.session?.status === 'SUSPENDED';
+let nextPollDelayMs = initialIsLive ? 2500 : 30000;
 async function adaptiveWorkerTick() {
   try {
     const snap = await updateSnapshot();
-    const isLive = snap?.session?.status === 'IN_PROGRESS';
+    const isLive =
+      snap?.session?.status === 'IN_PROGRESS' || snap?.session?.status === 'SUSPENDED';
     nextPollDelayMs = isLive ? 2500 : 30000;
   } catch (err) {
     console.error('[Worker adaptive error]:', err);

@@ -209,7 +209,8 @@ function App() {
         snapshot?.session.flag === 'YELLOW' ||
         snapshot?.session.flag === 'SC' ||
         snapshot?.session.flag === 'VSC' ||
-        snapshot?.session.flag === 'RED',
+        snapshot?.session.flag === 'RED' ||
+        snapshot?.session.flag === 'CHEQUERED',
     ) && drivers.length > 0;
 
   // Only an active Grand Prix Race session awards championship points
