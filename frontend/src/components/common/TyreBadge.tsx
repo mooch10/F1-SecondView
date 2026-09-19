@@ -74,8 +74,10 @@ export const TyreBadge: React.FC<TyreBadgeProps> = ({
         {letter}
       </span>
       <span
-        className={`font-mono font-bold tabular-nums ${
-          isSmall ? 'text-[9.5px] text-zinc-400' : 'text-[10px] sm:text-xs text-zinc-300'
+        className={`font-mono font-bold tabular-nums text-left shrink-0 ${
+          isSmall
+            ? 'w-[19px] text-[9.5px] text-zinc-400'
+            : 'w-[19px] sm:w-[23px] text-[10px] sm:text-xs text-zinc-300'
         }`}
       >
         {tyre.laps}

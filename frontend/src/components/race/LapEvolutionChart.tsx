@@ -4,11 +4,10 @@ import {
   LAST_RACE_EVENTS,
 } from '../../data/lastRaceAnalysisData';
 import { useLanguage } from '../../hooks/useLanguage';
-import { CountryFlag } from '../common/CountryFlag';
 
 export const LapEvolutionChart: React.FC = () => {
   const { lang, t } = useLanguage();
-  const [activeFilter, setActiveFilter] = useState<'all' | 'podium' | 'points' | 'colapinto' | 'norris'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'podium' | 'points'>('all');
   const [hoveredDriver, setHoveredDriver] = useState<string | null>(null);
 
   const filteredDrivers = useMemo(() => {
@@ -17,10 +16,6 @@ export const LapEvolutionChart: React.FC = () => {
         return LAST_RACE_LAP_CHART_DRIVERS.filter((d) => d.finishPos <= 3);
       case 'points':
         return LAST_RACE_LAP_CHART_DRIVERS.filter((d) => d.finishPos <= 10);
-      case 'colapinto':
-        return LAST_RACE_LAP_CHART_DRIVERS.filter((d) => d.code === 'COL' || d.code === 'GAS');
-      case 'norris':
-        return LAST_RACE_LAP_CHART_DRIVERS.filter((d) => d.code === 'NOR' || d.code === 'PIA');
       default:
         return LAST_RACE_LAP_CHART_DRIVERS;
     }
@@ -60,16 +55,6 @@ export const LapEvolutionChart: React.FC = () => {
             { id: 'all' as const, label: t.lastRace.filterAll },
             { id: 'podium' as const, label: t.lastRace.filterPodium },
             { id: 'points' as const, label: t.lastRace.filterPoints },
-            {
-              id: 'colapinto' as const,
-              label: (
-                <span className="inline-flex items-center gap-1">
-                  <span>Alpine</span>
-                  <CountryFlag countryCode="AR" alt="Argentina" className="w-3.5 h-2.5 rounded-[2px] shadow-xs inline-block" />
-                </span>
-              ),
-            },
-            { id: 'norris' as const, label: 'McLaren' },
           ].map((btn) => (
             <button
               key={btn.id}

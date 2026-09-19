@@ -733,6 +733,14 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       </span>
                       {d.interval && d.interval !== 'LEADER' && (
                         <div className="flex items-center justify-end gap-1">
+                          {closeInterval && (
+                            <span
+                              className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
+                              title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode (MOM) active (< 1.0s behind car ahead)'}
+                            >
+                              OVERTAKE
+                            </span>
+                          )}
                           {/* Quick H2H Battle Launcher */}
                           <button
                             type="button"
@@ -749,14 +757,6 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           >
                             <Swords className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                           </button>
-                          {closeInterval && (
-                            <span
-                              className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wider uppercase animate-pulse select-none shrink-0"
-                              title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s del auto de adelante)' : 'Overtake Mode (MOM) active (< 1.0s behind car ahead)'}
-                            >
-                              OVERTAKE
-                            </span>
-                          )}
                           <span
                             className={`font-mono text-[10px] font-tabular ${
                               closeInterval

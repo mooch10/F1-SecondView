@@ -2,6 +2,7 @@ import React from 'react';
 import { FASTEST_PIT_STOPS_2026 } from '../../data/lastRaceAnalysisData';
 import { useLanguage } from '../../hooks/useLanguage';
 import { Trophy } from 'lucide-react';
+import { getShortTeamName } from '../../utils/teamUtils';
 
 export const PitStopLeaderboard: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -35,14 +36,15 @@ export const PitStopLeaderboard: React.FC = () => {
         </div>
 
         {fastest && (
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5 font-mono text-xs text-amber-600 dark:text-amber-400">
-            <Trophy className="w-4 h-4 text-amber-500 shrink-0" />
+          <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 rounded-xl px-3 py-1.5 font-mono text-xs text-purple-300">
+            <Trophy className="w-4 h-4 text-purple-400 shrink-0" />
             <div>
-              <span className="text-[10px] uppercase block font-sans">
+              <span className="text-[10px] uppercase block font-sans text-purple-300/80">
                 {lang === 'es' ? 'Parada Más Rápida' : 'Fastest Pit Stop'}:
               </span>
-              <span className="font-black text-sm">
-                {fastest.teamName.split(' ')[0]} • {fastest.stationaryTimeSec.toFixed(2)}s
+              <span className="font-black text-sm text-zinc-100">
+                {getShortTeamName(fastest.teamName)} •{' '}
+                <span className="text-purple-400 font-extrabold">{fastest.stationaryTimeSec.toFixed(2)}s</span>
               </span>
             </div>
           </div>
@@ -73,14 +75,14 @@ export const PitStopLeaderboard: React.FC = () => {
                   key={record.rank}
                   className={`transition-colors ${
                     isWinner
-                      ? 'bg-amber-500/[0.07] hover:bg-amber-500/[0.12]'
+                      ? 'bg-purple-500/[0.08] hover:bg-purple-500/[0.12]'
                       : 'hover:bg-zinc-100/60 dark:hover:bg-white/[0.03]'
                   }`}
                 >
                   {/* Rank */}
                   <td className="py-2.5 px-2 text-center font-black">
                     {record.rank === 1 ? (
-                      <span className="text-amber-500">1º</span>
+                      <span className="text-purple-400">1º</span>
                     ) : record.rank === 2 ? (
                       <span className="text-zinc-400">2º</span>
                     ) : record.rank === 3 ? (
@@ -136,7 +138,7 @@ export const PitStopLeaderboard: React.FC = () => {
                     <span
                       className={`font-black text-sm font-tabular ${
                         isWinner
-                          ? 'text-amber-500'
+                          ? 'text-purple-400'
                           : record.stationaryTimeSec <= 2.25
                           ? 'text-emerald-500'
                           : 'text-zinc-800 dark:text-zinc-200'
@@ -157,6 +159,15 @@ export const PitStopLeaderboard: React.FC = () => {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* DHL Fastest Pit Stop Trophy Clarification Footnote */}
+      <div className="pt-2 border-t border-zinc-200/60 dark:border-white/[0.06] text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+        <span>
+          {lang === 'es'
+            ? '* Los puntos corresponden al Trofeo Oficial DHL Fastest Pit Stop de Escuderías (premio anual de paradas, independiente del Campeonato Mundial de F1).'
+            : '* Points apply to the official DHL Fastest Pit Stop Award for constructors (annual trophy, independent of the F1 World Championship).'}
+        </span>
       </div>
     </div>
   );
