@@ -93,6 +93,7 @@ export const QualifyingView: React.FC<QualifyingViewProps> = ({
 
   const isQualifyingLive = Boolean(
     liveSnapshot?.session?.sessionType === 'Qualifying' &&
+    liveSnapshot?.session?.status !== 'FINISHED' &&
     (liveSnapshot?.session?.status === 'IN_PROGRESS' ||
       liveSnapshot?.session?.status === 'SUSPENDED' ||
       liveSnapshot?.session?.flag === 'RED' ||
