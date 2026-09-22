@@ -664,6 +664,10 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                         : undefined
                     }
                   >
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: isAcadSelected ? '#FFFFFF' : acad.color }}
+                    />
                     <span>{acad.badge}</span>
                     <span className="text-[10px] font-bold opacity-90">({count})</span>
                   </button>
@@ -742,7 +746,7 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                             {/* Junior Series: Academy Badge */}
                             {series !== 'f1' && acad && (
                               <span
-                                className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono font-bold shrink-0 border"
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 border"
                                 style={{
                                   backgroundColor: `${acad.color}15`,
                                   borderColor: `${acad.color}35`,
@@ -750,6 +754,10 @@ export const StandingsView: React.FC<StandingsViewProps> = ({
                                 }}
                                 title={acad.name}
                               >
+                                <span
+                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: acad.color }}
+                                />
                                 {acad.badge}
                               </span>
                             )}

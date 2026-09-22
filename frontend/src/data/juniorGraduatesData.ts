@@ -14,7 +14,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'FDA',
     color: '#E8002D',
     f1Team: 'Ferrari',
-    badge: '🐎 Ferrari',
+    badge: 'Ferrari',
   },
   redbull: {
     id: 'redbull',
@@ -22,7 +22,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'RBJT',
     color: '#3671C6',
     f1Team: 'Red Bull Racing',
-    badge: '🐂 Red Bull',
+    badge: 'Red Bull',
   },
   mclaren: {
     id: 'mclaren',
@@ -30,7 +30,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'MCL',
     color: '#FF8000',
     f1Team: 'McLaren',
-    badge: '🧡 McLaren',
+    badge: 'McLaren',
   },
   williams: {
     id: 'williams',
@@ -38,7 +38,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'WIL',
     color: '#00A0DE',
     f1Team: 'Williams',
-    badge: '🔷 Williams',
+    badge: 'Williams',
   },
   alpine: {
     id: 'alpine',
@@ -46,7 +46,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'ALP',
     color: '#0093CC',
     f1Team: 'Alpine',
-    badge: '🔵 Alpine',
+    badge: 'Alpine',
   },
   sauber: {
     id: 'sauber',
@@ -54,7 +54,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'SAU',
     color: '#52E252',
     f1Team: 'Kick Sauber / Audi',
-    badge: '🟢 Sauber / Audi',
+    badge: 'Sauber / Audi',
   },
   astonmartin: {
     id: 'astonmartin',
@@ -62,7 +62,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'AMR',
     color: '#229971',
     f1Team: 'Aston Martin',
-    badge: '💚 Aston Martin',
+    badge: 'Aston Martin',
   },
   mercedes: {
     id: 'mercedes',
@@ -70,7 +70,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'MERC',
     color: '#27F4D2',
     f1Team: 'Mercedes-AMG',
-    badge: '⭐ Mercedes',
+    badge: 'Mercedes',
   },
   cadillac: {
     id: 'cadillac',
@@ -78,7 +78,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'CAD',
     color: '#EAB308',
     f1Team: 'Cadillac F1',
-    badge: '🛡️ Cadillac',
+    badge: 'Cadillac',
   },
   independent: {
     id: 'independent',
@@ -86,7 +86,7 @@ export const F1_ACADEMIES: Record<string, F1AcademyInfo> = {
     shortName: 'IND',
     color: '#71717A',
     f1Team: 'Independiente',
-    badge: '⚡ Independiente',
+    badge: 'Independiente',
   },
 };
 
