@@ -12,7 +12,7 @@ import type {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? 'http://localhost:3001' : 'https://f1-secondview.onrender.com');
+  (import.meta.env.DEV ? 'http://localhost:3001' : 'https://f1-secondview-7ank.onrender.com');
 
 export async function fetchLiveSnapshot(): Promise<LiveSnapshot | null> {
   try {
