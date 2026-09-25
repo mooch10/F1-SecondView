@@ -449,8 +449,7 @@ let nextPollDelayMs = initialIsLive ? 2500 : 30000;
 async function adaptiveWorkerTick() {
   try {
     const snap = await updateSnapshot();
-    const isLive =
-      snap?.session?.status === 'IN_PROGRESS' || snap?.session?.status === 'SUSPENDED';
+    const isLive = snap?.session?.status === 'IN_PROGRESS' || snap?.session?.status === 'SUSPENDED';
     nextPollDelayMs = isLive ? 2500 : 30000;
   } catch (err) {
     console.error('[Worker adaptive error]:', err);

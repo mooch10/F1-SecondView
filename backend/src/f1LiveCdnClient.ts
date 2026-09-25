@@ -419,13 +419,18 @@ export class F1LiveCdnClient {
         currentFlag = 'VSC';
       } else if (trackSt.includes('yellow') && currentFlag === 'GREEN') {
         currentFlag = 'YELLOW';
-      } else if (trackSt.includes('allclear') && currentFlag !== 'CHEQUERED' && currentFlag !== 'RED') {
+      } else if (
+        trackSt.includes('allclear') &&
+        currentFlag !== 'CHEQUERED' &&
+        currentFlag !== 'RED'
+      ) {
         currentFlag = 'GREEN';
       }
     }
 
     // Accurate Session Type Classification
-    const typeName = `${effectiveSessionInfo?.Type || ''} ${effectiveSessionInfo?.Name || ''} ${normalizedPath}`.toLowerCase();
+    const typeName =
+      `${effectiveSessionInfo?.Type || ''} ${effectiveSessionInfo?.Name || ''} ${normalizedPath}`.toLowerCase();
     const hasQualyParts = Boolean(
       sessionDataRaw?.Series?.some((s) => s.QualifyingPart !== undefined),
     );
@@ -650,10 +655,11 @@ export class F1LiveCdnClient {
         gap = qualyGap;
       }
 
-      let interval =
-        isLeader
-          ? (isQualy ? 'POLE' : 'LÍDER')
-          : timing.IntervalToPositionAhead?.Value || '- - -';
+      let interval = isLeader
+        ? isQualy
+          ? 'POLE'
+          : 'LÍDER'
+        : timing.IntervalToPositionAhead?.Value || '- - -';
       if (isQualy && !isLeader && qualyInterval) {
         interval = qualyInterval;
       }
@@ -697,9 +703,9 @@ export class F1LiveCdnClient {
         lastLapTime: timing.LastLapTime?.Value || '',
         bestLapTime: bestLapTimeStr,
         bestLapDuration,
-        isFastestLap: !isQualy && Boolean(
-          timing.BestLapTime?.OverallFastest || timing.LastLapTime?.OverallFastest,
-        ),
+        isFastestLap:
+          !isQualy &&
+          Boolean(timing.BestLapTime?.OverallFastest || timing.LastLapTime?.OverallFastest),
         isPole: isQualy && isLeader && Boolean(bestLapTimeStr),
         eliminatedPhase,
         q1Time,
@@ -787,13 +793,11 @@ export class F1LiveCdnClient {
           : 'IN_PROGRESS';
 
     const resolvedSessionName = isQualy
-      ? effectiveSessionInfo?.Name &&
-        effectiveSessionInfo.Name.toLowerCase().includes('qual')
+      ? effectiveSessionInfo?.Name?.toLowerCase().includes('qual')
         ? effectiveSessionInfo.Name
         : innerSessionInfo?.Name || 'Clasificación'
       : isPractice
-        ? effectiveSessionInfo?.Name &&
-          !effectiveSessionInfo.Name.toLowerCase().includes('race')
+        ? effectiveSessionInfo?.Name && !effectiveSessionInfo.Name.toLowerCase().includes('race')
           ? effectiveSessionInfo.Name
           : innerSessionInfo?.Name || 'Práctica Libre'
         : effectiveSessionInfo?.Name || sessionInfo?.Name || 'Carrera';

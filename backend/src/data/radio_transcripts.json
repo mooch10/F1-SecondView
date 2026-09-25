@@ -214,5 +214,205 @@
     "driverNumber": 12,
     "driverCode": "ANT",
     "driverName": "Kimi ANTONELLI"
+  },
+  "VER_3_20260924_122834.mp3": {
+    "transcript": "Radio check. (Mic click)",
+    "category": "RADIO_CHECK",
+    "language": "en",
+    "driverNumber": 3,
+    "driverCode": "VER",
+    "driverName": "Max VERSTAPPEN"
+  },
+  "HAD_6_20260924_123146.mp3": {
+    "transcript": "That crazy pudding on the brakes, that crazy, it's really shunted in the world.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 6,
+    "driverCode": "HAD",
+    "driverName": "Isack HADJAR"
+  },
+  "PIA_81_20260924_123303.mp3": {
+    "transcript": "The preparation of these brakes is unbelievable, twice as bad as I think I've ever had, it's not clear in data, Opga.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 81,
+    "driverCode": "PIA",
+    "driverName": "Oscar PIASTRI"
+  },
+  "OCO_31_20260924_123515.mp3": {
+    "transcript": "and there's don't feel that everywhere, really.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 31,
+    "driverCode": "OCO",
+    "driverName": "Esteban OCON"
+  },
+  "VER_3_20260924_123602.mp3": {
+    "transcript": "That's going to be pulling to the right. You drive the straight. Copy that.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 3,
+    "driverCode": "VER",
+    "driverName": "Max VERSTAPPEN"
+  },
+  "SAI_55_20260924_124643.mp3": {
+    "transcript": "Ok, we need to switch up the cap P15 P2 rear brakes on fires.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 55,
+    "driverCode": "SAI",
+    "driverName": "Carlos SAINZ"
+  },
+  "HAD_6_20260924_124716.mp3": {
+    "transcript": "And he's going to do it right away. It's a good start. But the engine I think. I've done reaching really well. How much is it reach I can recharge? Yeah, come on. The engine's broken. Yet we're looking at the engine still but a nod just like that. Oh, it's the finger.",
+    "category": "DAMAGE",
+    "language": "en",
+    "driverNumber": 6,
+    "driverCode": "HAD",
+    "driverName": "Isack HADJAR"
+  },
+  "RUS_63_20260924_124938.mp3": {
+    "transcript": "I don't know why the money here in St. Louis corner them holds a very minor pitch.",
+    "category": "PIT",
+    "language": "en",
+    "driverNumber": 63,
+    "driverCode": "RUS",
+    "driverName": "George RUSSELL"
+  },
+  "LIN_41_20260924_125353.mp3": {
+    "transcript": "Good room for a harder bed of chartering, pit and tree style into 15. I applaud a lot of booths like, what that's like.",
+    "category": "PIT",
+    "language": "en",
+    "driverNumber": 41,
+    "driverCode": "LIN",
+    "driverName": "Arvid LINDBLAD"
+  },
+  "ANT_12_20260924_125410.mp3": {
+    "transcript": "Oh, stay dronically. Okay, we shift lead. Yeah, last stay dronically. We copy.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 12,
+    "driverCode": "ANT",
+    "driverName": "Kimi ANTONELLI"
+  },
+  "PIA_81_20260924_130055.mp3": {
+    "transcript": "Hopefully we need to do both of these active checks in the group box and we debug this latter to check the box and break.",
+    "category": "PIT",
+    "language": "en",
+    "driverNumber": 81,
+    "driverCode": "PIA",
+    "driverName": "Oscar PIASTRI"
+  },
+  "GAS_10_20260924_160244.mp3": {
+    "transcript": "They can't count the wind, so far like something, same direction.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 10,
+    "driverCode": "GAS",
+    "driverName": "Pierre GASLY"
+  },
+  "VER_3_20260924_160623.mp3": {
+    "transcript": "und dann freut man sich, wie wir hier getan haben.",
+    "category": "GENERAL",
+    "language": "de",
+    "driverNumber": 3,
+    "driverCode": "VER",
+    "driverName": "Max VERSTAPPEN"
+  },
+  "OCO_31_20260924_161314.mp3": {
+    "transcript": "There's one clutch on the front left turn one. What is that? We'll have a look.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 31,
+    "driverCode": "OCO",
+    "driverName": "Esteban OCON"
+  },
+  "LEC_16_20260924_161432.mp3": {
+    "transcript": "Yeah, very strange feeling in Turn 1, we can say... Because in general the car is extremely full now.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 16,
+    "driverCode": "LEC",
+    "driverName": "Charles LECLERC"
+  },
+  "LIN_41_20260924_161917.mp3": {
+    "transcript": "Yeah, I was like, I'm not sure, I'm pretty sorry.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 41,
+    "driverCode": "LIN",
+    "driverName": "Arvid LINDBLAD"
+  },
+  "LIN_41_20260924_162133.mp3": {
+    "transcript": "Yeah, I'm so sorry. I think I literally clicked it by like, you know what I mean to, sorry.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 41,
+    "driverCode": "LIN",
+    "driverName": "Arvid LINDBLAD"
+  },
+  "BEA_87_20260924_162958.mp3": {
+    "transcript": "Oh, my head too big.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 87,
+    "driverCode": "BEA",
+    "driverName": "Oliver BEARMAN"
+  },
+  "BEA_87_20260924_163059.mp3": {
+    "transcript": "My end is switched off, I just dropped, drop, drop, soon I'll let you not go, sorry guys.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 87,
+    "driverCode": "BEA",
+    "driverName": "Oliver BEARMAN"
+  },
+  "HAD_6_20260924_163722.mp3": {
+    "transcript": "I just like sideways in the event you are fine, I do it, it's just like a slap, it's like just zero compliance on the rail, it's like the air less of dark horse. Okay, we'll check for a drop by.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 6,
+    "driverCode": "HAD",
+    "driverName": "Isack HADJAR"
+  },
+  "LAW_30_20260924_163919.mp3": {
+    "transcript": "That is so dangerous. Oh my god. That is so dangerous.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 30,
+    "driverCode": "LAW",
+    "driverName": "Liam LAWSON"
+  },
+  "BOR_5_20260924_164110.mp3": {
+    "transcript": "Okay, nice. Why did that happen? Too much pick. We are good pick in some breakings.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 5,
+    "driverCode": "BOR",
+    "driverName": "Gabriel BORTOLETO"
+  },
+  "RUS_63_20260924_164521.mp3": {
+    "transcript": "I don't know if it's right backboard, so that's it. Yeah, I can't be a soul.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 63,
+    "driverCode": "RUS",
+    "driverName": "George RUSSELL"
+  },
+  "VER_3_20260924_165759.mp3": {
+    "transcript": "Oh, this is someone who may not like it to me, that's me, that's me, that's me, that's me, that's me, that's me, that's me.",
+    "category": "GENERAL",
+    "language": "en",
+    "driverNumber": 3,
+    "driverCode": "VER",
+    "driverName": "Max VERSTAPPEN"
+  },
+  "HAD_6_20260924_170444.mp3": {
+    "transcript": "of course down in a 10% throttle to the grid. To be honest, I am not even listening. I'm thinking about something else. Here we go. So, ciao right here. So, sorry, four seconds. And then lift off.",
+    "category": "STRATEGY",
+    "language": "en",
+    "driverNumber": 6,
+    "driverCode": "HAD",
+    "driverName": "Isack HADJAR"
   }
 }
