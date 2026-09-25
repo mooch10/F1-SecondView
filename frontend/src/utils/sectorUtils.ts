@@ -18,13 +18,13 @@ export function computeBestSessionSectors(
 
   for (const d of drivers) {
     const s = d.sectors;
-    if (s?.s1 && typeof s.s1 === 'number' && s.s1 > 0 && s.s1 < bestS1) {
+    if (s?.s1 && typeof s.s1 === 'number' && s.s1 >= 10 && s.s1 < bestS1) {
       bestS1 = s.s1;
     }
-    if (s?.s2 && typeof s.s2 === 'number' && s.s2 > 0 && s.s2 < bestS2) {
+    if (s?.s2 && typeof s.s2 === 'number' && s.s2 >= 10 && s.s2 < bestS2) {
       bestS2 = s.s2;
     }
-    if (s?.s3 && typeof s.s3 === 'number' && s.s3 > 0 && s.s3 < bestS3) {
+    if (s?.s3 && typeof s.s3 === 'number' && s.s3 >= 10 && s.s3 < bestS3) {
       bestS3 = s.s3;
     }
   }
@@ -60,8 +60,8 @@ export function resolveSectorStatus(
       ? bestSectors.bestS2
       : bestSectors.bestS3;
 
-  // 1. If this driver's time matches the overall fastest sector of the session (with 0.001s tolerance)
-  if (targetBest !== null && Math.abs(time - targetBest) <= 0.001) {
+  // 1. If this driver's time matches or beats the overall fastest sector of the session
+  if (targetBest !== null && (time <= targetBest + 0.001 || Math.abs(time - targetBest) <= 0.001)) {
     return 'purple';
   }
 

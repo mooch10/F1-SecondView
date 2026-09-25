@@ -43,16 +43,18 @@ interface UseTrackAnimationProps {
   trackGeometry: TrackGeometryInterface | null;
   isGpsClustered: boolean;
   sessionStatus?: SessionState;
+  benchmarkLapSec?: number;
 }
 
-// Typical racing benchmark: 1 lap ~ 85 seconds = ~0.0118 progress/sec
-const DEFAULT_PROGRESS_SPEED = 1 / 85;
+// Fallback racing benchmark: 1 lap ~ 95 seconds = ~0.0105 progress/sec
+const DEFAULT_BENCHMARK_LAP_SEC = 95;
 
 export function useTrackAnimation({
   drivers,
   trackGeometry,
   isGpsClustered,
   sessionStatus,
+  benchmarkLapSec,
 }: UseTrackAnimationProps) {
   const [animatedCoords, setAnimatedCoords] = useState<Map<number, AnimatedCarCoord>>(new Map());
 
@@ -112,13 +114,18 @@ export function useTrackAnimation({
         targetProgress = proj.t;
       }
 
-      // If session is NOT started, speed is strictly 0
+      // Physical speed estimation anchored to actual driver lap time or circuit benchmark
       let baseSpeed = 0;
+      const benchmarkSec =
+        benchmarkLapSec && benchmarkLapSec > 50 && benchmarkLapSec < 150
+          ? benchmarkLapSec
+          : DEFAULT_BENCHMARK_LAP_SEC;
+
       if (!isStationary) {
-        if (driver.bestLapDuration && driver.bestLapDuration > 45 && driver.bestLapDuration < 140) {
+        if (driver.bestLapDuration && driver.bestLapDuration > 50 && driver.bestLapDuration < 150) {
           baseSpeed = 1.0 / driver.bestLapDuration;
         } else {
-          baseSpeed = DEFAULT_PROGRESS_SPEED;
+          baseSpeed = 1.0 / benchmarkSec;
         }
       }
 
@@ -160,10 +167,14 @@ export function useTrackAnimation({
           // If progressDelta is near zero, it means the server returned an identical cached snapshot.
           // Do NOT reset lastPacketTime or packetProgress; allow the car to continue coasting smoothly!
           if (Math.abs(progressDelta) >= 0.0008) {
-            let calibratedSpeed = existing.speed;
-            if (progressDelta > 0.001 && progressDelta < 0.15) {
+            let calibratedSpeed = baseSpeed > 0 ? baseSpeed : existing.speed;
+            if (progressDelta > 0.001 && progressDelta < 0.15 && baseSpeed > 0) {
               const measuredSpeed = progressDelta / dtSeconds;
-              calibratedSpeed = Math.max(0.005, Math.min(0.025, measuredSpeed));
+              // Strict speed guardrails: car speed must stay close to true lap pace
+              // Never allow unrealistically high speeds (e.g. 40s/lap)
+              const minSpeed = Math.max(1.0 / 140, baseSpeed * 0.75);
+              const maxSpeed = Math.min(1.0 / 65, baseSpeed * 1.15);
+              calibratedSpeed = Math.max(minSpeed, Math.min(maxSpeed, measuredSpeed));
             } else if (baseSpeed > 0) {
               calibratedSpeed = baseSpeed;
             }
@@ -195,7 +206,7 @@ export function useTrackAnimation({
     if (rafRef.current === null && animateRef.current) {
       rafRef.current = requestAnimationFrame(animateRef.current);
     }
-  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary, sessionStatus]);
+  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary, sessionStatus, benchmarkLapSec]);
 
   // 2. High-Performance 60 FPS Continuous Animation Loop
   useEffect(() => {

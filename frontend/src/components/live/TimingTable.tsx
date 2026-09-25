@@ -94,6 +94,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
   };
 
   const isQualy = sessionType === 'Qualifying';
+  const isTimedSession = sessionType === 'Qualifying' || sessionType === 'Practice';
   const isRace = sessionType !== 'Qualifying' && sessionType !== 'Practice';
 
   const toggleExpand = (driverNumber: number) => {
@@ -214,7 +215,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       <div className="flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#171C28] border-b border-white/[0.08] text-[11px] sm:text-xs font-mono select-none">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-            {isQualy ? t.live.qualyProgress : t.live.liveTimes}
+            {isTimedSession ? (isQualy ? t.live.qualyProgress : (lang === 'es' ? 'TIEMPOS Y SECTORES EN VIVO' : 'LIVE TIMING & SECTORS')) : t.live.liveTimes}
           </span>
           {pinnedDriver && (
             <span className="hidden sm:inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20 font-bold">
@@ -400,16 +401,16 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           </div>
         </div>
       )}
-      {/* Table Header (Polymorphic: Qualy vs Race) */}
-      {isQualy ? (
+      {/* Table Header (Polymorphic: Qualy/Practice vs Race) */}
+      {isTimedSession ? (
         <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
           <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
-          <div className="col-span-4 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
-          <div className="col-span-3 sm:col-span-5 text-center whitespace-nowrap">
+          <div className="col-span-3 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
+          <div className="col-span-5 sm:col-span-5 text-center whitespace-nowrap">
             <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
             <span className="sm:hidden">SECTORES</span>
           </div>
-          <div className="col-span-4 sm:col-span-3 text-right whitespace-nowrap">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
+          <div className="col-span-3 sm:col-span-3 text-right whitespace-nowrap">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
@@ -527,7 +528,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 </div>
 
                 {/* Team stripe + Star Pin + Code & Number */}
-                <div className={`${isQualy ? 'col-span-4' : 'col-span-3'} sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden`}>
+                <div className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden">
                   <span
                     className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
@@ -589,7 +590,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                         </span>
                       )}
                       {/* Active FIA Penalty Badge in Race (En rojo oficial de sanción) */}
-                      {!isQualy && d.penaltySeconds && d.penaltySeconds > 0 && (
+                      {!isTimedSession && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span
                           className="px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs"
                           title={lang === 'es' ? `Penalización oficial FIA: +${d.penaltySeconds}s` : `Official FIA penalty: +${d.penaltySeconds}s`}
@@ -615,10 +616,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   </div>
                 </div>
 
-                {isQualy ? (
+                {isTimedSession ? (
                   <>
-                    {/* Qualy Sectors & Mini-Sectors Center Column */}
-                    <div className="col-span-3 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
+                    {/* Qualy / Practice Sectors & Mini-Sectors Center Column */}
+                    <div className="col-span-5 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
                       {/* 3 Sector Pills (Mobile & Desktop) */}
                       <div className="flex items-center justify-center gap-1 w-full flex-nowrap">
                         <SectorPill
@@ -646,8 +647,8 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       </div>
                     </div>
 
-                    {/* Qualy MEJOR TIEMPO / GAP */}
-                    <div className="col-span-4 sm:col-span-3 text-right flex items-center justify-end gap-1 sm:gap-1.5 shrink-0">
+                    {/* Qualy / Practice MEJOR TIEMPO / GAP */}
+                    <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-1 sm:gap-1.5 shrink-0">
                       <div className="flex flex-col leading-tight">
                         <span
                           className={`font-mono text-xs font-tabular whitespace-nowrap ${
@@ -1083,7 +1084,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   )}
 
                   {/* Live Tyre Stints Strategy Bar */}
-                  {!isQualy && d.tyre && (
+                  {isRace && d.tyre && (
                     <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2">
                       <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1.5 uppercase font-semibold">
                         <span>{lang === 'es' ? 'Estrategia de Neumáticos en Carrera' : 'Race Tyre Stints'}</span>
@@ -1101,7 +1102,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                   )}
 
                   {/* Detalle de Paradas en Boxes (Pit Stops Breakdown) */}
-                  {!isQualy &&
+                  {isRace &&
                     ((d.pitHistory && d.pitHistory.length > 0) ||
                       (typeof d.lastPitStopDuration === 'number' && d.lastPitStopDuration > 0)) && (
                       <div className="bg-[#131722] border border-white/[0.06] rounded-lg p-2.5 mt-2">

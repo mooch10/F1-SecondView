@@ -17,6 +17,7 @@ import type { DriverLive, SessionState, TrackOutline } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTrackAnimation } from '../../hooks/useTrackAnimation';
 import { getCircuitIntel } from '../../data/circuitIntelData';
+import { projectPointToTrack } from '../../utils/trackInterpolator';
 
 interface CircuitMapProps {
   circuitTrack?: TrackOutline | null;
@@ -87,15 +88,34 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
   // Robust fallback: if live snapshot circuitTrack is missing/empty, resolve from 2026 circuit intel
   const effectiveTrack = useMemo(() => {
-    if (circuitTrack && circuitTrack.outline && circuitTrack.outline.length >= 3) {
-      return circuitTrack;
-    }
     const intel = getCircuitIntel(circuitName || sessionName);
+    const parseLapSec = (timeStr?: string): number | undefined => {
+      if (!timeStr) return undefined;
+      const parts = timeStr.split(':');
+      if (parts.length === 2) {
+        const min = Number.parseFloat(parts[0]);
+        const sec = Number.parseFloat(parts[1]);
+        return Number.isNaN(min) || Number.isNaN(sec) ? undefined : min * 60 + sec;
+      }
+      const s = Number.parseFloat(timeStr);
+      return Number.isNaN(s) ? undefined : s;
+    };
+    const benchmarkLapSec = parseLapSec(intel?.lapRecord?.time);
+
+    if (circuitTrack && circuitTrack.outline && circuitTrack.outline.length >= 3) {
+      return {
+        ...circuitTrack,
+        benchmarkLapSec,
+        sectors: intel?.sectors,
+      };
+    }
     if (intel && intel.outline && intel.outline.length >= 3) {
       return {
         circuitName: intel.name,
         outline: intel.outline,
         bounds: intel.bounds,
+        benchmarkLapSec,
+        sectors: intel.sectors,
       };
     }
     return null;
@@ -126,8 +146,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
     const toSvgPoint = (x: number, y: number): [number, number] => {
       const px = offsetX + (x - minX) * scale;
-      // Invert Y so Cartesian North is up in SVG
-      const py = canvasH - (offsetY + (y - minY) * scale);
+      // Standard SVG coordinates: Y increases downwards, matching official layout and CircuitProfileModal
+      const py = offsetY + (y - minY) * scale;
       return [px, py];
     };
 
@@ -178,10 +198,11 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     }
     fullPath += ' Z';
 
-    // Sector 1, 2, 3 path splits
-    // S1: 0% to 33%, S2: 33% to 67%, S3: 67% to 100%
-    const s1EndIdx = Math.floor(N * 0.33);
-    const s2EndIdx = Math.floor(N * 0.67);
+    // Sector 1, 2, 3 path splits using circuit intel sector ratios if available
+    const s1Ratio = effectiveTrack.sectors?.s1EndRatio || 0.33;
+    const s2Ratio = effectiveTrack.sectors?.s2EndRatio || 0.67;
+    const s1EndIdx = Math.min(N - 2, Math.max(1, Math.floor(N * s1Ratio)));
+    const s2EndIdx = Math.min(N - 1, Math.max(s1EndIdx + 1, Math.floor(N * s2Ratio)));
 
     let s1Path = `M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
     for (let i = 1; i <= s1EndIdx; i++) {
@@ -240,9 +261,12 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       startFinish,
       s1SplitPt,
       s2SplitPt,
+      s1Ratio,
+      s2Ratio,
       pts,
       cumDists,
       totalLength,
+      benchmarkLapSec: effectiveTrack.benchmarkLapSec,
       overtakeZones: [
         { start: ot1Start, end: ot1End, label: 'OVERTAKE 1' },
         { start: ot2Start, end: ot2End, label: 'OVERTAKE 2' },
@@ -276,6 +300,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     trackGeometry,
     isGpsClustered,
     sessionStatus,
+    benchmarkLapSec: trackGeometry?.benchmarkLapSec,
   });
 
   // Render car coordinates with anti-overlap decluttering based on real GPS and 60 FPS spline animation
@@ -299,22 +324,36 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       let x = 0;
       let y = 0;
       let angle = 0;
-      const sector = 1;
+      let currentProgress = 0;
 
       const anim = animatedPositions.get(d.driverNumber);
       if (anim) {
         x = anim.x;
         y = anim.y;
         angle = anim.angle;
+        currentProgress = anim.progress;
       } else if (d.location && (d.location.x !== 0 || d.location.y !== 0)) {
         // Fallback directly to raw GPS coordinates
         const [gx, gy] = trackGeometry.toSvgPoint(d.location.x, d.location.y);
         x = gx;
         y = gy;
+        if (trackGeometry.pts && trackGeometry.cumDists && trackGeometry.totalLength) {
+          const proj = projectPointToTrack(
+            [gx, gy],
+            trackGeometry.pts,
+            trackGeometry.cumDists,
+            trackGeometry.totalLength,
+          );
+          currentProgress = proj.t;
+        }
       } else {
         // Driver has no active GPS position on track - do not invent fake coordinates
         return;
       }
+
+      const s1R = trackGeometry.s1Ratio || 0.33;
+      const s2R = trackGeometry.s2Ratio || 0.67;
+      const sector = currentProgress < s1R ? 1 : currentProgress < s2R ? 2 : 3;
 
       coords.push({
         driver: d,

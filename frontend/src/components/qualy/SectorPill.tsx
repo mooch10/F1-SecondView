@@ -62,11 +62,11 @@ export const SectorPill: React.FC<SectorPillProps> = ({
       >
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${styles.dot}`} />
         {showLabel && (
-          <span className={`text-[8.5px] sm:text-[10px] font-extrabold ${styles.label}`}>
+          <span className={`hidden xs:inline sm:inline text-[8.5px] sm:text-[10px] font-extrabold ${styles.label}`}>
             S{sectorNumber}
           </span>
         )}
-        <span className="hidden sm:inline font-tabular text-[11px]">{formatSectorTime(time)}</span>
+        <span className="inline font-tabular text-[8.5px] sm:text-[11px]">{formatSectorTime(time)}</span>
       </span>
     );
   }

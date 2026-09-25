@@ -12,6 +12,7 @@ import type {
   SessionState,
   SessionType,
   TeamRadioCapture,
+  TrackWeather,
   TyreCompound,
 } from './types.js';
 import { getCircuitData } from './universalLiveEngine.js';
@@ -59,6 +60,42 @@ export interface F1CdnSpeeds {
   I2?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
   FL?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
   ST?: { Value?: string; OverallFastest?: boolean; PersonalFastest?: boolean };
+}
+
+export interface F1CdnTimingStats {
+  SessionType?: string;
+  Lines?: Record<
+    string,
+    {
+      Line?: number;
+      RacingNumber?: string;
+      PersonalBestLapTime?: {
+        Lap?: number;
+        Position?: number;
+        Value?: string;
+      };
+      BestSectors?: Array<{
+        Position?: number;
+        Value?: string;
+      }>;
+      BestSpeeds?: {
+        I1?: { Position?: number; Value?: string };
+        I2?: { Position?: number; Value?: string };
+        FL?: { Position?: number; Value?: string };
+        ST?: { Position?: number; Value?: string };
+      };
+    }
+  >;
+}
+
+export interface F1CdnWeatherData {
+  AirTemp?: string;
+  Humidity?: string;
+  Pressure?: string;
+  Rainfall?: string;
+  TrackTemp?: string;
+  WindDirection?: string;
+  WindSpeed?: string;
 }
 
 function parseLapDurationSec(lapStr?: string): number | null {
@@ -217,6 +254,19 @@ export class F1LiveCdnClient {
   } | null = null;
   private readonly FINALIZED_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
+  // In-memory cache for best driver sectors during session
+  private bestDriverSectorsCache = new Map<
+    string,
+    {
+      s1: number | null;
+      s2: number | null;
+      s3: number | null;
+      s1Status: SectorStatus;
+      s2Status: SectorStatus;
+      s3Status: SectorStatus;
+    }
+  >();
+
   private async fetchCdnJson<T>(path: string, cacheBust = true): Promise<T | null> {
     const bustParam = cacheBust ? `?_=${Date.now()}` : '';
     const url = `${this.baseUrl}/${path.replace(/^\//, '')}${bustParam}`;
@@ -318,6 +368,8 @@ export class F1LiveCdnClient {
       driverListSettled,
       raceControlSettled,
       teamRadioSettled,
+      timingStatsSettled,
+      weatherSettled,
     ] = await Promise.allSettled([
       this.fetchCdnJson<F1CdnTimingData>(`${normalizedPath}TimingData.json`),
       this.fetchCdnJson<F1CdnTimingAppData>(`${normalizedPath}TimingAppData.json`),
@@ -330,6 +382,8 @@ export class F1LiveCdnClient {
         : Promise.resolve(null),
       this.fetchCdnJson<F1CdnRaceControl>(`${normalizedPath}RaceControlMessages.json`),
       this.fetchCdnJson<F1CdnTeamRadio>(`${normalizedPath}TeamRadio.json`),
+      this.fetchCdnJson<F1CdnTimingStats>(`${normalizedPath}TimingStats.json`),
+      this.fetchCdnJson<F1CdnWeatherData>(`${normalizedPath}WeatherData.json`),
     ]);
 
     const timingDataRaw = timingSettled.status === 'fulfilled' ? timingSettled.value : null;
@@ -345,6 +399,22 @@ export class F1LiveCdnClient {
     const raceControlRaw =
       raceControlSettled.status === 'fulfilled' ? raceControlSettled.value : null;
     const teamRadioRaw = teamRadioSettled.status === 'fulfilled' ? teamRadioSettled.value : null;
+    const timingStatsRaw =
+      timingStatsSettled.status === 'fulfilled' ? timingStatsSettled.value : null;
+    const statsLines = timingStatsRaw?.Lines || {};
+    const weatherRaw = weatherSettled.status === 'fulfilled' ? weatherSettled.value : null;
+
+    let trackWeather: TrackWeather | null = null;
+    if (weatherRaw) {
+      trackWeather = {
+        airTemp: Number.parseFloat(weatherRaw.AirTemp || '0') || 0,
+        trackTemp: Number.parseFloat(weatherRaw.TrackTemp || '0') || 0,
+        humidity: Number.parseFloat(weatherRaw.Humidity || '0') || 0,
+        rainfall: weatherRaw.Rainfall === '1' || weatherRaw.Rainfall === 'true',
+        windSpeed: Number.parseFloat(weatherRaw.WindSpeed || '0') || 0,
+        windDirection: Number.parseInt(weatherRaw.WindDirection || '0', 10) || 0,
+      };
+    }
 
     if (freshDriverList && Object.keys(freshDriverList).length > 0) {
       driverListMap = freshDriverList;
@@ -502,25 +572,39 @@ export class F1LiveCdnClient {
 
       // Sectors
       const sectorsRaw = Array.isArray(timing.Sectors) ? timing.Sectors : [];
-      const s1Val = sectorsRaw[0]?.Value ? Number.parseFloat(sectorsRaw[0].Value) : null;
-      const s2Val = sectorsRaw[1]?.Value ? Number.parseFloat(sectorsRaw[1].Value) : null;
-      const s3Val = sectorsRaw[2]?.Value ? Number.parseFloat(sectorsRaw[2].Value) : null;
+      const driverStat = statsLines[racingNumStr];
 
-      const s1Status: SectorStatus = sectorsRaw[0]?.OverallFastest
+      let s1Val = sectorsRaw[0]?.Value
+        ? Number.parseFloat(sectorsRaw[0].Value)
+        : sectorsRaw[0]?.PreviousValue
+          ? Number.parseFloat(sectorsRaw[0].PreviousValue)
+          : null;
+      let s2Val = sectorsRaw[1]?.Value
+        ? Number.parseFloat(sectorsRaw[1].Value)
+        : sectorsRaw[1]?.PreviousValue
+          ? Number.parseFloat(sectorsRaw[1].PreviousValue)
+          : null;
+      let s3Val = sectorsRaw[2]?.Value
+        ? Number.parseFloat(sectorsRaw[2].Value)
+        : sectorsRaw[2]?.PreviousValue
+          ? Number.parseFloat(sectorsRaw[2].PreviousValue)
+          : null;
+
+      let s1Status: SectorStatus = sectorsRaw[0]?.OverallFastest
         ? 'purple'
         : sectorsRaw[0]?.PersonalFastest
           ? 'green'
           : s1Val
             ? 'yellow'
             : 'none';
-      const s2Status: SectorStatus = sectorsRaw[1]?.OverallFastest
+      let s2Status: SectorStatus = sectorsRaw[1]?.OverallFastest
         ? 'purple'
         : sectorsRaw[1]?.PersonalFastest
           ? 'green'
           : s2Val
             ? 'yellow'
             : 'none';
-      const s3Status: SectorStatus = sectorsRaw[2]?.OverallFastest
+      let s3Status: SectorStatus = sectorsRaw[2]?.OverallFastest
         ? 'purple'
         : sectorsRaw[2]?.PersonalFastest
           ? 'green'
@@ -540,6 +624,70 @@ export class F1LiveCdnClient {
           return 'none';
         });
       };
+
+      const cacheKey = `${normalizedPath}_${racingNumStr}`;
+
+      // In Qualifying or Practice (or when in pit / session finalised):
+      // If current sector values are an in-lap / out-lap / empty, or driver is in pit,
+      // present their best representative sectors from TimingStats.json or cache
+      if (driverStat?.BestSectors && driverStat.BestSectors.length >= 3) {
+        const bestS1 = driverStat.BestSectors[0]?.Value
+          ? Number.parseFloat(driverStat.BestSectors[0].Value)
+          : null;
+        const bestS2 = driverStat.BestSectors[1]?.Value
+          ? Number.parseFloat(driverStat.BestSectors[1].Value)
+          : null;
+        const bestS3 = driverStat.BestSectors[2]?.Value
+          ? Number.parseFloat(driverStat.BestSectors[2].Value)
+          : null;
+
+        const liveSum = (s1Val || 0) + (s2Val || 0) + (s3Val || 0);
+        const bestSum = (bestS1 || 0) + (bestS2 || 0) + (bestS3 || 0);
+        const isSlowLap = bestSum > 0 && liveSum > bestSum * 1.15;
+
+        if (timing.InPit || isFinalised || isSlowLap || !s3Val) {
+          if (bestS1) {
+            s1Val = bestS1;
+            s1Status = driverStat.BestSectors[0]?.Position === 1 ? 'purple' : 'green';
+          }
+          if (bestS2) {
+            s2Val = bestS2;
+            s2Status = driverStat.BestSectors[1]?.Position === 1 ? 'purple' : 'green';
+          }
+          if (bestS3) {
+            s3Val = bestS3;
+            s3Status = driverStat.BestSectors[2]?.Position === 1 ? 'purple' : 'green';
+          }
+        }
+      }
+
+      // In-memory cache update and fallback
+      if (s1Val && s2Val && s3Val && (s1Status === 'purple' || s1Status === 'green')) {
+        this.bestDriverSectorsCache.set(cacheKey, {
+          s1: s1Val,
+          s2: s2Val,
+          s3: s3Val,
+          s1Status,
+          s2Status,
+          s3Status,
+        });
+      } else if (timing.InPit || isFinalised) {
+        const cached = this.bestDriverSectorsCache.get(cacheKey);
+        if (cached) {
+          if (!s1Val || s1Status === 'yellow') {
+            s1Val = cached.s1;
+            s1Status = cached.s1Status;
+          }
+          if (!s2Val || s2Status === 'yellow') {
+            s2Val = cached.s2;
+            s2Status = cached.s2Status;
+          }
+          if (!s3Val || s3Status === 'yellow') {
+            s3Val = cached.s3;
+            s3Status = cached.s3Status;
+          }
+        }
+      }
 
       const parseCompoundStr = (comp?: string): TyreCompound => {
         const s = (comp || '').toUpperCase();
@@ -665,9 +813,21 @@ export class F1LiveCdnClient {
       }
 
       // Speed Trap & Speeds
-      const speedTrap = timing.Speeds?.ST?.Value ? Number.parseFloat(timing.Speeds.ST.Value) : null;
-      const i1Speed = timing.Speeds?.I1?.Value ? Number.parseFloat(timing.Speeds.I1.Value) : null;
-      const i2Speed = timing.Speeds?.I2?.Value ? Number.parseFloat(timing.Speeds.I2.Value) : null;
+      let speedTrap = timing.Speeds?.ST?.Value ? Number.parseFloat(timing.Speeds.ST.Value) : null;
+      let i1Speed = timing.Speeds?.I1?.Value ? Number.parseFloat(timing.Speeds.I1.Value) : null;
+      let i2Speed = timing.Speeds?.I2?.Value ? Number.parseFloat(timing.Speeds.I2.Value) : null;
+
+      if (driverStat?.BestSpeeds) {
+        if ((!speedTrap || (timing.InPit && speedTrap < 200)) && driverStat.BestSpeeds.ST?.Value) {
+          speedTrap = Number.parseFloat(driverStat.BestSpeeds.ST.Value);
+        }
+        if ((!i1Speed || timing.InPit) && driverStat.BestSpeeds.I1?.Value) {
+          i1Speed = Number.parseFloat(driverStat.BestSpeeds.I1.Value);
+        }
+        if ((!i2Speed || timing.InPit) && driverStat.BestSpeeds.I2?.Value) {
+          i2Speed = Number.parseFloat(driverStat.BestSpeeds.I2.Value);
+        }
+      }
 
       // Track location coordinate: only during active live session, NEVER when finalised
       const outlineLen = circuitMeta.outline.length;
@@ -822,6 +982,7 @@ export class F1LiveCdnClient {
 
     const snapshotResult: LiveSnapshot = {
       session: sessionLive,
+      weather: trackWeather,
       drivers: parsedDrivers,
       messages: messages.slice(-25).reverse(),
       teamRadios: enrichedRadios,
