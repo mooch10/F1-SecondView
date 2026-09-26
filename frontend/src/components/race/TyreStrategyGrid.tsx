@@ -18,7 +18,7 @@ export const TyreStrategyGrid: React.FC = () => {
     }
   };
 
-  const totalLaps = 57;
+  const totalLaps = LAST_RACE_TYRE_STRATEGIES[0]?.totalLaps || 51;
 
   return (
     <div className="bg-zinc-50 dark:bg-[#10141E] border border-zinc-200 dark:border-white/10 rounded-2xl p-3 sm:p-5 flex flex-col gap-4 shadow-sm">

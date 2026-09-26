@@ -22,7 +22,9 @@ export const LapEvolutionChart: React.FC = () => {
   }, [activeFilter]);
 
   // Chart dimensions & scaling
-  const totalLaps = 57;
+  const totalLaps = LAST_RACE_LAP_CHART_DRIVERS[0]?.positions.length
+    ? LAST_RACE_LAP_CHART_DRIVERS[0].positions.length - 1
+    : 51;
   const svgWidth = 800;
   const svgHeight = 360;
   const padLeft = 40;
