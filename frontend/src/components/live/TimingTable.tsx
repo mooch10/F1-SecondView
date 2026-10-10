@@ -20,6 +20,7 @@ const DriverProfileModal = lazy(() =>
 interface TimingTableProps {
   drivers: DriverLive[];
   sessionType?: SessionType;
+  qualifyingPhase?: 'Q1' | 'Q2' | 'Q3' | null;
 }
 
 const F1_POINTS: Record<number, number> = {
@@ -38,6 +39,7 @@ const F1_POINTS: Record<number, number> = {
 export const TimingTable: React.FC<TimingTableProps> = ({
   drivers,
   sessionType = 'Race',
+  qualifyingPhase,
 }) => {
   const { lang, t } = useLanguage();
   const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
@@ -215,7 +217,13 @@ export const TimingTable: React.FC<TimingTableProps> = ({
       <div className="flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#171C28] border-b border-white/[0.08] text-[11px] sm:text-xs font-mono select-none">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-            {isTimedSession ? (isQualy ? t.live.qualyProgress : (lang === 'es' ? 'TIEMPOS Y SECTORES EN VIVO' : 'LIVE TIMING & SECTORS')) : t.live.liveTimes}
+            {isTimedSession
+              ? isQualy
+                ? qualifyingPhase
+                  ? `${t.live.qualyProgress} ${qualifyingPhase}`
+                  : (lang === 'es' ? 'CLASIFICACIÓN OFICIAL' : 'OFFICIAL QUALIFYING')
+                : (lang === 'es' ? 'TIEMPOS Y SECTORES EN VIVO' : 'LIVE TIMING & SECTORS')
+              : t.live.liveTimes}
           </span>
           {pinnedDriver && (
             <span className="hidden sm:inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20 font-bold">

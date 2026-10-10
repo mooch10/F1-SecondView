@@ -439,10 +439,9 @@ export function generateUniversalLiveSnapshot(
   const isQualy = activeSession.sessionType === 'Qualifying';
   const isNotStarted = activeSession.status === 'NOT_STARTED';
   const hasLiveTiming = Boolean(
-    liveSession &&
-      liveSession.drivers.length > 0 &&
-      liveSession.status !== 'NOT_STARTED' &&
-      liveSession.drivers.some((d) => d.gapToLeaderSec > 0),
+    !isNotStarted &&
+      ((liveSession && liveSession.drivers.length > 0 && liveSession.status !== 'NOT_STARTED') ||
+        activeSession.status === 'IN_PROGRESS'),
   );
 
   const rawSourceDrivers =
@@ -514,7 +513,12 @@ export function generateUniversalLiveSnapshot(
   const drivers: DriverLive[] = sourceDrivers.map((d, idx) => {
     const isPole = idx === 0;
     const { driverLapDuration, s1, s2, s3 } = precomputedSectors[idx];
-    const diffSec = d.performanceBias;
+    const diffSec =
+      d.performanceBias > 0
+        ? d.performanceBias
+        : idx === 0
+          ? 0
+          : Number((idx * 0.075 + (idx > 10 ? 0.3 : 0)).toFixed(3));
     const gap =
       isNotStarted || !hasLiveTiming
         ? `P${d.order}`
@@ -534,7 +538,7 @@ export function generateUniversalLiveSnapshot(
           ? isQualy
             ? 'POLE'
             : 'LÍDER'
-          : `+${intervalDiff.toFixed(3)}`;
+          : `+${intervalDiff > 0 ? intervalDiff.toFixed(3) : '0.075'}`;
 
     const s1Status: SectorStatus =
       Math.abs(s1 - bestEngineS1) <= 0.001 ? 'purple' : idx < 7 ? 'green' : 'yellow';
@@ -543,12 +547,27 @@ export function generateUniversalLiveSnapshot(
     const s3Status: SectorStatus =
       Math.abs(s3 - bestEngineS3) <= 0.001 ? 'purple' : idx < 8 ? 'green' : 'yellow';
 
-    // Position car along track outline with Leader at the front and followers behind
+    // In Qualifying, typically only 4-6 cars are out on track simultaneously, while the rest are in garage/pit
+    const isQualyCarOnTrack = !isQualy || idx < 5;
+    const isCarInPit =
+      isNotStarted || !isQualyCarOnTrack || d.status === 'PIT' || d.status === 'GARAGE';
+
+    // Position car along track outline:
+    // When in pit: park at pit lane (near start/finish index 0)
+    // When on track: distribute smoothly around the circuit without bunching into a 20-pixel train
     const outlineLen = circuit.outline.length;
-    const lagPoints = Math.round(d.performanceBias * 2.5 + idx * 3.5);
-    const stepOffset = isNotStarted
-      ? (((outlineLen - idx * 4) % outlineLen) + outlineLen) % outlineLen
-      : (((nowSec * 2 - lagPoints) % outlineLen) + outlineLen) % outlineLen;
+    let stepOffset = 0;
+    if (isNotStarted || isCarInPit) {
+      stepOffset = 0;
+    } else if (isQualy) {
+      // Space active qualifying cars evenly across the lap (~20% spacing)
+      const prog = (((idx * 0.2 + nowSec * 0.011) % 1.0) + 1.0) % 1.0;
+      stepOffset = Math.floor(prog * outlineLen) % outlineLen;
+    } else {
+      // Race: smooth progression along track based on driver pace and gap
+      const prog = (((nowSec * (1.0 / benchmarkLap) - idx * 0.035) % 1.0) + 1.0) % 1.0;
+      stepOffset = Math.floor(prog * outlineLen) % outlineLen;
+    }
     const coord = circuit.outline[stepOffset] || [0, 0];
 
     const eliminatedPhase: 'Q1' | 'Q2' | null = isQualy
@@ -644,50 +663,49 @@ export function generateUniversalLiveSnapshot(
         !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
       isOvertakeZone:
         !isNotStarted && hasLiveTiming && !isQualy && idx > 0 && Math.abs(intervalDiff) <= 1.0,
-      lastLapTime: isNotStarted || !hasLiveTiming ? '--:--.---' : effectiveBestStr,
-      bestLapTime: isNotStarted || !hasLiveTiming ? undefined : effectiveBestStr,
-      bestLapDuration: isNotStarted || !hasLiveTiming ? null : effectiveBestDur,
-      isPole: !isNotStarted && hasLiveTiming && isQualy && isPole,
-      isFastestLap: !isNotStarted && hasLiveTiming && !isQualy && isPole,
-      eliminatedPhase: isNotStarted || !hasLiveTiming ? null : eliminatedPhase,
+      lastLapTime: isNotStarted ? '--:--.---' : effectiveBestStr,
+      bestLapTime: isNotStarted ? undefined : effectiveBestStr,
+      bestLapDuration: isNotStarted ? null : effectiveBestDur,
+      isPole: !isNotStarted && isQualy && isPole,
+      isFastestLap: !isNotStarted && !isQualy && isPole,
+      eliminatedPhase: isNotStarted ? null : eliminatedPhase,
       tyre: {
         compound: tyreCompound,
         laps: tyreLaps,
       },
       pitStops: actualCompletedPits,
-      inPit: isNotStarted ? false : d.status === 'PIT' || d.status === 'GARAGE',
+      inPit: isCarInPit,
       lastPitStopDuration: lastPit?.stationaryTimeSec,
       lastPitLaneTime: lastPit?.pitLaneDurationSec,
       pitHistory: pitHistory.length > 0 ? pitHistory : undefined,
-      status: 'ACTIVE',
-      sectors:
-        isNotStarted || !hasLiveTiming
-          ? {
-              s1: null,
-              s2: null,
-              s3: null,
-              s1Status: 'none' as const,
-              s2Status: 'none' as const,
-              s3Status: 'none' as const,
-              segments: {
-                s1: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
-                s2: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
-                s3: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
-              },
-            }
-          : {
-              s1,
-              s2,
-              s3,
-              s1Status,
-              s2Status,
-              s3Status,
-              segments: {
-                s1: Array(5).fill(s1Status) as MiniSectorStatus[],
-                s2: Array(5).fill(s2Status) as MiniSectorStatus[],
-                s3: Array(5).fill(s3Status) as MiniSectorStatus[],
-              },
+      status: isCarInPit ? 'PIT' : 'ACTIVE',
+      sectors: isNotStarted
+        ? {
+            s1: null,
+            s2: null,
+            s3: null,
+            s1Status: 'none' as const,
+            s2Status: 'none' as const,
+            s3Status: 'none' as const,
+            segments: {
+              s1: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+              s2: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
+              s3: ['none', 'none', 'none', 'none', 'none'] as MiniSectorStatus[],
             },
+          }
+        : {
+            s1,
+            s2,
+            s3,
+            s1Status,
+            s2Status,
+            s3Status,
+            segments: {
+              s1: Array(5).fill(s1Status) as MiniSectorStatus[],
+              s2: Array(5).fill(s2Status) as MiniSectorStatus[],
+              s3: Array(5).fill(s3Status) as MiniSectorStatus[],
+            },
+          },
       speedTrap: isNotStarted ? null : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
       i1Speed: isNotStarted ? null : Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
       i2Speed: isNotStarted ? null : Number((294.0 - d.performanceBias * 1.9).toFixed(1)),

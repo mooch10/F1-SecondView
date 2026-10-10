@@ -366,8 +366,12 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       });
     });
 
-    // Anti-Overlap Offset Pass: Offset close markers so they never merge into a single blob
-    const threshold = 26; // SVG pixels
+    // Stable Track-Normal Anti-Overlap Pass:
+    // If cars are close to each other, offset them along the track's normal (perpendicular) vector
+    // into stable inside / outside racing lanes, WITHOUT flipping 180 degrees when cars overtake!
+    const threshold = 24; // SVG pixels
+    const laneOffsets = new Map<number, number>();
+
     for (let i = 0; i < coords.length; i++) {
       for (let j = i + 1; j < coords.length; j++) {
         const dx = coords[j].x - coords[i].x;
@@ -375,16 +379,31 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
         const dist = Math.hypot(dx, dy);
 
         if (dist < threshold) {
-          // Perpendicular offset
-          const angle = Math.atan2(dy, dx) + Math.PI / 2;
-          const shift = (threshold - dist) / 2 + 3;
-          coords[j].x += Math.cos(angle) * shift;
-          coords[j].y += Math.sin(angle) * shift;
-          coords[i].x -= Math.cos(angle) * shift;
-          coords[i].y -= Math.sin(angle) * shift;
+          const shift = Math.min(13, (threshold - dist) / 2 + 4);
+          const iNum = coords[i].driver.driverNumber;
+          const jNum = coords[j].driver.driverNumber;
+          const iLane = laneOffsets.get(iNum) || 0;
+          const jLane = laneOffsets.get(jNum) || 0;
+
+          if (iLane === 0 && jLane === 0) {
+            // Assign inside lane (-shift) and outside lane (+shift) deterministically
+            const iSign = iNum % 2 === 0 ? -1 : 1;
+            laneOffsets.set(iNum, iSign * shift);
+            laneOffsets.set(jNum, -iSign * shift);
+          }
         }
       }
     }
+
+    // Apply smooth track-normal offset to coordinates
+    coords.forEach((c) => {
+      const lane = laneOffsets.get(c.driver.driverNumber);
+      if (lane && lane !== 0) {
+        const rad = (c.angle + 90) * (Math.PI / 180);
+        c.x += Math.cos(rad) * lane;
+        c.y += Math.sin(rad) * lane;
+      }
+    });
 
     return coords;
   }, [trackGeometry, isFinished, filteredDrivers, selectedDriverNumber, animatedPositions]);

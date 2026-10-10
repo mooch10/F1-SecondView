@@ -367,6 +367,7 @@ function App() {
                     <TimingTable
                       drivers={drivers}
                       sessionType={snapshot?.session.sessionType}
+                      qualifyingPhase={snapshot?.session.qualifyingPhase}
                     />
                   </>
                 ) : (

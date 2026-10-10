@@ -234,7 +234,7 @@ export interface F1CdnTeamRadio {
 
 export class F1LiveCdnClient {
   private readonly baseUrl = 'https://livetiming.formula1.com/static';
-  private readonly timeoutMs = 3500;
+  private readonly timeoutMs = 7500;
   private readonly userAgent =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
@@ -245,6 +245,10 @@ export class F1LiveCdnClient {
 
   // In-memory cache for static driver metadata per GP session (no need to re-fetch 15KB every 2s)
   private driverListCache = new Map<string, F1CdnDriverList>();
+
+  // Fallback cache for transient drops during live sessions (45 seconds)
+  private lastLiveSnapshot: { timestamp: number; snapshot: LiveSnapshot } | null = null;
+  private readonly LIVE_CACHE_TTL_MS = 45 * 1000;
 
   // Long-term cache for completed races (prevents thousands of requests between GP weekends)
   private finalizedSnapshotCache: {
@@ -299,6 +303,106 @@ export class F1LiveCdnClient {
   }
 
   /**
+   * Discovers today's active or closest session path directly from the official Index.json feed
+   * when root SessionInfo.json is unavailable or temporarily delayed.
+   */
+  private async resolveSessionFromIndex(): Promise<F1CdnSessionInfo | null> {
+    try {
+      const year = new Date().getFullYear();
+      const indexData = await this.fetchCdnJson<{
+        Meetings?: Array<{
+          Key?: number;
+          Name?: string;
+          OfficialName?: string;
+          Location?: string;
+          Number?: number;
+          Country?: { Key?: number; Code?: string; Name?: string };
+          Circuit?: { Key?: number; ShortName?: string };
+          Sessions?: Array<{
+            Name?: string;
+            Type?: string;
+            Key?: number;
+            StartDate?: string;
+            EndDate?: string;
+            Path?: string;
+          }>;
+        }>;
+      }>(`${year}/Index.json`, false);
+
+      if (!indexData?.Meetings) return null;
+
+      const now = new Date();
+      const nowMs = now.getTime();
+      let bestSession: {
+        Name?: string;
+        Type?: string;
+        Key?: number;
+        StartDate?: string;
+        EndDate?: string;
+        Path?: string;
+      } | null = null;
+      let bestMeeting: NonNullable<typeof indexData.Meetings>[number] | null = null;
+      let minDiff = Number.POSITIVE_INFINITY;
+
+      for (const m of indexData.Meetings) {
+        for (const s of m.Sessions || []) {
+          if (!s.Path || !s.StartDate) continue;
+          const startMs = new Date(s.StartDate).getTime();
+          const endMs = s.EndDate ? new Date(s.EndDate).getTime() : startMs + 2.5 * 3600 * 1000;
+          if (nowMs >= startMs - 45 * 60 * 1000 && nowMs <= endMs + 2 * 3600 * 1000) {
+            bestSession = s;
+            bestMeeting = m;
+            break;
+          }
+          const diff = Math.abs(nowMs - startMs);
+          if (diff < minDiff && diff < 72 * 3600 * 1000) {
+            minDiff = diff;
+            bestSession = s;
+            bestMeeting = m;
+          }
+        }
+        if (
+          bestSession?.StartDate &&
+          nowMs >= new Date(bestSession.StartDate).getTime() - 45 * 60 * 1000
+        ) {
+          break;
+        }
+      }
+
+      if (bestSession?.Path) {
+        return {
+          Meeting: {
+            Key: bestMeeting?.Key || 9999,
+            Name: bestMeeting?.Name || 'Grand Prix',
+            OfficialName: bestMeeting?.OfficialName || '',
+            Location: bestMeeting?.Location || '',
+            Number: bestMeeting?.Number || 1,
+            Country: {
+              Key: bestMeeting?.Country?.Key || 0,
+              Code: bestMeeting?.Country?.Code || '',
+              Name: bestMeeting?.Country?.Name || '',
+            },
+            Circuit: {
+              Key: bestMeeting?.Circuit?.Key || 0,
+              ShortName: bestMeeting?.Circuit?.ShortName || '',
+            },
+          },
+          SessionStatus: 'Started',
+          Key: bestSession.Key,
+          Type: bestSession.Type,
+          Name: bestSession.Name,
+          StartDate: bestSession.StartDate,
+          EndDate: bestSession.EndDate,
+          Path: bestSession.Path,
+        };
+      }
+    } catch (err) {
+      console.warn('[F1 CDN] resolveSessionFromIndex error:', err);
+    }
+    return null;
+  }
+
+  /**
    * Retrieves the currently active or most recent session metadata.
    */
   public async getSessionInfo(forceFresh = false): Promise<F1CdnSessionInfo | null> {
@@ -312,7 +416,14 @@ export class F1LiveCdnClient {
       return this.cachedSessionInfo.data;
     }
 
-    const data = await this.fetchCdnJson<F1CdnSessionInfo>('SessionInfo.json');
+    let data = await this.fetchCdnJson<F1CdnSessionInfo>('SessionInfo.json');
+    if (!data || !data.Path) {
+      const indexFallback = await this.resolveSessionFromIndex();
+      if (indexFallback) {
+        data = indexFallback;
+      }
+    }
+
     if (data) {
       this.cachedSessionInfo = { timestamp: now, data };
     }
@@ -422,6 +533,18 @@ export class F1LiveCdnClient {
     }
 
     if (!timingDataRaw || !timingDataRaw.Lines) {
+      if (
+        this.lastLiveSnapshot &&
+        Date.now() - this.lastLiveSnapshot.timestamp < this.LIVE_CACHE_TTL_MS
+      ) {
+        return {
+          ...this.lastLiveSnapshot.snapshot,
+          session: {
+            ...this.lastLiveSnapshot.snapshot.session,
+            timestamp: Math.floor(Date.now() / 1000),
+          },
+        };
+      }
       return null;
     }
 
@@ -831,7 +954,15 @@ export class F1LiveCdnClient {
 
       // Track location coordinate: only during active live session, NEVER when finalised
       const outlineLen = circuitMeta.outline.length;
-      const stepOffset = outlineLen > 0 ? (((pos * 7) % outlineLen) + outlineLen) % outlineLen : 0;
+      const nowSec = Math.floor(Date.now() / 1000);
+      const lapSec =
+        bestLapDuration && bestLapDuration > 50 && bestLapDuration < 150 ? bestLapDuration : 90;
+      const driverProg = isQualy
+        ? (((pos * 0.16 + nowSec * (1.0 / lapSec)) % 1.0) + 1.0) % 1.0
+        : (((nowSec * (1.0 / lapSec) - pos * 0.035) % 1.0) + 1.0) % 1.0;
+      const activeStepOffset =
+        outlineLen > 0 ? Math.floor(driverProg * outlineLen) % outlineLen : 0;
+      const stepOffset = timing.InPit ? 0 : activeStepOffset;
       const location =
         !isFinalised && circuitMeta.outline[stepOffset]
           ? { x: circuitMeta.outline[stepOffset][0], y: circuitMeta.outline[stepOffset][1] }
@@ -992,6 +1123,12 @@ export class F1LiveCdnClient {
         bounds: circuitMeta.bounds,
       },
       history: [],
+    };
+
+    // Store in live snapshot cache for fault tolerance across transient network drops
+    this.lastLiveSnapshot = {
+      timestamp: Date.now(),
+      snapshot: snapshotResult,
     };
 
     // Store in finalized cache if session is complete

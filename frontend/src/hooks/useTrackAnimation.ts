@@ -17,12 +17,13 @@ export interface AnimatedCarCoord {
 
 interface DriverKinematics {
   driverNumber: number;
-  packetProgress: number; // Base progress from latest received telemetry packet
-  lastPacketTime: number; // Timestamp (ms) when packet was received
+  currentProgress: number; // Current visual progress [0, 1) along track
+  targetProgress: number; // Latest target from packet
   speed: number; // Progress advancement per second (0 if stationary)
+  convergenceSpeed: number; // Smooth speed adjustment (+ or -) to catch up without snapping
+  convergenceEndTime: number; // Timestamp (ms) when catch-up finishes
+  lastFrameTime: number; // Timestamp (ms) of previous frame
   inPit: boolean;
-  blendError: number; // Discrepancy between projected position and newly arrived packet
-  blendStartTime: number; // Timestamp (ms) when blend started
   currentPos: { x: number; y: number };
   targetPos: { x: number; y: number };
   angle: number;
@@ -138,58 +139,45 @@ export function useTrackAnimation({
 
         kinematicsMap.set(num, {
           driverNumber: num,
-          packetProgress: targetProgress,
-          lastPacketTime: now,
+          currentProgress: targetProgress,
+          targetProgress,
           speed: isStationary ? 0 : baseSpeed,
+          convergenceSpeed: 0,
+          convergenceEndTime: now,
+          lastFrameTime: now,
           inPit,
-          blendError: 0,
-          blendStartTime: now,
           currentPos: { x: initialPt.x, y: initialPt.y },
           targetPos: { x: targetX, y: targetY },
-          angle: 0,
+          angle: 'angle' in initialPt ? initialPt.angle : 0,
         });
       } else {
         existing.inPit = inPit;
         existing.targetPos = { x: targetX, y: targetY };
+        existing.targetProgress = targetProgress;
 
         if (isStationary) {
           // Stationary on grid, in pit or parc fermé: lock speed to 0 and snap directly to target box
           existing.speed = 0;
-          existing.packetProgress = targetProgress;
-          existing.lastPacketTime = now;
-          existing.blendError = 0;
+          existing.convergenceSpeed = 0;
+          existing.currentProgress = targetProgress;
         } else {
-          // Car is in active race
-          const dtSeconds = Math.max(0.3, (now - existing.lastPacketTime) / 1000);
-          const progressDelta = computeCircularDelta(targetProgress, existing.packetProgress);
+          // Car is in active race: reconcile smoothly without teleporting
+          existing.speed = baseSpeed > 0 ? baseSpeed : (existing.speed > 0 ? existing.speed : 1.0 / DEFAULT_BENCHMARK_LAP_SEC);
 
-          // Anti-Rubber-Banding Protection:
-          // If progressDelta is near zero, it means the server returned an identical cached snapshot.
-          // Do NOT reset lastPacketTime or packetProgress; allow the car to continue coasting smoothly!
-          if (Math.abs(progressDelta) >= 0.0008) {
-            let calibratedSpeed = baseSpeed > 0 ? baseSpeed : existing.speed;
-            if (progressDelta > 0.001 && progressDelta < 0.15 && baseSpeed > 0) {
-              const measuredSpeed = progressDelta / dtSeconds;
-              // Strict speed guardrails: car speed must stay close to true lap pace
-              // Never allow unrealistically high speeds (e.g. 40s/lap)
-              const minSpeed = Math.max(1.0 / 140, baseSpeed * 0.75);
-              const maxSpeed = Math.min(1.0 / 65, baseSpeed * 1.15);
-              calibratedSpeed = Math.max(minSpeed, Math.min(maxSpeed, measuredSpeed));
-            } else if (baseSpeed > 0) {
-              calibratedSpeed = baseSpeed;
-            }
+          // Calculate circular difference: how far targetProgress is ahead of current visual progress
+          const delta = computeCircularDelta(targetProgress, existing.currentProgress);
 
-            // Extrapolated progress up to this moment
-            const elapsedSinceLast = Math.min(2.5, (now - existing.lastPacketTime) / 1000);
-            const currentExtrapolated = normalizeProgress(existing.packetProgress + existing.speed * elapsedSinceLast);
-            const error = computeCircularDelta(currentExtrapolated, targetProgress);
-
-            existing.packetProgress = targetProgress;
-            existing.lastPacketTime = now;
-            existing.speed = calibratedSpeed;
-            // Smoothly blend if error is small (< 12% track length)
-            existing.blendError = Math.abs(error) < 0.12 ? error : 0;
-            existing.blendStartTime = now;
+          if (Math.abs(delta) < 0.0005) {
+            // Very close / identical packet: maintain base speed smoothly
+            existing.convergenceSpeed = 0;
+          } else {
+            // Reconcile over 1.0s window: extra speed = delta / 1.0s
+            // Clamp to [-0.4 * speed, +0.5 * speed] so car never moves backward or at hyperspeed
+            const maxBoost = existing.speed * 0.5;
+            const maxSlowdown = -existing.speed * 0.4;
+            const desiredExtra = delta / 1.0;
+            existing.convergenceSpeed = Math.max(maxSlowdown, Math.min(maxBoost, desiredExtra));
+            existing.convergenceEndTime = now + 1000;
           }
         }
       }
@@ -214,7 +202,7 @@ export function useTrackAnimation({
 
     let isRunning = true;
     const minFrameDeltaMs = 1000 / 60; // 60 FPS cap (protects 120Hz/144Hz high refresh displays)
-    let lastFrameTime = 0;
+    let lastFrameTime = performance.now();
 
     const animate = (currentTime: number) => {
       if (!isRunning) return;
@@ -234,8 +222,9 @@ export function useTrackAnimation({
       kinematicsMap.forEach((k) => {
         if (k.inPit || isGpsClustered || isSessionStationary || k.speed === 0) {
           // Stationary cars (Grid, Pits, Parc Fermé): smooth lerp directly to target slot without track progression
-          const dt = 0.016;
-          const lerpFactor = Math.min(1, dt * 8.0);
+          const dt = Math.min(0.05, Math.max(0.001, (currentTime - k.lastFrameTime) / 1000));
+          k.lastFrameTime = currentTime;
+          const lerpFactor = Math.min(1, dt * 6.0);
           const dx = (k.targetPos.x - k.currentPos.x) * lerpFactor;
           const dy = (k.targetPos.y - k.currentPos.y) * lerpFactor;
           k.currentPos.x += dx;
@@ -247,24 +236,26 @@ export function useTrackAnimation({
             x: k.currentPos.x,
             y: k.currentPos.y,
             angle: 0,
-            progress: k.packetProgress,
+            progress: k.targetProgress,
             inPit: k.inPit,
           });
         } else {
           hasActiveRacers = true;
-          // Active racing cars: dead-reckoning forward along track spline based on time elapsed
-          const timeSincePacket = Math.min(3.0, (currentTime - k.lastPacketTime) / 1000);
-          let currentProgress = normalizeProgress(k.packetProgress + k.speed * timeSincePacket);
+          const dt = Math.min(0.05, Math.max(0.001, (currentTime - k.lastFrameTime) / 1000));
+          k.lastFrameTime = currentTime;
 
-          // Apply smooth reconciliation decay over 350ms to absorb telemetry gaps seamlessly
-          const blendElapsed = (currentTime - k.blendStartTime) / 1000;
-          if (blendElapsed < 0.35 && k.blendError !== 0) {
-            const blendFactor = 1.0 - (blendElapsed / 0.35);
-            currentProgress = normalizeProgress(currentProgress + k.blendError * blendFactor);
+          // Apply extra convergence speed if within reconciliation window
+          let effectiveSpeed = k.speed;
+          if (currentTime < k.convergenceEndTime) {
+            const remainingRatio = Math.max(0, Math.min(1, (k.convergenceEndTime - currentTime) / 1000));
+            effectiveSpeed += k.convergenceSpeed * remainingRatio;
           }
 
+          // Advance progress forward strictly monotonically
+          k.currentProgress = normalizeProgress(k.currentProgress + effectiveSpeed * dt);
+
           // Evaluate exact SVG coordinates and tangent angle along track spline
-          const splinePt = trackGeometry.getPointAtProgress(currentProgress);
+          const splinePt = trackGeometry.getPointAtProgress(k.currentProgress);
           k.currentPos.x = splinePt.x;
           k.currentPos.y = splinePt.y;
           k.angle = splinePt.angle;
@@ -274,7 +265,7 @@ export function useTrackAnimation({
             x: splinePt.x,
             y: splinePt.y,
             angle: splinePt.angle,
-            progress: currentProgress,
+            progress: k.currentProgress,
             inPit: false,
           });
         }
@@ -303,9 +294,9 @@ export function useTrackAnimation({
       } else {
         const now = performance.now();
         kinematicsMapRef.current.forEach((k) => {
-          k.lastPacketTime = now;
-          k.blendStartTime = now;
-          k.blendError = 0;
+          k.lastFrameTime = now;
+          k.convergenceSpeed = 0;
+          k.convergenceEndTime = now;
         });
         if (!rafRef.current) {
           rafRef.current = requestAnimationFrame(animate);

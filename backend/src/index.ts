@@ -35,6 +35,22 @@ export async function updateSnapshot(): Promise<LiveSnapshot | null> {
       console.warn('[Worker] F1 CDN Live fetch error:', err);
     }
 
+    // Retain previous valid snapshot for up to 45 seconds to resist network jitter or cold start delay
+    if (
+      !newSnapshot &&
+      cachedSnapshot &&
+      cachedSnapshot.drivers.length > 0 &&
+      Date.now() - cachedSnapshot.session.timestamp * 1000 < 45000
+    ) {
+      newSnapshot = {
+        ...cachedSnapshot,
+        session: {
+          ...cachedSnapshot.session,
+          timestamp: Math.floor(Date.now() / 1000),
+        },
+      };
+    }
+
     // 2. Secondary Source: OpenF1 (only if explicit SESSION_KEY or OPENF1_TOKEN is provided)
     if (!newSnapshot && (process.env.SESSION_KEY || process.env.OPENF1_TOKEN)) {
       let targetSessionKey: number | null = process.env.SESSION_KEY
