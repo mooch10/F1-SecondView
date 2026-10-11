@@ -57,16 +57,16 @@ export const SectorPill: React.FC<SectorPillProps> = ({
   if (compact) {
     return (
       <span
-        className={`inline-flex items-center gap-0.5 sm:gap-1 font-mono text-[9px] sm:text-[11px] font-bold px-1 sm:px-2 py-0.5 rounded border transition-colors shrink-0 ${styles.container}`}
+        className={`inline-flex items-center gap-0.5 sm:gap-1 font-mono text-[8px] sm:text-[11px] font-bold px-1 sm:px-1.5 py-0.5 rounded border transition-colors shrink-0 ${styles.container}`}
         title={`Sector ${sectorNumber}: ${time ? `${time.toFixed(3)}s` : 'Sin tiempo'} (${status})`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${styles.dot}`} />
+        <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full shrink-0 ${styles.dot}`} />
         {showLabel && (
-          <span className={`hidden xs:inline sm:inline text-[8.5px] sm:text-[10px] font-extrabold ${styles.label}`}>
+          <span className={`hidden sm:inline text-[8.5px] sm:text-[10px] font-extrabold ${styles.label}`}>
             S{sectorNumber}
           </span>
         )}
-        <span className="inline font-tabular text-[8.5px] sm:text-[11px]">{formatSectorTime(time)}</span>
+        <span className="inline font-tabular text-[8px] sm:text-[11px] tracking-tight sm:tracking-normal">{formatSectorTime(time)}</span>
       </span>
     );
   }

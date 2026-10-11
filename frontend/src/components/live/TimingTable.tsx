@@ -297,7 +297,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
           </div>
 
           {/* Pinned Driver Data Row */}
-          <div className="grid grid-cols-12 gap-1 items-center">
+          <div className="grid grid-cols-12 gap-1 sm:gap-4 px-1 sm:px-2 items-center">
             {/* Position */}
             <div className="col-span-1 flex flex-col items-center justify-center leading-none">
               <span className="font-mono text-xs sm:text-sm font-black text-amber-300">
@@ -317,13 +317,13 @@ export const TimingTable: React.FC<TimingTableProps> = ({
 
             {/* Code, Number & Name */}
             <div
-              className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden"
+              className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 min-w-0"
             >
               <span
                 className="w-1 sm:w-1.5 h-5 sm:h-7 rounded-full shrink-0"
                 style={{ backgroundColor: pinnedDriver.teamColor || '#E10600' }}
               />
-              <div className="flex flex-col leading-tight truncate">
+              <div className="flex flex-col leading-tight truncate min-w-0">
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -331,99 +331,150 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       e.stopPropagation();
                       openDriverProfile(undefined, pinnedDriver.code, pinnedDriver.fullName);
                     }}
-                    className="font-mono text-sm font-black text-white hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
+                    className="font-mono text-xs sm:text-sm font-bold text-white hover:text-[#FFD60A] transition-colors underline decoration-white/20 hover:decoration-[#FFD60A]/60 cursor-pointer"
                     title={lang === 'es' ? 'Ver ficha oficial del piloto' : 'View driver profile'}
                   >
                     {pinnedDriver.code}
                   </button>
-                  <span className="text-[10px] text-zinc-400 font-mono">
+                  <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">
                     #{pinnedDriver.driverNumber}
                   </span>
                 </div>
-                <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate transition-colors">
+                <span className="text-[8.5px] text-zinc-400 font-mono font-semibold sm:hidden mt-0.5">
+                  #{pinnedDriver.driverNumber}
+                </span>
+                <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 truncate transition-colors hidden sm:block">
                   {pinnedDriver.fullName}
                 </span>
               </div>
             </div>
 
-            {/* Tyres */}
-            <div className="col-span-2 sm:col-span-2 text-center flex justify-center">
-              <TyreBadge tyre={pinnedDriver.tyre} lang={lang} />
-            </div>
+            {isTimedSession ? (
+              <>
+                {/* Qualy Sectors */}
+                <div className="col-span-5 sm:col-span-5 flex flex-col items-center justify-center gap-0.5 sm:gap-1 px-0 sm:px-1 min-w-0">
+                  <div className="flex items-center justify-center gap-0.5 sm:gap-1 w-full flex-nowrap">
+                    <SectorPill
+                      sectorNumber={1}
+                      time={pinnedDriver.sectors?.s1}
+                      status={resolveSectorStatus(1, pinnedDriver.sectors?.s1, pinnedDriver.sectors?.s1Status, bestSectors)}
+                      compact
+                    />
+                    <SectorPill
+                      sectorNumber={2}
+                      time={pinnedDriver.sectors?.s2}
+                      status={resolveSectorStatus(2, pinnedDriver.sectors?.s2, pinnedDriver.sectors?.s2Status, bestSectors)}
+                      compact
+                    />
+                    <SectorPill
+                      sectorNumber={3}
+                      time={pinnedDriver.sectors?.s3}
+                      status={resolveSectorStatus(3, pinnedDriver.sectors?.s3, pinnedDriver.sectors?.s3Status, bestSectors)}
+                      compact
+                    />
+                  </div>
+                </div>
 
-            {/* Pit Stop (Visible on mobile & desktop) */}
-            <div className="col-span-1 sm:col-span-1 flex flex-col items-center justify-center font-mono text-xs text-zinc-400 leading-tight">
-              <span className="font-bold text-white text-[9px] sm:text-xs">{pinnedDriver.pitStops ?? 0}P</span>
-              {pinnedDriver.lastPitStopDuration ? (
-                <span
-                  className={`text-[7.5px] sm:text-[8.5px] mt-0.5 whitespace-nowrap ${
-                    fastestPitStop && fastestPitStop.time === pinnedDriver.lastPitStopDuration
-                      ? 'text-amber-400 font-extrabold'
-                      : 'text-zinc-400 font-medium'
-                  }`}
-                >
-                  {pinnedDriver.lastPitStopDuration.toFixed(1)}s
-                </span>
-              ) : null}
-            </div>
-
-            {/* Interval & Gap */}
-            <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-2 sm:pr-2">
-              <span className="font-mono text-xs font-bold text-zinc-200 truncate">
-                {pinnedDriver.gap}
-              </span>
-              {pinnedDriver.interval && pinnedDriver.interval !== 'LEADER' && (
-                <div className="flex items-center justify-end gap-1">
-                  {!isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval)) && (
-                    <span
-                      className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse select-none shrink-0"
-                      title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s)' : 'Overtake Mode (MOM) active (< 1.0s)'}
-                    >
-                      OVERTAKE
-                    </span>
-                  )}
+                {/* Qualy Best Lap & Gap */}
+                <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-1 sm:pr-2 min-w-0">
                   <span
-                    className={`font-mono text-[10px] truncate ${
-                      !isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval))
-                        ? 'text-emerald-400 font-extrabold'
-                        : 'text-zinc-400'
+                    className={`font-mono text-[11px] sm:text-xs font-bold whitespace-nowrap ${
+                      pinnedDriver.isPole ? 'text-[#FFD60A] font-black' : 'text-zinc-100'
                     }`}
                   >
-                    INT {pinnedDriver.interval}
+                    {pinnedDriver.bestLapTime || pinnedDriver.lastLapTime || '--:--.---'}
+                  </span>
+                  <span
+                    className={`font-mono text-[9px] sm:text-[10px] whitespace-nowrap ${
+                      pinnedDriver.isPole ? 'text-[#FFD60A] font-bold' : 'text-zinc-400'
+                    }`}
+                  >
+                    {pinnedDriver.gap}
                   </span>
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                {/* Tyres */}
+                <div className="col-span-2 sm:col-span-2 text-center flex justify-center">
+                  <TyreBadge tyre={pinnedDriver.tyre} lang={lang} />
+                </div>
 
-            {/* Last Lap Time */}
-            <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight pl-2 sm:pl-1">
-              <span className="font-mono text-xs font-bold text-zinc-300">
-                {pinnedDriver.lastLapTime || '--:--.---'}
-              </span>
-              {pinnedDriver.isFastestLap && (
-                <span className="text-[8px] sm:text-[9px] font-bold text-purple-400 uppercase">
-                  {t.live.table.fastestLap}
-                </span>
-              )}
-            </div>
+                {/* Pit Stop (Visible on mobile & desktop) */}
+                <div className="col-span-1 sm:col-span-1 flex flex-col items-center justify-center font-mono text-xs text-zinc-400 leading-tight">
+                  <span className="font-bold text-white text-[9px] sm:text-xs">{pinnedDriver.pitStops ?? 0}P</span>
+                  {pinnedDriver.lastPitStopDuration ? (
+                    <span
+                      className={`text-[7.5px] sm:text-[8.5px] mt-0.5 whitespace-nowrap ${
+                        fastestPitStop && fastestPitStop.time === pinnedDriver.lastPitStopDuration
+                          ? 'text-amber-400 font-extrabold'
+                          : 'text-zinc-400 font-medium'
+                      }`}
+                    >
+                      {pinnedDriver.lastPitStopDuration.toFixed(1)}s
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* Interval & Gap */}
+                <div className="col-span-3 sm:col-span-3 text-right flex flex-col justify-center leading-tight pr-2 sm:pr-2">
+                  <span className="font-mono text-xs font-bold text-zinc-200 truncate">
+                    {pinnedDriver.gap}
+                  </span>
+                  {pinnedDriver.interval && pinnedDriver.interval !== 'LEADER' && (
+                    <div className="flex items-center justify-end gap-1">
+                      {!isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval)) && (
+                        <span
+                          className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-mono font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider animate-pulse select-none shrink-0"
+                          title={lang === 'es' ? 'Modo Overtake (MOM) habilitado (< 1.0s)' : 'Overtake Mode (MOM) active (< 1.0s)'}
+                        >
+                          OVERTAKE
+                        </span>
+                      )}
+                      <span
+                        className={`font-mono text-[10px] truncate ${
+                          !isQualy && (pinnedDriver.isOvertakeZone || isCloseInterval(pinnedDriver.interval))
+                            ? 'text-emerald-400 font-extrabold'
+                            : 'text-zinc-400'
+                        }`}
+                      >
+                        INT {pinnedDriver.interval}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Last Lap Time */}
+                <div className="col-span-2 sm:col-span-2 text-right flex flex-col justify-center leading-tight pl-2 sm:pl-1">
+                  <span className="font-mono text-xs font-bold text-zinc-300">
+                    {pinnedDriver.lastLapTime || '--:--.---'}
+                  </span>
+                  {pinnedDriver.isFastestLap && (
+                    <span className="text-[8px] sm:text-[9px] font-bold text-purple-400 uppercase">
+                      {t.live.table.fastestLap}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
       {/* Table Header (Polymorphic: Qualy/Practice vs Race) */}
       {isTimedSession ? (
-        <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
+        <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[8.5px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
           <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
-          <div className="col-span-3 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
+          <div className="col-span-3 sm:col-span-3 whitespace-nowrap pl-0.5 sm:pl-0">{t.live.table.driver}</div>
           <div className="col-span-5 sm:col-span-5 text-center whitespace-nowrap">
             <span className="hidden sm:inline">SECTORES & MINI-SECTORES</span>
             <span className="sm:hidden">SECTORES</span>
           </div>
-          <div className="col-span-3 sm:col-span-3 text-right whitespace-nowrap">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
+          <div className="col-span-3 sm:col-span-3 text-right whitespace-nowrap pr-2 sm:pr-0">{lang === 'es' ? 'TIEMPO / GAP' : 'TIME / GAP'}</div>
         </div>
       ) : (
-        <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[9px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none">
+        <div className="grid grid-cols-12 gap-1 sm:gap-4 px-2 sm:px-5 py-1.5 sm:py-3 bg-[#1C2230] border-b border-white/[0.08] text-[8.5px] sm:text-xs font-bold tracking-wider uppercase text-zinc-400 font-mono select-none items-center">
           <div className="col-span-1 text-center whitespace-nowrap">{t.live.table.pos}</div>
-          <div className="col-span-3 sm:col-span-3 whitespace-nowrap">{t.live.table.driver}</div>
+          <div className="col-span-3 sm:col-span-3 whitespace-nowrap pl-0.5 sm:pl-0">{t.live.table.driver}</div>
           <div className="col-span-2 sm:col-span-2 text-center whitespace-nowrap">{t.live.table.tyre}</div>
           <div className="col-span-1 sm:col-span-1 text-center whitespace-nowrap">{t.live.table.pit}</div>
           <div className="col-span-3 sm:col-span-3 text-right pr-2 sm:pr-2 whitespace-nowrap">GAP / INT</div>
@@ -536,9 +587,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 </div>
 
                 {/* Team stripe + Star Pin + Code & Number */}
-                <div className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 overflow-hidden">
+                <div className="col-span-3 sm:col-span-3 flex items-center gap-1 sm:gap-1.5 min-w-0">
                   <span
-                    className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
+                    className="w-1 h-5 sm:h-6 rounded-full shrink-0"
                     style={{ backgroundColor: d.teamColor || '#E10600' }}
                   />
                   {/* Star Pin Button */}
@@ -551,7 +602,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     className={`p-0.5 rounded transition-colors cursor-pointer shrink-0 ${
                       isPinned
                         ? 'text-amber-400'
-                        : 'text-zinc-600 hover:text-amber-400/80'
+                        : 'hidden sm:inline-flex text-zinc-600 hover:text-amber-400/80'
                     }`}
                     title={
                       isPinned
@@ -560,7 +611,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     }
                   >
                     <Star
-                      className={`w-3.5 h-3.5 ${
+                      className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
                         isPinned ? 'fill-amber-400 text-amber-400' : ''
                       }`}
                     />
@@ -581,7 +632,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       >
                         {d.code}
                       </button>
-                      <span className="text-[9px] sm:text-[10px] text-zinc-400 font-mono shrink-0">
+                      <span className="text-[10px] text-zinc-400 font-mono shrink-0 hidden sm:inline">
                         #{d.driverNumber}
                       </span>
                       {/* Official Championship Points Badge in Race (Desktop) */}
@@ -600,24 +651,47 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       {/* Active FIA Penalty Badge in Race (En rojo oficial de sanción) */}
                       {!isTimedSession && d.penaltySeconds && d.penaltySeconds > 0 && (
                         <span
-                          className="px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs"
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-tight shrink-0 select-none shadow-xs hidden sm:inline-block"
                           title={lang === 'es' ? `Penalización oficial FIA: +${d.penaltySeconds}s` : `Official FIA penalty: +${d.penaltySeconds}s`}
                         >
                           +{d.penaltySeconds}s
                         </span>
                       )}
-                      {/* Elimination Phase Tag in Qualy */}
                       {isQualy && d.eliminatedPhase && (
-                        <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 shrink-0">
+                        <span className="px-1 py-0.2 rounded text-[8px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 shrink-0 hidden sm:inline-block">
                           {d.eliminatedPhase}
                         </span>
                       )}
                       {d.inPit && (
-                        <span className="px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-zinc-800 text-zinc-400 border border-white/10 shrink-0 hidden sm:inline-block">
                           PIT
                         </span>
                       )}
                     </div>
+
+                    {/* Mobile Line 2: Driver Number + Badges (PIT, Q1/Q2, Penalty) */}
+                    <div className="flex items-center gap-1 sm:hidden mt-0.5 flex-nowrap">
+                      <span className="text-[8.5px] text-zinc-400 font-mono font-semibold shrink-0">
+                        #{d.driverNumber}
+                      </span>
+                      {d.inPit && (
+                        <span className="px-1 py-0.2 rounded text-[7.5px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-white/10 shrink-0 leading-none">
+                          PIT
+                        </span>
+                      )}
+                      {isQualy && d.eliminatedPhase && (
+                        <span className="px-1 py-0.2 rounded text-[7.5px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 shrink-0 leading-none">
+                          {d.eliminatedPhase}
+                        </span>
+                      )}
+                      {!isTimedSession && d.penaltySeconds && d.penaltySeconds > 0 && (
+                        <span className="px-1 py-0.2 rounded text-[7.5px] font-mono font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 shrink-0 leading-none">
+                          +{d.penaltySeconds}s
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Desktop Line 2: Full Name */}
                     <span className="text-[10px] text-zinc-400 group-hover/driver:text-zinc-200 truncate hidden sm:block transition-colors">
                       {d.fullName}
                     </span>
@@ -627,9 +701,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                 {isTimedSession ? (
                   <>
                     {/* Qualy / Practice Sectors & Mini-Sectors Center Column */}
-                    <div className="col-span-5 sm:col-span-5 flex flex-col items-center justify-center gap-1 px-0.5 sm:px-1">
+                    <div className="col-span-5 sm:col-span-5 flex flex-col items-center justify-center gap-0.5 sm:gap-1 px-0 sm:px-1 min-w-0">
                       {/* 3 Sector Pills (Mobile & Desktop) */}
-                      <div className="flex items-center justify-center gap-1 w-full flex-nowrap">
+                      <div className="flex items-center justify-center gap-0.5 sm:gap-1 w-full flex-nowrap">
                         <SectorPill
                           sectorNumber={1}
                           time={d.sectors?.s1}
@@ -656,10 +730,10 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Qualy / Practice MEJOR TIEMPO / GAP */}
-                    <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-1 sm:gap-1.5 shrink-0">
-                      <div className="flex flex-col leading-tight">
+                    <div className="col-span-3 sm:col-span-3 text-right flex items-center justify-end gap-0.5 sm:gap-1.5 shrink-0 pr-0.5 sm:pr-0 min-w-0">
+                      <div className="flex flex-col leading-tight min-w-0">
                         <span
-                          className={`font-mono text-xs font-tabular whitespace-nowrap ${
+                          className={`font-mono text-[11px] sm:text-xs font-tabular whitespace-nowrap ${
                             d.isPole
                               ? 'text-[#FFD60A] font-black'
                               : 'text-zinc-100 font-bold'
@@ -668,7 +742,7 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                           {d.bestLapTime || d.lastLapTime || '--:--.---'}
                         </span>
                         <span
-                          className={`font-mono text-[10px] font-tabular whitespace-nowrap ${
+                          className={`font-mono text-[9px] sm:text-[10px] font-tabular whitespace-nowrap ${
                             d.isPole ? 'text-[#FFD60A] font-bold' : 'text-zinc-400'
                           }`}
                         >
@@ -677,9 +751,9 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                       </div>
                       <div className="text-zinc-500 shrink-0">
                         {isExpanded ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
+                          <ChevronUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
+                          <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         )}
                       </div>
                     </div>
@@ -1258,20 +1332,23 @@ export const TimingTable: React.FC<TimingTableProps> = ({
                     </div>
 
                     {/* Team stripe + Code & Number */}
-                    <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5 sm:gap-2 overflow-hidden">
+                    <div className="col-span-4 sm:col-span-3 flex items-center gap-1.5 sm:gap-2 min-w-0">
                       <span
-                        className="w-1 h-5 sm:h-6 rounded-full flex-shrink-0"
+                        className="w-1 h-5 sm:h-6 rounded-full shrink-0"
                         style={{ backgroundColor: d.teamColor || '#71717A' }}
                       />
-                      <div className="flex flex-col leading-tight truncate">
+                      <div className="flex flex-col leading-tight truncate min-w-0">
                         <div className="flex items-center gap-1 sm:gap-1.5">
                           <span className="font-mono text-xs sm:text-sm font-bold text-zinc-300 tracking-tight">
                             {d.code}
                           </span>
-                          <span className="text-[9px] sm:text-[10px] text-zinc-500 font-mono">
+                          <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">
                             #{d.driverNumber}
                           </span>
                         </div>
+                        <span className="text-[8.5px] text-zinc-500 font-mono font-semibold sm:hidden mt-0.5">
+                          #{d.driverNumber}
+                        </span>
                         <span className="text-[10px] text-zinc-400 truncate hidden sm:block">
                           {d.fullName}
                         </span>
