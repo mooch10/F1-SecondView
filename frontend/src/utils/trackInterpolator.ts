@@ -11,23 +11,26 @@ export interface TrackProjectionResult {
 
 /**
  * Projects a 2D SVG point onto the track polygon outline and returns the normalized track progress `t` [0, 1).
+ * When `prevT` is provided, continuity weighting prevents jumping to adjacent parallel streets or opposite sides of hairpins.
  */
 export function projectPointToTrack(
   pt: [number, number],
   pts: [number, number][],
   cumDists: number[],
   totalLength: number,
+  prevT?: number,
 ): TrackProjectionResult {
   const N = pts.length;
   if (N < 2 || totalLength <= 0) {
     return { t: 0, distanceToTrack: 0, projectedPoint: pt };
   }
 
-  let minDistSq = Infinity;
+  let minCost = Infinity;
   let bestSegIdx = 0;
   let bestU = 0;
   let bestProjX = pt[0];
   let bestProjY = pt[1];
+  let bestDistSq = 0;
 
   for (let i = 0; i < N; i++) {
     const a = pts[i];
@@ -43,12 +46,31 @@ export function projectPointToTrack(
     const projY = a[1] + u * dy;
     const distSq = (pt[0] - projX) ** 2 + (pt[1] - projY) ** 2;
 
-    if (distSq < minDistSq) {
-      minDistSq = distSq;
+    let cost = distSq;
+    if (prevT !== undefined && prevT >= 0) {
+      const segDist = cumDists[i + 1] - cumDists[i];
+      const candDist = cumDists[i] + u * segDist;
+      const candT = ((candDist / totalLength) % 1.0 + 1.0) % 1.0;
+      let diff = candT - prevT;
+      if (diff < -0.5) diff += 1.0;
+      else if (diff > 0.5) diff -= 1.0;
+
+      // In real racing, a car moves forward within [-0.03, +0.08] between 1.5s packets.
+      // If a candidate segment is outside this plausible window (e.g. parallel street 1500m away on track),
+      // penalize it heavily so the projection stays on the car's actual current street.
+      if (diff < -0.03 || diff > 0.08) {
+        const mismatchMeters = Math.abs(diff) * totalLength;
+        cost += mismatchMeters * mismatchMeters * 4.0;
+      }
+    }
+
+    if (cost < minCost) {
+      minCost = cost;
       bestSegIdx = i;
       bestU = u;
       bestProjX = projX;
       bestProjY = projY;
+      bestDistSq = distSq;
     }
   }
 
@@ -58,7 +80,7 @@ export function projectPointToTrack(
 
   return {
     t,
-    distanceToTrack: Math.sqrt(minDistSq),
+    distanceToTrack: Math.sqrt(bestDistSq),
     projectedPoint: [bestProjX, bestProjY],
   };
 }

@@ -662,18 +662,60 @@ export class F1LiveCdnClient {
       }
     }
 
-    // Parse drivers and normalize to DriverLive[]
-    const parsedDrivers: DriverLive[] = [];
-    let maxLapsCompleted = 0;
+    const totalLaps = circuitMeta.totalLaps > 0 ? circuitMeta.totalLaps : 57;
 
     // Direct Lap extraction from SessionData for race sessions
+    let maxLapsCompleted = 0;
     if (sessionType === 'Race' && sessionDataRaw?.Series && sessionDataRaw.Series.length > 0) {
       const latestLapEntry = sessionDataRaw.Series[sessionDataRaw.Series.length - 1]?.Lap;
       if (typeof latestLapEntry === 'number' && latestLapEntry > maxLapsCompleted) {
         maxLapsCompleted = latestLapEntry;
       }
     }
+    for (const t of Object.values(timingLines)) {
+      if (t?.NumberOfLaps && t.NumberOfLaps > maxLapsCompleted) {
+        maxLapsCompleted = t.NumberOfLaps;
+      }
+    }
 
+    // Leader lap duration for field benchmark pace
+    let leaderLapDuration: number | null = null;
+    for (const t of Object.values(timingLines)) {
+      if (!t) continue;
+      const p = Number.parseInt(t.Position || String(t.Line || 99), 10);
+      if (p === 1 && t.BestLapTime?.Value) {
+        leaderLapDuration = parseLapDurationSec(t.BestLapTime.Value);
+        break;
+      }
+    }
+
+    // Comprehensive session completion detection
+    const isStatusFinished =
+      effectiveSessionInfo?.SessionStatus?.toLowerCase() === 'finalised' ||
+      effectiveSessionInfo?.SessionStatus?.toLowerCase() === 'finished' ||
+      effectiveSessionInfo?.SessionStatus?.toLowerCase() === 'ended';
+    const isFlagChequered = currentFlag === 'CHEQUERED';
+    const hasChequeredMessage = messages.some((m) => {
+      const txt = m.text.toLowerCase();
+      return (
+        txt.includes('chequered flag') ||
+        txt.includes('bandera a cuadros') ||
+        txt.includes('all pass holders') ||
+        txt.includes('track closed')
+      );
+    });
+    const isLapsComplete =
+      sessionType === 'Race' && totalLaps > 0 && maxLapsCompleted >= totalLaps;
+
+    const isSessionFinished =
+      isStatusFinished || isFlagChequered || hasChequeredMessage || isLapsComplete;
+
+    if (isSessionFinished) {
+      currentFlag = 'CHEQUERED';
+    }
+
+    // Parse drivers and normalize to DriverLive[]
+    const parsedDrivers: DriverLive[] = [];
     const activePhaseIndex = qualifyingPhase === 'Q3' ? 2 : qualifyingPhase === 'Q2' ? 1 : 0;
 
     for (const [racingNumStr, timing] of Object.entries(timingLines)) {
@@ -952,21 +994,26 @@ export class F1LiveCdnClient {
         }
       }
 
-      // Track location coordinate: only during active live session, NEVER when finalised
+      // Track location coordinate: only during active live session, NEVER when finished
       const outlineLen = circuitMeta.outline.length;
       const nowSec = Math.floor(Date.now() / 1000);
-      const lapSec =
-        bestLapDuration && bestLapDuration > 50 && bestLapDuration < 150 ? bestLapDuration : 90;
+      const sessionPace =
+        leaderLapDuration && leaderLapDuration > 50 && leaderLapDuration < 150
+          ? leaderLapDuration
+          : (circuitMeta.benchmarkLapSec || 95);
       const driverProg = isQualy
-        ? (((pos * 0.16 + nowSec * (1.0 / lapSec)) % 1.0) + 1.0) % 1.0
-        : (((nowSec * (1.0 / lapSec) - pos * 0.035) % 1.0) + 1.0) % 1.0;
+        ? (((pos * 0.16 + nowSec * (1.0 / sessionPace)) % 1.0) + 1.0) % 1.0
+        : (((nowSec * (1.0 / sessionPace) - (pos - 1) * 0.035) % 1.0) + 1.0) % 1.0;
       const activeStepOffset =
         outlineLen > 0 ? Math.floor(driverProg * outlineLen) % outlineLen : 0;
-      const stepOffset = timing.InPit ? 0 : activeStepOffset;
+      const isCarRetired = Boolean(timing.Retired || timing.Stopped);
+      const isCarInPit = Boolean(timing.InPit);
       const location =
-        !isFinalised && circuitMeta.outline[stepOffset]
-          ? { x: circuitMeta.outline[stepOffset][0], y: circuitMeta.outline[stepOffset][1] }
-          : null;
+        !isSessionFinished && !isCarRetired && !isCarInPit && circuitMeta.outline[activeStepOffset]
+          ? { x: circuitMeta.outline[activeStepOffset][0], y: circuitMeta.outline[activeStepOffset][1] }
+          : !isSessionFinished && isCarInPit && circuitMeta.outline[0]
+            ? { x: circuitMeta.outline[0][0], y: circuitMeta.outline[0][1] }
+            : null;
 
       const intervalSec =
         typeof interval === 'string'
@@ -1069,13 +1116,11 @@ export class F1LiveCdnClient {
 
     const enrichedRadios = enrichWithTranscripts(teamRadios);
 
-    const totalLaps = circuitMeta.totalLaps > 0 ? circuitMeta.totalLaps : 57;
     const progressPercentage = Math.min(100, Math.round((maxLapsCompleted / totalLaps) * 100));
 
-    const isSessionFinalised = sessionInfo?.SessionStatus?.toLowerCase() === 'finalised';
-    const isSessionStarted = sessionInfo?.SessionStatus?.toLowerCase() === 'started';
+    const isSessionStarted = effectiveSessionInfo?.SessionStatus?.toLowerCase() === 'started';
 
-    const sessionState: SessionState = isSessionFinalised
+    const sessionState: SessionState = isSessionFinished
       ? 'FINISHED'
       : currentFlag === 'RED'
         ? 'SUSPENDED'
@@ -1132,7 +1177,7 @@ export class F1LiveCdnClient {
     };
 
     // Store in finalized cache if session is complete
-    if (isFinalised) {
+    if (isSessionFinished) {
       this.finalizedSnapshotCache = {
         sessionPath: normalizedPath,
         timestamp: Date.now(),

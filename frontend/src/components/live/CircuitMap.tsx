@@ -17,7 +17,7 @@ import type { DriverLive, SessionState, TrackOutline } from '../../types/f1';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTrackAnimation } from '../../hooks/useTrackAnimation';
 import { getCircuitIntel } from '../../data/circuitIntelData';
-import { projectPointToTrack } from '../../utils/trackInterpolator';
+import { computeCircularDelta, projectPointToTrack } from '../../utils/trackInterpolator';
 
 interface CircuitMapProps {
   circuitTrack?: TrackOutline | null;
@@ -27,6 +27,10 @@ interface CircuitMapProps {
   className?: string;
   defaultExpanded?: boolean;
   sessionStatus?: SessionState;
+  sessionFlag?: string | null;
+  sessionCurrentLap?: number;
+  sessionTotalLaps?: number;
+  isSessionFinished?: boolean;
 }
 
 type FilterMode = 'all' | 'top10' | 'top3' | 'leader';
@@ -39,9 +43,19 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
   className = '',
   defaultExpanded,
   sessionStatus,
+  sessionFlag,
+  sessionCurrentLap,
+  sessionTotalLaps,
+  isSessionFinished: propIsSessionFinished,
 }) => {
   const { lang } = useLanguage();
-  const isFinished = sessionStatus === 'FINISHED';
+  const isFinished =
+    sessionStatus === 'FINISHED' ||
+    sessionFlag === 'CHEQUERED' ||
+    Boolean(propIsSessionFinished) ||
+    (sessionTotalLaps && sessionTotalLaps > 0
+      ? (sessionCurrentLap ?? 0) >= sessionTotalLaps
+      : false);
   const [isExpanded, setIsExpanded] = useState<boolean>(
     defaultExpanded !== undefined ? defaultExpanded : !isFinished,
   );
@@ -300,6 +314,8 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
     trackGeometry,
     isGpsClustered,
     sessionStatus,
+    sessionFlag,
+    isSessionFinished: isFinished,
     benchmarkLapSec: trackGeometry?.benchmarkLapSec,
   });
 
@@ -314,6 +330,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
       x: number;
       y: number;
       angle: number;
+      currentProgress: number;
       isSelected: boolean;
       isLeader: boolean;
       sector: number;
@@ -360,6 +377,7 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
         x,
         y,
         angle,
+        currentProgress,
         isSelected: d.driverNumber === selectedDriverNumber,
         isLeader: d.pos === 1,
         sector,
@@ -374,6 +392,15 @@ export const CircuitMap: React.FC<CircuitMapProps> = ({
 
     for (let i = 0; i < coords.length; i++) {
       for (let j = i + 1; j < coords.length; j++) {
+        // Only offset cars against each other if they are truly on the same section of track!
+        // Cars on parallel roads (e.g. Turn 7 vs Turn 9 in Singapore) must not push each other.
+        const progressDiff = Math.abs(
+          computeCircularDelta(coords[i].currentProgress, coords[j].currentProgress),
+        );
+        if (progressDiff > 0.04) {
+          continue;
+        }
+
         const dx = coords[j].x - coords[i].x;
         const dy = coords[j].y - coords[i].y;
         const dist = Math.hypot(dx, dy);

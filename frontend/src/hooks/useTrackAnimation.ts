@@ -44,6 +44,8 @@ interface UseTrackAnimationProps {
   trackGeometry: TrackGeometryInterface | null;
   isGpsClustered: boolean;
   sessionStatus?: SessionState;
+  sessionFlag?: string | null;
+  isSessionFinished?: boolean;
   benchmarkLapSec?: number;
 }
 
@@ -55,6 +57,8 @@ export function useTrackAnimation({
   trackGeometry,
   isGpsClustered,
   sessionStatus,
+  sessionFlag,
+  isSessionFinished,
   benchmarkLapSec,
 }: UseTrackAnimationProps) {
   const [animatedCoords, setAnimatedCoords] = useState<Map<number, AnimatedCarCoord>>(new Map());
@@ -65,12 +69,17 @@ export function useTrackAnimation({
   const animateRef = useRef<((t: number) => void) | null>(null);
 
   // Status flags: cars must stay stationary if session hasn't started or is finished
-  const isSessionStationary = sessionStatus === 'NOT_STARTED' || sessionStatus === 'FINISHED';
+  const isFinished =
+    sessionStatus === 'FINISHED' ||
+    sessionFlag === 'CHEQUERED' ||
+    Boolean(isSessionFinished);
+
+  const isSessionStationary = sessionStatus === 'NOT_STARTED' || isFinished;
 
   // 1. Sync telemetry packets when new data arrives from polling/websocket
   useEffect(() => {
-    if (!trackGeometry || sessionStatus === 'FINISHED') {
-      if (sessionStatus === 'FINISHED') {
+    if (!trackGeometry || isFinished) {
+      if (isFinished) {
         kinematicsMapRef.current.clear();
         queueMicrotask(() => {
           setAnimatedCoords((prev) => (prev.size === 0 ? prev : new Map()));
@@ -89,6 +98,7 @@ export function useTrackAnimation({
 
       const inPit = Boolean(driver.inPit || driver.status === 'DNF' || driver.status === 'DNS' || driver.status === 'DSQ');
       const isStationary = isSessionStationary || inPit || isGpsClustered;
+      const existing = kinematicsMap.get(num);
 
       // Compute target SVG point from coordinates
       let targetX = 0;
@@ -103,7 +113,7 @@ export function useTrackAnimation({
         return;
       }
 
-      // Project onto track spline
+      // Project onto track spline with continuity penalty to avoid jumping across parallel roads
       let targetProgress = 0;
       if (trackGeometry.pts && trackGeometry.cumDists && trackGeometry.totalLength) {
         const proj = projectPointToTrack(
@@ -111,6 +121,7 @@ export function useTrackAnimation({
           trackGeometry.pts,
           trackGeometry.cumDists,
           trackGeometry.totalLength,
+          existing?.currentProgress,
         );
         targetProgress = proj.t;
       }
@@ -129,8 +140,6 @@ export function useTrackAnimation({
           baseSpeed = 1.0 / benchmarkSec;
         }
       }
-
-      const existing = kinematicsMap.get(num);
 
       if (!existing) {
         const initialPt = isStationary
@@ -194,7 +203,7 @@ export function useTrackAnimation({
     if (rafRef.current === null && animateRef.current) {
       rafRef.current = requestAnimationFrame(animateRef.current);
     }
-  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary, sessionStatus, benchmarkLapSec]);
+  }, [drivers, trackGeometry, isGpsClustered, isSessionStationary, isFinished, sessionStatus, sessionFlag, isSessionFinished, benchmarkLapSec]);
 
   // 2. High-Performance 60 FPS Continuous Animation Loop
   useEffect(() => {

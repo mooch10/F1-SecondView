@@ -557,7 +557,7 @@ export function generateUniversalLiveSnapshot(
     // When on track: distribute smoothly around the circuit without bunching into a 20-pixel train
     const outlineLen = circuit.outline.length;
     let stepOffset = 0;
-    if (isNotStarted || isCarInPit) {
+    if (isNotStarted || isCarInPit || isRaceFinished) {
       stepOffset = 0;
     } else if (isQualy) {
       // Space active qualifying cars evenly across the lap (~20% spacing)
@@ -709,10 +709,13 @@ export function generateUniversalLiveSnapshot(
       speedTrap: isNotStarted ? null : Number((336.5 - d.performanceBias * 2.8).toFixed(1)),
       i1Speed: isNotStarted ? null : Number((300.5 - d.performanceBias * 2.1).toFixed(1)),
       i2Speed: isNotStarted ? null : Number((294.0 - d.performanceBias * 1.9).toFixed(1)),
-      location: {
-        x: coord[0],
-        y: coord[1],
-      },
+      location:
+        isRaceFinished || isNotStarted
+          ? null
+          : {
+              x: coord[0],
+              y: coord[1],
+            },
       q1Time: !isNotStarted && isQualy ? formatLapSeconds(q1Dur) : null,
       q2Time: !isNotStarted && isQualy && q2Dur ? formatLapSeconds(q2Dur) : null,
       q3Time: !isNotStarted && isQualy && q3Dur ? formatLapSeconds(q3Dur) : null,

@@ -360,6 +360,9 @@ function App() {
                           sessionName={snapshot?.session.sessionName}
                           circuitName={snapshot?.session.circuit}
                           sessionStatus={snapshot?.session.status}
+                          sessionFlag={snapshot?.session.flag}
+                          sessionCurrentLap={snapshot?.session.currentLap}
+                          sessionTotalLaps={snapshot?.session.totalLaps}
                         />
                       )}
 
